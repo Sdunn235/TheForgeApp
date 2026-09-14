@@ -1,0 +1,16 @@
+# Dependencies
+node_modules/
+
+# Compiled Sass source maps
+css/*.map
+
+# npm logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS / editor cruft
+Thumbs.db
+[Dd]esktop.ini
+*.swp
+.DS_Store

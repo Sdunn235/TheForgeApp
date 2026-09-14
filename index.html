@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>The Forge v0.0.1</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+    <!-- Overwrite Bootstrap CSS -->
+    <link rel="stylesheet" href="css/forge.css">
+</head>
+
+
+<body>
+    <div class="video-background">
+        <iframe src="https://www.youtube.com/embed/ez68sFkO6Qo?autoplay=1&mute=1&loop=1&playlist=ez68sFkO6Qo&controls=0"
+            title="Background video" allow="autoplay; encrypted-media" allowfullscreen
+            alt="JohnBrx Youtube video Adding 3D Terrain to My 2D Game [DEVLOG]">
+        </iframe>
+    </div>
+    <div class="page-content">
+        <!-- Navbar -->
+        <nav class="navbar fixed-top navbar-expand-lg bg-primary" data-bs-theme="light">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="./index.html">The Forge</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarScroll"
+                    aria-controls="navbarScroll" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarScroll">
+                    <ul class="navbar-nav justify-content-center me-auto my-2 my-lg-0 navbar-nav-scroll"
+                        style="--bs-scroll-height: 100px;">
+                        <li class="nav-item">
+                            <a class="nav-link active" aria-current="page" href="./index.html">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="./new-character.html">Forge Character</a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
+                                aria-expanded="false">
+                                Link
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="#">Action</a></li>
+                                <li><a class="dropdown-item" href="#">Another action</a></li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                                <li><a class="dropdown-item" href="#">Something else here</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link disabled" aria-disabled="true">Link</a>
+                        </li>
+                    </ul>
+                    <form class="d-flex" role="search">
+                        <input class="form-control me-2" data-bs-theme="dark" type="search" placeholder="Search"
+                            aria-label="Search" />
+                        <button class="btn btn-secondary" type="submit">Search</button>
+                    </form>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main content -->
+        <!--Home Page Info Container-->
+        <div class="container text-start mt-5 pt-5">
+            <div class="row bg-secondary mb-4 px-2 row-cols-1 row-cols-md-1 g-0">
+                <div class="container col">
+                    <h1 class="display-1 pb-2 border-bottom border-primary">Welcome to The Forge</h1>
+                    <p class="lead">This is the description for The Forge. Explain Use and design in a high top-down
+                        approach.</p>
+                </div>
+            </div>
+            <!--Home Page Card Grid-->
+
+            <!--Create Character Page Card Grid-->
+            <div class="row row-cols-1 row-cols-md-2 g-4">
+                <div class="col">
+                    <div class="card mb-3"><img src="Assets/Images/anvil.png" alt="Hammer Anvil">
+                        <div class="card-body">
+                            <h3 class="card-title">Character Design</h3>
+                            <p class="card-text pt-2">This is where you will be able do most things character related.
+                                Be it creating, editing, or viewing characters in the world. This will not only be
+                                players,
+                                but also NPCs, and other characters that may be in the world. This will be the main
+                                hub for character design and management.
+                            </p>
+                        </div>
+                        <div class="card-body">
+                            <div class="btn-group d-grid" role="group">
+                                <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown"
+                                    aria-expanded="false">
+                                    Create, edit, or view characters in the world.
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-lg-end">
+                                    <li><a class="dropdown-item" href="new-character.html">Create Character</a></li>
+                                    <li><a class="dropdown-item" href="#">Edit Character</a></li>
+                                    <li><a class="dropdown-item" href="#">View Characters</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!--Create Stat Attributes Page Card Grid-->
+                <div class="col">
+                    <div class="card mb-3"><img src="Assets/Images/anvil.png" alt="Hammer Anvil">
+                        <div class="card-body">
+                            <h3 class="card-title">Character Design</h3>
+                            <p class="card-text pt-2">This is where you will be able do most things charaacter
+                                related.
+                                Be it creating, editing, or viewing characters in the world. This will not only be
+                                players,
+                                but also NPCs, and other characters that may be in the world. This will be the main
+                                hub for
+                                character design and management.
+                            </p>
+                        </div>
+                        <div class="card-body">
+                            <div class="btn-group d-grid" role="group">
+                                <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown"
+                                    aria-expanded="false">
+                                    Create, edit, or view characters in the world.
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-lg-end">
+                                    <li><a class="dropdown-item" href="#">Create Character</a></li>
+                                    <li><a class="dropdown-item" href="#">Edit Character</a></li>
+                                    <li><a class="dropdown-item" href="#">View Characters</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!--Create Skills Page Card Grid-->
+                <div class="col">
+                    <div class="card mb-3"><img src="Assets/Images/anvil.png" alt="Hammer Anvil">
+                        <div class="card-body">
+                            <h3 class="card-title">Character Design</h3>
+                            <p class="card-text pt-2">This is where you will be able do most things charaacter
+                                related.
+                                Be it creating, editing, or viewing characters in the world. This will not only be
+                                players,
+                                but also NPCs, and other characters that may be in the world. This will be the main
+                                hub for
+                                character design and management.
+                            </p>
+                        </div>
+                        <div class="card-body">
+                            <div class="btn-group d-grid" role="group">
+                                <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown"
+                                    aria-expanded="false">
+                                    Create, edit, or view characters in the world.
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-lg-end">
+                                    <li><a class="dropdown-item" href="#">Create Character</a></li>
+                                    <li><a class="dropdown-item" href="#">Edit Character</a></li>
+                                    <li><a class="dropdown-item" href="#">View Character</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="card mb-3"><img src="Assets/Images/anvil.png" alt="Hammer Anvil">
+                        <div class="card-body">
+                            <h3 class="card-title">Character Design</h3>
+                            <p class="card-text pt-2">This is where you will be able do most things character related.
+                                Be it creating, editing, or viewing characters in the world. This will not only be
+                                players,
+                                but also NPCs, and other characters that may be in the world. This will be the main
+                                hub for character design and management.
+                            </p>
+                        </div>
+                        <div class="card-body">
+                            <div class="btn-group d-grid" role="group">
+                                <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown"
+                                    aria-expanded="false">
+                                    Create, edit, or view characters in the world.
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-lg-end">
+                                    <li><a class="dropdown-item" href="#">Create Character</a></li>
+                                    <li><a class="dropdown-item" href="#">Edit Character</a></li>
+                                    <li><a class="dropdown-item" href="#">View Characters</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!--Create Stat Attributes Page Card Grid-->
+                <div class="col">
+                    <div class="card mb-3"><img src="Assets/Images/anvil.png" alt="Hammer Anvil">
+                        <div class="card-body">
+                            <h3 class="card-title">Character Design</h3>
+                            <p class="card-text pt-2">This is where you will be able do most things charaacter
+                                related.
+                                Be it creating, editing, or viewing characters in the world. This will not only be
+                                players,
+                                but also NPCs, and other characters that may be in the world. This will be the main
+                                hub for
+                                character design and management.
+                            </p>
+                        </div>
+                        <div class="card-body">
+                            <div class="btn-group d-grid" role="group">
+                                <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown"
+                                    aria-expanded="false">
+                                    Create, edit, or view characters in the world.
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-lg-end">
+                                    <li><a class="dropdown-item" href="#">Create Character</a></li>
+                                    <li><a class="dropdown-item" href="#">Edit Character</a></li>
+                                    <li><a class="dropdown-item" href="#">View Characters</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!--Create Skills Page Card Grid-->
+                <div class="col">
+                    <div class="card mb-3"><img src="Assets/Images/anvil.png" alt="Hammer Anvil">
+                        <div class="card-body">
+                            <h3 class="card-title">Character Design</h3>
+                            <p class="card-text pt-2">This is where you will be able do most things charaacter
+                                related.
+                                Be it creating, editing, or viewing characters in the world. This will not only be
+                                players,
+                                but also NPCs, and other characters that may be in the world. This will be the main
+                                hub for
+                                character design and management.
+                            </p>
+                        </div>
+                        <div class="card-body">
+                            <div class="btn-group d-grid" role="group">
+                                <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown"
+                                    aria-expanded="false">
+                                    Create, edit, or view characters in the world.
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-lg-end">
+                                    <li><a class="dropdown-item" href="#">Create Character</a></li>
+                                    <li><a class="dropdown-item" href="#">Edit Character</a></li>
+                                    <li><a class="dropdown-item" href="#">View Character</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+        crossorigin="anonymous"></script>
+    <!-- Popper JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"
+        integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r"
+        crossorigin="anonymous"></script>
+</body>
+
+</html>

@@ -1,0 +1,16 @@
+{
+  "name": "theforgeapp",
+  "version": "1.0.0",
+  "description": "The Forge character and world design interface.",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "build:css": "sass scss/forge.scss css/forge.css",
+    "sass": "sass scss/forge.scss css/forge.css --watch"
+  },
+  "dependencies": {
+    "bootstrap": "^5.3.8",
+    "bootstrap-icons": "^1.13.1",
+    "sass": "^1.104.1"
+  }
+}
