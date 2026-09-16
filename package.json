@@ -5,7 +5,6 @@
   "type": "commonjs",
   "main": "index.js",
   "scripts": {
-    "build:css": "sass scss/forge.scss css/forge.css",
     "sass": "sass scss/forge.scss css/forge.css --watch"
   },
   "dependencies": {

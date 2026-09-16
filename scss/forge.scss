@@ -3,25 +3,24 @@
 // Define variables first
 $primary: #8034fc;
 $secondary: #d0c0e9;
+$disabled: #756a86;
+$success: #198754;
+$accordion-bg: $primary;
+$form-range-track-height: 0.75rem;
+$form-range-thumb-bg: $success;
+$accordion-border-color: $secondary;
 
 // Include Bootstrap
 @import "../node_modules/bootstrap/scss/bootstrap";
 
 
-
 // Card Styles
 .card {
-    background-color: transparent;
-    border: none;
-    position: relative;
-    display: flex;
-    flex-direction: column;
-
     .card-navigation {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-top: auto;
+        margin-top: 40px;
         background-color: $secondary;
     }
 
@@ -36,7 +35,6 @@ $secondary: #d0c0e9;
         width: 100%;
         height: 180px;
         object-fit: contain;
-        background-color: color.change($secondary, $alpha: 0.35);
         border-radius: 0.25rem 0.25rem 0 0;
     }
 
@@ -44,20 +42,40 @@ $secondary: #d0c0e9;
         background-color: $secondary;
         border-radius: 0 0 0.25rem 0.25rem;
     }
-    .card-navigation {
-        padding: 16px 0
+
+    .btn-disabled {
+        color: #fff;
+        background-color: $disabled;
+        border-color: $disabled;
+
+        &:hover,
+        &:focus {
+            color: #fff;
+            background-color: color.adjust($disabled, $lightness: -8%);
+            border-color: color.adjust($disabled, $lightness: -8%);
+        }
     }
 }
+
+.character-step {
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+    background-color: $secondary;
+}
+
 .card-img-top {
     height: 50px;
     object-fit: cover;
 
 }
+
 .card-header-row {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
 }
+
 .dropdown-menu {
     width: 100%;
 
@@ -77,13 +95,13 @@ $secondary: #d0c0e9;
         }
     }
 }
+
 //####
 
-// Video Background was generated using AI through VS Code GPT chat agent
-.video-background {
-    position: fixed;
-    inset: 0;
-    z-index: -2;
+// Video hero banner
+.video-hero {
+    position: relative;
+    height: 360px;
     overflow: hidden;
     background-color: #000;
 
@@ -91,10 +109,8 @@ $secondary: #d0c0e9;
         position: absolute;
         top: 50%;
         left: 50%;
-        width: 100vw;
-        height: 56.25vw;
-        min-height: 100vh;
-        min-width: 177.78vh;
+        width: 100%;
+        height: 100%;
         transform: translate(-50%, -50%);
         pointer-events: none;
     }
@@ -106,6 +122,7 @@ $secondary: #d0c0e9;
         background: rgba(0, 0, 0, 0.45);
     }
 }
+
 //####
 
 .page-content {
@@ -132,6 +149,7 @@ $secondary: #d0c0e9;
         cursor: pointer;
     }
 }
+
 .character-type-switch {
     display: flex;
     align-items: center;
@@ -166,10 +184,18 @@ $secondary: #d0c0e9;
             color: $primary;
         }
     }
+
 }
+
+.badge {
+    font-size: 1rem;
+}
+
 //####
 
 .lead {
-    margin-bottom: 0;size: 1.25rem;
+    margin-bottom: 0;
+    size: 1.25rem;
     padding-bottom: 1rem;
 }
+

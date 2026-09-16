@@ -2471,9 +2471,9 @@ textarea.form-control-lg {
 .form-range::-webkit-slider-thumb {
   width: 1rem;
   height: 1rem;
-  margin-top: -0.25rem;
+  margin-top: -0.125rem;
   appearance: none;
-  background-color: #8034fc;
+  background-color: #198754;
   border: 0;
   border-radius: 1rem;
   transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
@@ -2488,7 +2488,7 @@ textarea.form-control-lg {
 }
 .form-range::-webkit-slider-runnable-track {
   width: 100%;
-  height: 0.5rem;
+  height: 0.75rem;
   color: transparent;
   cursor: pointer;
   background-color: var(--bs-secondary-bg);
@@ -2499,7 +2499,7 @@ textarea.form-control-lg {
   width: 1rem;
   height: 1rem;
   appearance: none;
-  background-color: #8034fc;
+  background-color: #198754;
   border: 0;
   border-radius: 1rem;
   transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
@@ -2514,7 +2514,7 @@ textarea.form-control-lg {
 }
 .form-range::-moz-range-track {
   width: 100%;
-  height: 0.5rem;
+  height: 0.75rem;
   color: transparent;
   cursor: pointer;
   background-color: var(--bs-secondary-bg);
@@ -4482,9 +4482,9 @@ textarea.form-control-lg {
 
 .accordion {
   --bs-accordion-color: var(--bs-body-color);
-  --bs-accordion-bg: var(--bs-body-bg);
+  --bs-accordion-bg: #8034fc;
   --bs-accordion-transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out, border-radius 0.15s ease;
-  --bs-accordion-border-color: var(--bs-border-color);
+  --bs-accordion-border-color: #d0c0e9;
   --bs-accordion-border-width: var(--bs-border-width);
   --bs-accordion-border-radius: var(--bs-border-radius);
   --bs-accordion-inner-border-radius: calc(var(--bs-border-radius) - (var(--bs-border-width)));
@@ -11859,18 +11859,11 @@ textarea.form-control-lg {
     display: none !important;
   }
 }
-.card {
-  background-color: transparent;
-  border: none;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-}
 .card .card-navigation {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: auto;
+  margin-top: 40px;
   background-color: #d0c0e9;
 }
 .card .btn-close {
@@ -11883,15 +11876,28 @@ textarea.form-control-lg {
   width: 100%;
   height: 180px;
   object-fit: contain;
-  background-color: rgba(208, 192, 233, 0.35);
   border-radius: 0.25rem 0.25rem 0 0;
 }
 .card .card-body {
   background-color: #d0c0e9;
   border-radius: 0 0 0.25rem 0.25rem;
 }
-.card .card-navigation {
-  padding: 16px 0;
+.card .btn-disabled {
+  color: #fff;
+  background-color: #756a86;
+  border-color: #756a86;
+}
+.card .btn-disabled:hover, .card .btn-disabled:focus {
+  color: #fff;
+  background-color: rgb(38.0823529412%, 34.5019607843%, 43.6156862745%);
+  border-color: rgb(38.0823529412%, 34.5019607843%, 43.6156862745%);
+}
+
+.character-step {
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+  background-color: #d0c0e9;
 }
 
 .card-img-top {
@@ -11921,25 +11927,22 @@ textarea.form-control-lg {
   background-color: rgb(38.0487340567%, 1.4448886351%, 97.7707976394%);
 }
 
-.video-background {
-  position: fixed;
-  inset: 0;
-  z-index: -2;
+.video-hero {
+  position: relative;
+  height: 360px;
   overflow: hidden;
   background-color: #000;
 }
-.video-background iframe {
+.video-hero iframe {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 100vw;
-  height: 56.25vw;
-  min-height: 100vh;
-  min-width: 177.78vh;
+  width: 100%;
+  height: 100%;
   transform: translate(-50%, -50%);
   pointer-events: none;
 }
-.video-background::after {
+.video-hero::after {
   content: "";
   position: absolute;
   inset: 0;
@@ -11991,6 +11994,10 @@ textarea.form-control-lg {
 }
 .character-type-switch:has(.character-type-input:checked) .npc-label {
   color: #8034fc;
+}
+
+.badge {
+  font-size: 1rem;
 }
 
 .lead {

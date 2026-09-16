@@ -13,17 +13,12 @@
 
 
 <body>
-    <div class="video-background">
-        <iframe src="https://www.youtube.com/embed/ez68sFkO6Qo?autoplay=1&mute=1&loop=1&playlist=ez68sFkO6Qo&controls=0"
-            title="Background video" allow="autoplay; encrypted-media" allowfullscreen
-            alt="JohnBrx Youtube video Adding 3D Terrain to My 2D Game [DEVLOG]">
-        </iframe>
-    </div>
     <div class="page-content">
         <!-- Navbar -->
         <nav class="navbar fixed-top navbar-expand-lg bg-primary" data-bs-theme="light">
             <div class="container-fluid">
-                <a class="navbar-brand" href="./index.html">The Forge</a>
+                <a class="navbar-brand" href="./index.html" data-bs-toggle="modal" data-bs-target="#leavePageModal">The
+                    Forge</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarScroll"
                     aria-controls="navbarScroll" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
@@ -34,78 +29,450 @@
             </div>
         </nav>
 
-    <!-- Main content -->
-    <!--New Character Page Info Container-->
-    <div class="container text-start mt-5 pt-5">
-        <div class="row bg-secondary mb-4 px-2 row-cols-1 row-cols-md-1 g-0">
-            <div class="container col">
-                <h1 class="display-1 pb-2 border-bottom border-primary">Forging New Characters</h1>
-                <p class="lead">This is where you will be able do most things character related.
-                    Be it creating, editing, or viewing characters in the world. This will not only be
-                    players,
-                    but also NPCs, and other characters that may be in the world. This will be the main hub
-                    for
-                    character design and management.</p>
-            </div>
+        <div class="video-hero">
+            <iframe
+                src="https://www.youtube.com/embed/ez68sFkO6Qo?autoplay=1&mute=1&loop=1&playlist=ez68sFkO6Qo&controls=0&playsinline=1"
+                title="Background video" allow="autoplay; encrypted-media" allowfullscreen>
+            </iframe>
         </div>
-        <!--New Character Page Card Grid-->
-        <div class="row row-cols-1 row-cols-md-1 g-4">
-            <div class="col">
-                <div class="card mb-3">
-                    <div class="card-body">
-                        <h3 class="card-title">Character Design</h3>
-                        <p class="card-text pt-2">
-                        </p>
-                        <form class="character-form">
-                            <div class="mb-3">
-                                <label class="form-label">Character Name</label>
-                                <input class="form-control" type="text" name="characterName" required>
-                            </div>
 
-                            <div class="character-type-switch mb-3">
-                                <span class="player-label">Player Character</span>
+        <!-- Main content -->
+        <!--New Character Page Info Container-->
+        <div class="container text-start mt-5 pt-5">
+            <div class="row bg-secondary mb-4 px-2 row-cols-1 row-cols-md-1 g-0">
+                <div class="container col">
+                    <h1 class="display-1 pb-2 border-bottom border-primary">Forging New Characters</h1>
+                    <p class="lead">This is where you will be able do most things character related.
+                        Be it creating, editing, or viewing characters in the world. This will not only be
+                        players,
+                        but also NPCs, and other characters that may be in the world. This will be the main hub
+                        for
+                        character design and management.</p>
+                </div>
+            </div>
 
-                                <div class="form-check form-switch">
-                                    <input class="form-check-input character-type-input" type="checkbox" name="isNpc"
-                                        value="true" role="switch">
+            <!--New Character Page Card Grid-->
+            <div class="row row-cols-1 row-cols-md-1 g-4">
+                <div class="col">
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <h3 class="card-title display-3">Character Design</h3>
+                            <p class="mb-4 text-dark display-6">Build your character from the ground up.</p>
+                            </p>
+                            <form class="character-form">
+                                <div class="character-step" data-step="character">
+                                    <h3 class="card-title-dark">Character Information</h3>
+                                    <p class="mb-4 text-dark">Character Needs ID and name before creation.</p>
+                                    <div class="mb-3">
+                                        <label for="characterName" class="form-label">
+                                            Character Name
+                                        </label>
+                                        <input type="text" class="form-control" id="characterName" name="characterName"
+                                            required>
+                                    </div>
+
+                                    <fieldset class="mb-3">
+                                        <legend class="fs-6">Character Type</legend>
+
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="characterType"
+                                                id="playerCharacter" value="player" checked>
+                                            <label class="form-check-label" for="playerCharacter">
+                                                Player Character
+                                            </label>
+                                        </div>
+
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="characterType"
+                                                id="npcCharacter" value="npc">
+                                            <label class="form-check-label" for="npcCharacter">
+                                                Non-Player Character
+                                            </label>
+                                        </div>
+                                    </fieldset>
+
+                                    <div class="mb-3" data-player-field>
+                                        <label for="userId" class="form-label">
+                                            User ID
+                                        </label>
+                                        <input class="form-control" type="text" id="userId" name="userId"
+                                            placeholder="Enter User ID" required>
+                                    </div>
+
+                                    <div class="mb-3 d-none" data-npc-field>
+                                        <label for="npcId" class="form-label">
+                                            NPC ID
+                                        </label>
+                                        <input class="form-control" type="text" id="npcId" name="npcId"
+                                            placeholder="Enter NPC ID" disabled>
+                                    </div>
+
+                                    <div class="card-navigation">
+                                        <button type="button" class="btn btn-outline-secondary" disabled>
+                                            &laquo; Backwards
+                                        </button>
+                                        <button type="submit" class="btn btn-disabled" data-info-submit
+                                            aria-disabled="true">
+                                            Save Info &raquo;
+                                        </button>
+                                    </div>
                                 </div>
 
-                                <span class="npc-label">Non-Player Character</span>
-                            </div>
+                                <!-- Stats Step-->
+                                <div class="character-step d-none" data-step="stats">
+                                    <h3 class="card-title-dark">Build Character Stats</h3>
+                                    <p class="mb-4 text-dark">Choose a value from 1 to 20 for each ability.</p>
 
-                            <div class="mb-3 player-id-field">
-                                <label class="form-label">User ID</label>
-                                <input class="form-control" type="text" name="userId" placeholder="Enter User ID"
-                                    required>
-                            </div>
+                                    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
+                                        <div class="col">
+                                            <div class="card h-100 p-3 bg-primary border-primary-subtle shadow-sm">
+                                                <label for="strength" class="form-label fw-semibold">Strength</label>
+                                                <p class="flex-grow-1 mb-3 text-light">Physical power,
+                                                    lifting, and close-combat force.</p>
+                                                <input type="range" class="form-range" id="strength" name="strength"
+                                                    min="1" max="20" value="1" aria-describedby="strengthValue">
+                                                <output for="strength" id="strengthValue"
+                                                    class="badge bg-secondary align-self-start">1</output>
+                                            </div>
+                                        </div>
 
-                            <div class="mb-3 npc-id-field d-none">
-                                <label class="form-label">NPC ID</label>
-                                <input class="form-control" type="text" name="npcId" placeholder="Enter NPC ID"
-                                    disabled>
-                            </div>
+                                        <div class="col">
+                                            <div class="card h-100 p-3 bg-light border-primary-subtle shadow-sm">
+                                                <label for="dexterity" class="form-label fw-semibold">Dexterity</label>
+                                                <p class="flex-grow-1 mb-3 small text-secondary">Speed,
+                                                    coordination, balance, and precision.</p>
+                                                <input type="range" class="form-range" id="dexterity" name="dexterity"
+                                                    min="1" max="20" value="1" aria-describedby="dexterityValue">
+                                                <output for="dexterity" id="dexterityValue"
+                                                    class="badge bg-secondary align-self-start">1</output>
+                                            </div>
+                                        </div>
 
-                            <button type="submit" class="btn btn-primary">
-                                Save Character
-                            </button>
+                                        <div class="col">
+                                            <div class="card h-100 p-3 bg-light border-primary-subtle shadow-sm">
+                                                <label for="constitution"
+                                                    class="form-label fw-semibold">Constitution</label>
+                                                <p class="flex-grow-1 mb-3 small text-secondary">Endurance,
+                                                    toughness, and resistance to harm.</p>
+                                                <input type="range" class="form-range" id="constitution"
+                                                    name="constitution" min="1" max="20" value="1"
+                                                    aria-describedby="constitutionValue">
+                                                <output for="constitution" id="constitutionValue"
+                                                    class="badge bg-secondary align-self-start">1</output>
+                                            </div>
+                                        </div>
 
-                            <div class="alert mt-3 d-none character-message" role="alert"></div>
-                        </form>
-                        <div class="card-body card-navigation">
-                            <button type="button" class="btn btn-outline-disabled" disabled>
-                                &laquo; Backwards
-                            </button>
+                                        <div class="col">
+                                            <div class="card h-100 p-3 bg-light border-primary-subtle shadow-sm">
+                                                <label for="intelligence"
+                                                    class="form-label fw-semibold">Intelligence</label>
+                                                <p class="flex-grow-1 mb-3 small text-secondary">Reasoning,
+                                                    memory, learning, and problem-solving.</p>
+                                                <input type="range" class="form-range" id="intelligence"
+                                                    name="intelligence" min="1" max="20" value="1"
+                                                    aria-describedby="intelligenceValue">
+                                                <output for="intelligence" id="intelligenceValue"
+                                                    class="badge bg-secondary align-self-start">1</output>
+                                            </div>
+                                        </div>
 
-                            <a href="#" class="btn btn-primary">
-                                Forwards &raquo;
-                            </a>
+                                        <div class="col">
+                                            <div class="card h-100 p-3 bg-light border-primary-subtle shadow-sm">
+                                                <label for="wisdom" class="form-label fw-semibold">Wisdom</label>
+                                                <p class="flex-grow-1 mb-3 small text-secondary">Awareness,
+                                                    perception, judgment, and intuition.</p>
+                                                <input type="range" class="form-range" id="wisdom" name="wisdom" min="1"
+                                                    max="20" value="1" aria-describedby="wisdomValue">
+                                                <output for="wisdom" id="wisdomValue"
+                                                    class="badge bg-secondary align-self-start">1</output>
+                                            </div>
+                                        </div>
+
+                                        <div class="col">
+                                            <div class="card h-100 p-3 bg-light border-primary-subtle shadow-sm">
+                                                <label for="charisma" class="form-label fw-semibold">Charisma</label>
+                                                <p class="flex-grow-1 mb-3 small text-secondary">Confidence,
+                                                    presence, influence, and leadership.</p>
+                                                <input type="range" class="form-range" id="charisma" name="charisma"
+                                                    min="1" max="20" value="1" aria-describedby="charismaValue">
+                                                <output for="charisma" id="charismaValue"
+                                                    class="badge bg-secondary align-self-start">1</output>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="card-navigation">
+                                        <button type="button" class="btn btn-outline-primary" data-action="back">
+                                            &laquo; Back
+                                        </button>
+                                        <button type="submit" class="btn btn-primary">
+                                            Save Stats &raquo;
+                                        </button>
+                                    </div>
+                                </div>
+                                <!-- Skills Step -->
+                                <div class="character-step d-none" data-step="skills">
+                                    <h3 class="card-title">Skills</h3>
+                                    <div class="col"></div>
+                                    <div class="mb-3">
+                                        <div class="accordion" id="accordionPanelsStayOpenExample">
+                                            <div class="accordion-item">
+                                                <h2 class="accordion-header">
+                                                    <button class="accordion-button" type="button"
+                                                        data-bs-toggle="collapse"
+                                                        data-bs-target="#panelsStayOpen-collapseOne"
+                                                        aria-expanded="false" aria-controls="panelsStayOpen-collapseOne">
+                                                        <h5>Gathering Skills</h5>
+                                                    </button>
+                                                </h2>
+                                                <div id="panelsStayOpen-collapseOne" class="accordion-collapse collapse show">
+                                                    <div class="accordion-body">
+                                                        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
+                                                            <div class="col">
+                                                                <div
+                                                                    class="card h-100 p-3 bg-light border-primary-subtle shadow-sm">
+                                                                    <label for="mining"
+                                                                        class="form-label fw-semibold">Mining</label>
+                                                                    <p class="flex-grow-1 mb-3 small text-secondary">
+                                                                        The
+                                                                        skill of extracting minerals from the
+                                                                        earth.</p>
+                                                                    <input type="range" class="form-range" id="mining"
+                                                                        name="mining" min="1" max="100" value="1"
+                                                                        aria-describedby="miningValue">
+                                                                    <output for="mining" id="miningValue"
+                                                                        class="badge bg-secondary align-self-start">1</output>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col">
+                                                                <div
+                                                                    class="card h-100 p-3 bg-light border-primary-subtle shadow-sm">
+                                                                    <label for="foraging"
+                                                                        class="form-label fw-semibold">Foraging</label>
+                                                                    <p class="flex-grow-1 mb-3 small text-secondary">
+                                                                        The
+                                                                        skill of gathering food from the natural
+                                                                        environment.</p>
+                                                                    <input type="range" class="form-range" id="foraging"
+                                                                        name="foraging" min="1" max="100" value="1"
+                                                                        aria-describedby="foragingValue">
+                                                                    <output for="foraging" id="foragingValue"
+                                                                        class="badge bg-secondary align-self-start">1</output>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col">
+                                                                <div
+                                                                    class="card h-100 p-3 bg-light border-primary-subtle shadow-sm">
+                                                                    <label for="lumberjacking"
+                                                                        class="form-label fw-semibold">Lumberjacking</label>
+                                                                    <p class="flex-grow-1 mb-3 small text-secondary">
+                                                                        The
+                                                                        skill of cutting down trees and
+                                                                        processing the
+                                                                        wood.</p>
+                                                                    <input type="range" class="form-range"
+                                                                        id="lumberjacking" name="lumberjacking" min="1"
+                                                                        max="100" value="1"
+                                                                        aria-describedby="lumberjackingValue">
+                                                                    <output for="lumberjacking" id="lumberjackingValue"
+                                                                        class="badge bg-secondary align-self-start">1</output>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="accordion-item">
+                                                    <h2 class="accordion-header">
+                                                        <button class="accordion-button collapsed" type="button"
+                                                        data-bs-toggle="collapse"
+                                                        data-bs-target="#panelsStayOpen-collapseTwo"
+                                                        aria-expanded="false" aria-controls="panelsStayOpen-collapseTwo">
+                                                            <h5>One-Handed Weapons</h5>
+                                                        </button>
+                                                    </h2>
+                                                    <div id="panelsStayOpen-collapseTwo" class="accordion-collapse collapse">
+                                                        <div class="accordion-body">
+                                                            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
+                                                                <div class="col">
+                                                                    <div
+                                                                        class="card h-100 p-3 bg-light border-primary-subtle shadow-sm">
+                                                                        <label for="mining"
+                                                                            class="form-label fw-semibold">Mining</label>
+                                                                        <p
+                                                                            class="flex-grow-1 mb-3 small text-secondary">
+                                                                            The
+                                                                            skill of extracting minerals from
+                                                                            the earth.
+                                                                        </p>
+                                                                        <input type="range" class="form-range"
+                                                                            id="mining" name="mining" min="1" max="100"
+                                                                            value="1" aria-describedby="miningValue">
+                                                                        <output for="mining" id="miningValue"
+                                                                            class="badge bg-secondary align-self-start">1</output>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col">
+                                                                    <div
+                                                                        class="card h-100 p-3 bg-light border-primary-subtle shadow-sm">
+                                                                        <label for="foraging"
+                                                                            class="form-label fw-semibold">Foraging</label>
+                                                                        <p
+                                                                            class="flex-grow-1 mb-3 small text-secondary">
+                                                                            The
+                                                                            skill of gathering food from the
+                                                                            natural
+                                                                            environment.</p>
+                                                                        <input type="range" class="form-range"
+                                                                            id="foraging" name="foraging" min="1"
+                                                                            max="100" value="1"
+                                                                            aria-describedby="foragingValue">
+                                                                        <output for="foraging" id="foragingValue"
+                                                                            class="badge bg-secondary align-self-start">1</output>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col">
+                                                                    <div
+                                                                        class="card h-100 p-3 bg-light border-primary-subtle shadow-sm">
+                                                                        <label for="lumberjacking"
+                                                                            class="form-label fw-semibold">Lumberjacking</label>
+                                                                        <p
+                                                                            class="flex-grow-1 mb-3 small text-secondary">
+                                                                            The
+                                                                            skill of cutting down trees and
+                                                                            processing
+                                                                            the
+                                                                            wood.</p>
+                                                                        <input type="range" class="form-range"
+                                                                            id="lumberjacking" name="lumberjacking"
+                                                                            min="1" max="100" value="1"
+                                                                            aria-describedby="lumberjackingValue">
+                                                                        <output for="lumberjacking"
+                                                                            id="lumberjackingValue"
+                                                                            class="badge bg-secondary align-self-start">1</output>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="accordion-item">
+                                                    <h2 class="accordion-header">
+                                                        <button class="accordion-button collapsed" type="button"
+                                                        data-bs-toggle="collapse"
+                                                        data-bs-target="#panelsStayOpen-collapseThree"
+                                                        aria-expanded="false" aria-controls="panelsStayOpen-collapseThree">
+                                                            <h5>Medium Armor</h5>
+                                                        </button>
+                                                    </h2>
+                                                    <div id="panelsStayOpen-collapseThree" class="accordion-collapse collapse">
+                                                        <div class="accordion-body">
+                                                            <strong>This is the third item’s accordion
+                                                                body.</strong> It is
+                                                            hidden by default, until the collapse plugin adds
+                                                            the
+                                                            appropriate classes that we use to style each
+                                                            element.
+                                                            These
+                                                            classes control the overall appearance, as well as
+                                                            the
+                                                            showing
+                                                            and hiding via CSS transitions. You can modify any
+                                                            of
+                                                            this with
+                                                            custom CSS or overriding our default variables. It’s
+                                                            also worth
+                                                            noting that just about any HTML can go within the
+                                                            <code>.accordion-body</code>, though the transition
+                                                            does
+                                                            limit
+                                                            overflow.
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="card-navigation">
+                                            <button type="button" class="btn btn-outline-primary" data-action="back">
+                                                &laquo; Back
+                                            </button>
+
+                                            <button type="submit" class="btn btn-primary">
+                                                Save Skills &raquo;
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Abilities Step -->
+                                <div class="character-step d-none" data-step="abilities">
+                                    <h3 class="card-title">Abilities</h3>
+
+                                    <div class="mb-3">
+                                        <label for="abilities" class="form-label">Abilities</label>
+                                        <textarea class="form-control" id="abilities" name="abilities"
+                                            rows="4"></textarea>
+                                    </div>
+
+                                    <div class="card-navigation">
+                                        <button type="button" class="btn btn-outline-primary" data-action="back">
+                                            &laquo; Back
+                                        </button>
+
+                                        <button type="submit" class="btn btn-primary">
+                                            Save Abilities &raquo;
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Spells Step -->
+                                <div class="character-step d-none" data-step="spells">
+                                    <h3 class="card-title">Spells</h3>
+
+                                    <div class="mb-3">
+                                        <label for="spells" class="form-label">Spells</label>
+                                        <textarea class="form-control" id="spells" name="spells" rows="4"></textarea>
+                                    </div>
+
+                                    <div class="card-navigation">
+                                        <button type="button" class="btn btn-outline-primary" data-action="back">
+                                            &laquo; Back
+                                        </button>
+
+                                        <button type="submit" class="btn btn-primary">
+                                            Save Spells &raquo;
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Items Step -->
+                                <div class="character-step d-none" data-step="items">
+                                    <h3 class="card-title">Items</h3>
+
+                                    <div class="mb-3">
+                                        <label for="items" class="form-label">Items</label>
+                                        <textarea class="form-control" id="items" name="items" rows="4"></textarea>
+                                    </div>
+
+                                    <div class="card-navigation">
+                                        <button type="button" class="btn btn-outline-primary" data-action="back">
+                                            &laquo; Back
+                                        </button>
+
+                                        <button type="submit" class="btn btn-primary">
+                                            Save Items &raquo;
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="alert mt-3 d-none" data-character-message role="alert">
+                                </div>
+                            </form>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-
     <!-- Leave Page Modal -->
     <div class="modal fade" id="leavePageModal" tabindex="-1" aria-labelledby="leavePageModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
