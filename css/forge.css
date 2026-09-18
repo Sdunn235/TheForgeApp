@@ -2471,7 +2471,7 @@ textarea.form-control-lg {
 .form-range::-webkit-slider-thumb {
   width: 1rem;
   height: 1rem;
-  margin-top: -0.125rem;
+  margin-top: 0rem;
   appearance: none;
   background-color: #198754;
   border: 0;
@@ -2488,7 +2488,7 @@ textarea.form-control-lg {
 }
 .form-range::-webkit-slider-runnable-track {
   width: 100%;
-  height: 0.75rem;
+  height: 1rem;
   color: transparent;
   cursor: pointer;
   background-color: var(--bs-secondary-bg);
@@ -2514,7 +2514,7 @@ textarea.form-control-lg {
 }
 .form-range::-moz-range-track {
   width: 100%;
-  height: 0.75rem;
+  height: 1rem;
   color: transparent;
   cursor: pointer;
   background-color: var(--bs-secondary-bg);
@@ -4482,9 +4482,9 @@ textarea.form-control-lg {
 
 .accordion {
   --bs-accordion-color: var(--bs-body-color);
-  --bs-accordion-bg: #8034fc;
+  --bs-accordion-bg: var(--bs-body-bg);
   --bs-accordion-transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out, border-radius 0.15s ease;
-  --bs-accordion-border-color: #d0c0e9;
+  --bs-accordion-border-color: var(--bs-border-color);
   --bs-accordion-border-width: var(--bs-border-width);
   --bs-accordion-border-radius: var(--bs-border-radius);
   --bs-accordion-inner-border-radius: calc(var(--bs-border-radius) - (var(--bs-border-width)));
@@ -11900,6 +11900,15 @@ textarea.form-control-lg {
   background-color: #d0c0e9;
 }
 
+.form-label {
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+
+.form-control {
+  font-size: 1.4rem;
+}
+
 .card-img-top {
   height: 50px;
   object-fit: cover;
@@ -11927,9 +11936,26 @@ textarea.form-control-lg {
   background-color: rgb(38.0487340567%, 1.4448886351%, 97.7707976394%);
 }
 
+.add-skill-menu {
+  width: auto;
+  min-width: 16rem;
+}
+
+.ability-toggle {
+  --bs-btn-color: #fff;
+  --bs-btn-bg: #756a86;
+  --bs-btn-border-color: #756a86;
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-bg: rgb(38.0823529412%, 34.5019607843%, 43.6156862745%);
+  --bs-btn-hover-border-color: rgb(38.0823529412%, 34.5019607843%, 43.6156862745%);
+  --bs-btn-active-color: #fff;
+  --bs-btn-active-bg: #198754;
+  --bs-btn-active-border-color: #198754;
+}
+
 .video-hero {
   position: relative;
-  height: 360px;
+  height: 800px;
   overflow: hidden;
   background-color: #000;
 }
@@ -12002,7 +12028,22 @@ textarea.form-control-lg {
 
 .lead {
   margin-bottom: 0;
-  size: 1.25rem;
+  font-size: 1.25rem;
+  padding-bottom: 1rem;
+}
+
+.fixed-top .navbar-brand {
+  font-size: 3rem;
+}
+.fixed-top .btn-close {
+  font-size: 3rem;
+}
+.fixed-top {
+  height: 100px;
+}
+
+.form-range {
+  height: 1rem;
   padding-bottom: 1rem;
 }
 

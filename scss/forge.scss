@@ -5,10 +5,8 @@ $primary: #8034fc;
 $secondary: #d0c0e9;
 $disabled: #756a86;
 $success: #198754;
-$accordion-bg: $primary;
-$form-range-track-height: 0.75rem;
+$form-range-track-height: 1rem;
 $form-range-thumb-bg: $success;
-$accordion-border-color: $secondary;
 
 // Include Bootstrap
 @import "../node_modules/bootstrap/scss/bootstrap";
@@ -63,6 +61,13 @@ $accordion-border-color: $secondary;
     padding: 1rem;
     background-color: $secondary;
 }
+.form-label {
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+.form-control {
+    font-size: 1.4rem;
+}
 
 .card-img-top {
     height: 50px;
@@ -96,12 +101,30 @@ $accordion-border-color: $secondary;
     }
 }
 
+.add-skill-menu {
+    width: auto;
+    min-width: 16rem;
+}
+
+// Ability toggles: grey by default, green when selected
+.ability-toggle {
+    --bs-btn-color: #fff;
+    --bs-btn-bg: #{$disabled};
+    --bs-btn-border-color: #{$disabled};
+    --bs-btn-hover-color: #fff;
+    --bs-btn-hover-bg: #{color.adjust($disabled, $lightness: -8%)};
+    --bs-btn-hover-border-color: #{color.adjust($disabled, $lightness: -8%)};
+    --bs-btn-active-color: #fff;
+    --bs-btn-active-bg: #{$success};
+    --bs-btn-active-border-color: #{$success};
+}
+
 //####
 
 // Video hero banner
 .video-hero {
     position: relative;
-    height: 360px;
+    height: 800px;
     overflow: hidden;
     background-color: #000;
 
@@ -195,7 +218,21 @@ $accordion-border-color: $secondary;
 
 .lead {
     margin-bottom: 0;
-    size: 1.25rem;
+    font-size: 1.25rem;
     padding-bottom: 1rem;
 }
 
+.fixed-top {
+    .navbar-brand {
+        font-size: 3rem;
+    }
+    .btn-close {
+        font-size: 3rem;
+    }
+    height: 100px;
+}
+
+.form-range {
+    height: 1rem;
+    padding-bottom: 1rem;
+}

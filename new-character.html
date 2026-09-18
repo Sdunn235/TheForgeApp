@@ -15,7 +15,7 @@
 <body>
     <div class="page-content">
         <!-- Navbar -->
-        <nav class="navbar fixed-top navbar-expand-lg bg-primary" data-bs-theme="light">
+        <nav class="navbar fixed-top navbar-expand-lg bg-primary" data-bs-theme="dark">
             <div class="container-fluid">
                 <a class="navbar-brand" href="./index.html" data-bs-toggle="modal" data-bs-target="#leavePageModal">The
                     Forge</a>
@@ -58,7 +58,6 @@
                         <div class="card-body">
                             <h3 class="card-title display-3">Character Design</h3>
                             <p class="mb-4 text-dark display-6">Build your character from the ground up.</p>
-                            </p>
                             <form class="character-form">
                                 <div class="character-step" data-step="character">
                                     <h3 class="card-title-dark">Character Information</h3>
@@ -122,7 +121,11 @@
                                 <div class="character-step d-none" data-step="stats">
                                     <h3 class="card-title-dark">Build Character Stats</h3>
                                     <p class="mb-4 text-dark">Choose a value from 1 to 20 for each ability.</p>
-
+                                    <div class="mb-3">
+                                    <label for="disabledTextInput" class="form-label">Available Stat Points
+                                    <input type="text" id="disabledTextInput" class="form-control"
+                                        placeholder="128"></label>
+                                    </div>
                                     <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
                                         <div class="col">
                                             <div class="card h-100 p-3 bg-primary border-primary-subtle shadow-sm">
@@ -210,38 +213,95 @@
                                         </button>
                                     </div>
                                 </div>
+
                                 <!-- Skills Step -->
                                 <div class="character-step d-none" data-step="skills">
-                                    <h3 class="card-title">Skills</h3>
-                                    <div class="col"></div>
+                                    <div class="d-flex align-items-center gap-2 mb-3">
+                                        <h3 class="card-title mb-0">Skills</h3>
+                                        <!-- Add Skill UI: add skill category -->
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm btn-outline-primary" type="button"
+                                                data-bs-toggle="dropdown"
+                                                data-bs-auto-close="outside"
+                                                aria-expanded="false"
+                                                aria-label="Add skill category">
+                                                +
+                                            </button>
+                                            <div class="dropdown-menu add-skill-menu p-3">
+                                                <label for="addSkillCategory" class="form-label fw-semibold">Choose a
+                                                    category</label>
+                                                <select class="form-select mb-2" id="addSkillCategory">
+                                                    <option selected disabled>Select a category...</option>
+                                                    <option>Two-Handed Weapons</option>
+                                                    <option>Ranged Weapons</option>
+                                                    <option>Light Armor</option>
+                                                    <option>Heavy Armor</option>
+                                                    <option>Crafting</option>
+                                                    <option>Magic</option>
+                                                </select>
+                                                <button type="button" class="btn btn-primary btn-sm w-100">Add</button>
+                                            </div>
+                                        </div>
+                                        <!-- End Add Skill UI -->
+                                    </div>
                                     <div class="mb-3">
                                         <div class="accordion" id="accordionPanelsStayOpenExample">
                                             <div class="accordion-item">
-                                                <h2 class="accordion-header">
-                                                    <button class="accordion-button" type="button"
-                                                        data-bs-toggle="collapse"
-                                                        data-bs-target="#panelsStayOpen-collapseOne"
-                                                        aria-expanded="false" aria-controls="panelsStayOpen-collapseOne">
-                                                        <h5>Gathering Skills</h5>
-                                                    </button>
-                                                </h2>
-                                                <div id="panelsStayOpen-collapseOne" class="accordion-collapse collapse show">
+                                                <div class="d-flex align-items-center">
+                                                    <h2 class="accordion-header flex-grow-1">
+                                                        <button class="accordion-button collapsed" type="button"
+                                                            data-bs-toggle="collapse"
+                                                            data-bs-target="#panelsStayOpen-collapseOne"
+                                                            aria-expanded="false"
+                                                            aria-controls="panelsStayOpen-collapseOne">
+                                                            <h5>Gathering Skills</h5>
+                                                        </button>
+                                                    </h2>
+                                                    <!-- Add Skill UI: add sub-skill (Gathering) -->
+                                                    <div class="dropdown px-2">
+                                                        <button class="btn btn-sm btn-outline-primary" type="button"
+                                                            data-bs-toggle="dropdown"
+                                                            data-bs-auto-close="outside"
+                                                            aria-expanded="false"
+                                                            aria-label="Add Gathering skill">
+                                                            +
+                                                        </button>
+                                                        <div class="dropdown-menu dropdown-menu-end add-skill-menu p-3">
+                                                            <label for="addGatheringSkill"
+                                                                class="form-label fw-semibold">Choose a skill</label>
+                                                            <select class="form-select mb-2" id="addGatheringSkill">
+                                                                <option selected disabled>Select a skill...</option>
+                                                                <option>Fishing</option>
+                                                                <option>Herbalism</option>
+                                                                <option>Skinning</option>
+                                                            </select>
+                                                            <button type="button"
+                                                                class="btn btn-primary btn-sm w-100">Add</button>
+                                                        </div>
+                                                    </div>
+                                                    <!-- End Add Skill UI -->
+                                                </div>
+                                                <div id="panelsStayOpen-collapseOne"
+                                                    class="accordion-collapse collapse">
                                                     <div class="accordion-body">
                                                         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
                                                             <div class="col">
                                                                 <div
                                                                     class="card h-100 p-3 bg-light border-primary-subtle shadow-sm">
-                                                                    <label for="mining"
-                                                                        class="form-label fw-semibold">Mining</label>
-                                                                    <p class="flex-grow-1 mb-3 small text-secondary">
-                                                                        The
-                                                                        skill of extracting minerals from the
-                                                                        earth.</p>
-                                                                    <input type="range" class="form-range" id="mining"
-                                                                        name="mining" min="1" max="100" value="1"
-                                                                        aria-describedby="miningValue">
-                                                                    <output for="mining" id="miningValue"
-                                                                        class="badge bg-secondary align-self-start">1</output>
+                                                                    <div class="card-body">
+                                                                        <h5 class="card-title">Mining</h5>
+                                                                        <p
+                                                                            class="card-text flex-grow-1 mb-3 small text-dark">
+                                                                            The skill of extracting minerals from the
+                                                                            earth.</p>
+                                                                        <label for="mining"
+                                                                            class="form-label fw-semibold">Mining</label>
+                                                                        <input type="range" class="form-range"
+                                                                            id="mining" name="mining" min="1" max="100"
+                                                                            value="1" aria-describedby="miningValue">
+                                                                        <output for="mining" id="miningValue"
+                                                                            class="badge bg-secondary align-self-start">1</output>
+                                                                    </div>
                                                                 </div>
                                                             </div>
                                                             <div class="col">
@@ -281,73 +341,104 @@
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <div class="accordion-item">
-                                                    <h2 class="accordion-header">
+                                            </div>
+                                            <div class="accordion-item">
+                                                <div class="d-flex align-items-center">
+                                                    <h2 class="accordion-header flex-grow-1">
                                                         <button class="accordion-button collapsed" type="button"
-                                                        data-bs-toggle="collapse"
-                                                        data-bs-target="#panelsStayOpen-collapseTwo"
-                                                        aria-expanded="false" aria-controls="panelsStayOpen-collapseTwo">
+                                                            data-bs-toggle="collapse"
+                                                            data-bs-target="#panelsStayOpen-collapseTwo"
+                                                            aria-expanded="false"
+                                                            aria-controls="panelsStayOpen-collapseTwo">
                                                             <h5>One-Handed Weapons</h5>
                                                         </button>
                                                     </h2>
-                                                    <div id="panelsStayOpen-collapseTwo" class="accordion-collapse collapse">
+                                                    <!-- Add Skill UI: add sub-skill (One-Handed Weapons) -->
+                                                    <div class="dropdown px-2">
+                                                        <button class="btn btn-sm btn-outline-primary" type="button"
+                                                            data-bs-toggle="dropdown"
+                                                            data-bs-auto-close="outside"
+                                                            aria-expanded="false"
+                                                            aria-label="Add One-Handed Weapons skill">
+                                                            +
+                                                        </button>
+                                                        <div class="dropdown-menu dropdown-menu-end add-skill-menu p-3">
+                                                            <label for="addOneHandedSkill"
+                                                                class="form-label fw-semibold">Choose a skill</label>
+                                                            <select class="form-select mb-2" id="addOneHandedSkill">
+                                                                <option selected disabled>Select a skill...</option>
+                                                                <option>Sword</option>
+                                                                <option>Axe</option>
+                                                                <option>Mace</option>
+                                                                <option>Dagger</option>
+                                                            </select>
+                                                            <button type="button"
+                                                                class="btn btn-primary btn-sm w-100">Add</button>
+                                                        </div>
+                                                    </div>
+                                                    <!-- End Add Skill UI -->
+                                                </div>
+                                                    <div id="panelsStayOpen-collapseTwo"
+                                                        class="accordion-collapse collapse">
                                                         <div class="accordion-body">
                                                             <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
                                                                 <div class="col">
                                                                     <div
                                                                         class="card h-100 p-3 bg-light border-primary-subtle shadow-sm">
-                                                                        <label for="mining"
-                                                                            class="form-label fw-semibold">Mining</label>
+                                                                        <label for="sword"
+                                                                            class="form-label fw-semibold">Sword</label>
                                                                         <p
                                                                             class="flex-grow-1 mb-3 small text-secondary">
-                                                                            The
-                                                                            skill of extracting minerals from
-                                                                            the earth.
-                                                                        </p>
+                                                                            Balanced blades for quick cuts and thrusts.</p>
                                                                         <input type="range" class="form-range"
-                                                                            id="mining" name="mining" min="1" max="100"
-                                                                            value="1" aria-describedby="miningValue">
-                                                                        <output for="mining" id="miningValue"
+                                                                            id="sword" name="sword" min="1" max="100"
+                                                                            value="1" aria-describedby="swordValue">
+                                                                        <output for="sword" id="swordValue"
                                                                             class="badge bg-secondary align-self-start">1</output>
                                                                     </div>
                                                                 </div>
                                                                 <div class="col">
                                                                     <div
                                                                         class="card h-100 p-3 bg-light border-primary-subtle shadow-sm">
-                                                                        <label for="foraging"
-                                                                            class="form-label fw-semibold">Foraging</label>
+                                                                        <label for="axe"
+                                                                            class="form-label fw-semibold">Axe</label>
                                                                         <p
                                                                             class="flex-grow-1 mb-3 small text-secondary">
-                                                                            The
-                                                                            skill of gathering food from the
-                                                                            natural
-                                                                            environment.</p>
+                                                                            Heavy chopping blows that bite through shields.</p>
                                                                         <input type="range" class="form-range"
-                                                                            id="foraging" name="foraging" min="1"
-                                                                            max="100" value="1"
-                                                                            aria-describedby="foragingValue">
-                                                                        <output for="foraging" id="foragingValue"
+                                                                            id="axe" name="axe" min="1" max="100"
+                                                                            value="1" aria-describedby="axeValue">
+                                                                        <output for="axe" id="axeValue"
                                                                             class="badge bg-secondary align-self-start">1</output>
                                                                     </div>
                                                                 </div>
                                                                 <div class="col">
                                                                     <div
                                                                         class="card h-100 p-3 bg-light border-primary-subtle shadow-sm">
-                                                                        <label for="lumberjacking"
-                                                                            class="form-label fw-semibold">Lumberjacking</label>
+                                                                        <label for="mace"
+                                                                            class="form-label fw-semibold">Mace</label>
                                                                         <p
                                                                             class="flex-grow-1 mb-3 small text-secondary">
-                                                                            The
-                                                                            skill of cutting down trees and
-                                                                            processing
-                                                                            the
-                                                                            wood.</p>
+                                                                            Blunt strikes that crush through armor.</p>
                                                                         <input type="range" class="form-range"
-                                                                            id="lumberjacking" name="lumberjacking"
-                                                                            min="1" max="100" value="1"
-                                                                            aria-describedby="lumberjackingValue">
-                                                                        <output for="lumberjacking"
-                                                                            id="lumberjackingValue"
+                                                                            id="mace" name="mace" min="1" max="100"
+                                                                            value="1" aria-describedby="maceValue">
+                                                                        <output for="mace" id="maceValue"
+                                                                            class="badge bg-secondary align-self-start">1</output>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col">
+                                                                    <div
+                                                                        class="card h-100 p-3 bg-light border-primary-subtle shadow-sm">
+                                                                        <label for="dagger"
+                                                                            class="form-label fw-semibold">Dagger</label>
+                                                                        <p
+                                                                            class="flex-grow-1 mb-3 small text-secondary">
+                                                                            Fast, close-range stabs and precise strikes.</p>
+                                                                        <input type="range" class="form-range"
+                                                                            id="dagger" name="dagger" min="1" max="100"
+                                                                            value="1" aria-describedby="daggerValue">
+                                                                        <output for="dagger" id="daggerValue"
                                                                             class="badge bg-secondary align-self-start">1</output>
                                                                     </div>
                                                                 </div>
@@ -356,15 +447,40 @@
                                                     </div>
                                                 </div>
                                                 <div class="accordion-item">
-                                                    <h2 class="accordion-header">
+                                                <div class="d-flex align-items-center">
+                                                    <h2 class="accordion-header flex-grow-1">
                                                         <button class="accordion-button collapsed" type="button"
-                                                        data-bs-toggle="collapse"
-                                                        data-bs-target="#panelsStayOpen-collapseThree"
-                                                        aria-expanded="false" aria-controls="panelsStayOpen-collapseThree">
+                                                            data-bs-toggle="collapse"
+                                                            data-bs-target="#panelsStayOpen-collapseThree"
+                                                            aria-expanded="false"
+                                                            aria-controls="panelsStayOpen-collapseThree">
                                                             <h5>Medium Armor</h5>
                                                         </button>
                                                     </h2>
-                                                    <div id="panelsStayOpen-collapseThree" class="accordion-collapse collapse">
+                                                    <div class="dropdown px-2">
+                                                        <button class="btn btn-sm btn-outline-primary" type="button"
+                                                            data-bs-toggle="dropdown"
+                                                            data-bs-auto-close="outside"
+                                                            aria-expanded="false"
+                                                            aria-label="Add Medium Armor skill">
+                                                            +
+                                                        </button>
+                                                        <div class="dropdown-menu dropdown-menu-end add-skill-menu p-3">
+                                                            <label for="addMediumArmorSkill"
+                                                                class="form-label fw-semibold">Choose a skill</label>
+                                                            <select class="form-select mb-2" id="addMediumArmorSkill">
+                                                                <option selected disabled>Select a skill...</option>
+                                                                <option>Chainmail</option>
+                                                                <option>Scale Mail</option>
+                                                                <option>Brigandine</option>
+                                                            </select>
+                                                            <button type="button"
+                                                                class="btn btn-primary btn-sm w-100">Add</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                    <div id="panelsStayOpen-collapseThree"
+                                                        class="accordion-collapse collapse">
                                                         <div class="accordion-body">
                                                             <strong>This is the third item’s accordion
                                                                 body.</strong> It is
@@ -389,29 +505,357 @@
                                                         </div>
                                                     </div>
                                                 </div>
-                                            </div>
                                         </div>
+                                    </div>
 
-                                        <div class="card-navigation">
-                                            <button type="button" class="btn btn-outline-primary" data-action="back">
-                                                &laquo; Back
-                                            </button>
+                                    <div class="card-navigation">
+                                        <button type="button" class="btn btn-outline-primary" data-action="back">
+                                            &laquo; Back
+                                        </button>
 
-                                            <button type="submit" class="btn btn-primary">
-                                                Save Skills &raquo;
-                                            </button>
-                                        </div>
+                                        <button type="submit" class="btn btn-primary">
+                                            Save Skills &raquo;
+                                        </button>
                                     </div>
                                 </div>
 
                                 <!-- Abilities Step -->
                                 <div class="character-step d-none" data-step="abilities">
-                                    <h3 class="card-title">Abilities</h3>
+                                    <div class="d-flex align-items-center gap-2 mb-2">
+                                        <h3 class="card-title mb-0">Abilities</h3>
+                                        <!-- Add Skill UI: add ability skill category -->
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm btn-outline-primary" type="button"
+                                                data-bs-toggle="dropdown"
+                                                data-bs-auto-close="outside"
+                                                aria-expanded="false"
+                                                aria-label="Add skill category">
+                                                +
+                                            </button>
+                                            <div class="dropdown-menu add-skill-menu p-3">
+                                                <label for="addAbilityCategory" class="form-label fw-semibold">Choose a
+                                                    category</label>
+                                                <select class="form-select mb-2" id="addAbilityCategory">
+                                                    <option selected disabled>Select a category...</option>
+                                                    <option>Two-Handed Weapons</option>
+                                                    <option>Ranged Weapons</option>
+                                                    <option>Light Armor</option>
+                                                    <option>Heavy Armor</option>
+                                                    <option>Crafting</option>
+                                                    <option>Magic</option>
+                                                </select>
+                                                <button type="button" class="btn btn-primary btn-sm w-100">Add</button>
+                                            </div>
+                                        </div>
+                                        <!-- End Add Skill UI -->
+                                    </div>
+                                    <p class="mb-4 text-dark">Click an ability to learn it. Hover for details.</p>
 
-                                    <div class="mb-3">
-                                        <label for="abilities" class="form-label">Abilities</label>
-                                        <textarea class="form-control" id="abilities" name="abilities"
-                                            rows="4"></textarea>
+                                    <!-- Level + Ability Points -->
+                                    <div class="row row-cols-1 row-cols-md-2 g-3 mb-4">
+                                        <div class="col">
+                                            <div class="card h-100 p-3 bg-light border-primary-subtle shadow-sm">
+                                                <label for="level" class="form-label fw-semibold">Level</label>
+                                                <p class="flex-grow-1 mb-3 small text-secondary">Your character's
+                                                    overall experience level.</p>
+                                                <input type="range" class="form-range" id="level" name="level"
+                                                    min="1" max="50" value="1" aria-describedby="levelValue">
+                                                <output for="level" id="levelValue"
+                                                    class="badge bg-secondary align-self-start">1</output>
+                                            </div>
+                                        </div>
+                                        <div class="col">
+                                            <div class="card h-100 p-3 bg-light border-primary-subtle shadow-sm">
+                                                <label for="abilityPoints" class="form-label fw-semibold">Ability
+                                                    Points</label>
+                                                <p class="flex-grow-1 mb-3 small text-secondary">You earn 2 ability
+                                                    points per level.</p>
+                                                <input type="text" class="form-control" id="abilityPoints"
+                                                    value="2" readonly>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Abilities by Skill Category -->
+                                    <div class="accordion mb-3" id="abilitiesAccordion">
+                                        <!-- Gathering Skills -->
+                                        <div class="accordion-item">
+                                            <div class="d-flex align-items-center">
+                                                <h2 class="accordion-header flex-grow-1">
+                                                    <button class="accordion-button collapsed" type="button"
+                                                        data-bs-toggle="collapse"
+                                                        data-bs-target="#abilities-collapseGathering"
+                                                        aria-expanded="false"
+                                                        aria-controls="abilities-collapseGathering">
+                                                        <h5>Gathering Skills</h5>
+                                                    </button>
+                                                </h2>
+                                                <!-- Add Skill UI: add ability skill (Gathering) -->
+                                                <div class="dropdown px-2">
+                                                    <button class="btn btn-sm btn-outline-primary" type="button"
+                                                        data-bs-toggle="dropdown"
+                                                        data-bs-auto-close="outside"
+                                                        aria-expanded="false"
+                                                        aria-label="Add Gathering skill">
+                                                        +
+                                                    </button>
+                                                    <div class="dropdown-menu dropdown-menu-end add-skill-menu p-3">
+                                                        <label for="addAbilityGatheringSkill"
+                                                            class="form-label fw-semibold">Choose a skill</label>
+                                                        <select class="form-select mb-2" id="addAbilityGatheringSkill">
+                                                            <option selected disabled>Select a skill...</option>
+                                                            <option>Fishing</option>
+                                                            <option>Herbalism</option>
+                                                            <option>Skinning</option>
+                                                        </select>
+                                                        <button type="button"
+                                                            class="btn btn-primary btn-sm w-100">Add</button>
+                                                    </div>
+                                                </div>
+                                                <!-- End Add Skill UI -->
+                                            </div>
+                                            <div id="abilities-collapseGathering" class="accordion-collapse collapse">
+                                                <div class="accordion-body">
+                                                    <h6 class="fw-bold">Mining</h6>
+                                                    <div class="d-flex flex-wrap gap-2 mb-3">
+                                                        <input type="checkbox" class="btn-check" id="ability-rich-veins"
+                                                            name="abilities" value="rich-veins" autocomplete="off">
+                                                        <label class="btn ability-toggle" for="ability-rich-veins"
+                                                            data-bs-toggle="tooltip"
+                                                            data-bs-title="Pull 25% more ore from every mining node.">Rich
+                                                            Veins</label>
+                                                        <input type="checkbox" class="btn-check" id="ability-steady-pick"
+                                                            name="abilities" value="steady-pick" autocomplete="off">
+                                                        <label class="btn ability-toggle" for="ability-steady-pick"
+                                                            data-bs-toggle="tooltip"
+                                                            data-bs-title="Your pickaxe loses durability half as fast.">Steady
+                                                            Pick</label>
+                                                    </div>
+
+                                                    <h6 class="fw-bold">Foraging</h6>
+                                                    <div class="d-flex flex-wrap gap-2 mb-3">
+                                                        <input type="checkbox" class="btn-check" id="ability-keen-eye"
+                                                            name="abilities" value="keen-eye" autocomplete="off">
+                                                        <label class="btn ability-toggle" for="ability-keen-eye"
+                                                            data-bs-toggle="tooltip"
+                                                            data-bs-title="Spot rare herbs and mushrooms more often.">Keen
+                                                            Eye</label>
+                                                        <input type="checkbox" class="btn-check"
+                                                            id="ability-bountiful-harvest" name="abilities"
+                                                            value="bountiful-harvest" autocomplete="off">
+                                                        <label class="btn ability-toggle" for="ability-bountiful-harvest"
+                                                            data-bs-toggle="tooltip"
+                                                            data-bs-title="Every harvest yields one extra item.">Bountiful
+                                                            Harvest</label>
+                                                    </div>
+
+                                                    <h6 class="fw-bold">Lumberjacking</h6>
+                                                    <div class="d-flex flex-wrap gap-2">
+                                                        <input type="checkbox" class="btn-check" id="ability-clean-cut"
+                                                            name="abilities" value="clean-cut" autocomplete="off">
+                                                        <label class="btn ability-toggle" for="ability-clean-cut"
+                                                            data-bs-toggle="tooltip"
+                                                            data-bs-title="Trees produce larger, higher quality logs.">Clean
+                                                            Cut</label>
+                                                        <input type="checkbox" class="btn-check" id="ability-timber"
+                                                            name="abilities" value="timber" autocomplete="off">
+                                                        <label class="btn ability-toggle" for="ability-timber"
+                                                            data-bs-toggle="tooltip"
+                                                            data-bs-title="Fell trees 30% faster.">Timber!</label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- One-Handed Weapons -->
+                                        <div class="accordion-item">
+                                            <div class="d-flex align-items-center">
+                                                <h2 class="accordion-header flex-grow-1">
+                                                    <button class="accordion-button collapsed" type="button"
+                                                        data-bs-toggle="collapse"
+                                                        data-bs-target="#abilities-collapseOneHanded"
+                                                        aria-expanded="false"
+                                                        aria-controls="abilities-collapseOneHanded">
+                                                        <h5>One-Handed Weapons</h5>
+                                                    </button>
+                                                </h2>
+                                                <!-- Add Skill UI: add ability skill (One-Handed Weapons) -->
+                                                <div class="dropdown px-2">
+                                                    <button class="btn btn-sm btn-outline-primary" type="button"
+                                                        data-bs-toggle="dropdown"
+                                                        data-bs-auto-close="outside"
+                                                        aria-expanded="false"
+                                                        aria-label="Add One-Handed Weapons skill">
+                                                        +
+                                                    </button>
+                                                    <div class="dropdown-menu dropdown-menu-end add-skill-menu p-3">
+                                                        <label for="addAbilityOneHandedSkill"
+                                                            class="form-label fw-semibold">Choose a skill</label>
+                                                        <select class="form-select mb-2" id="addAbilityOneHandedSkill">
+                                                            <option selected disabled>Select a skill...</option>
+                                                            <option>Short Sword</option>
+                                                            <option>Hand Axe</option>
+                                                            <option>Flail</option>
+                                                            <option>Rapier</option>
+                                                        </select>
+                                                        <button type="button"
+                                                            class="btn btn-primary btn-sm w-100">Add</button>
+                                                    </div>
+                                                </div>
+                                                <!-- End Add Skill UI -->
+                                            </div>
+                                            <div id="abilities-collapseOneHanded" class="accordion-collapse collapse">
+                                                <div class="accordion-body">
+                                                    <h6 class="fw-bold">Sword</h6>
+                                                    <div class="d-flex flex-wrap gap-2 mb-3">
+                                                        <input type="checkbox" class="btn-check" id="ability-riposte"
+                                                            name="abilities" value="riposte" autocomplete="off">
+                                                        <label class="btn ability-toggle" for="ability-riposte"
+                                                            data-bs-toggle="tooltip"
+                                                            data-bs-title="After a successful block, strike back instantly.">Riposte</label>
+                                                        <input type="checkbox" class="btn-check" id="ability-keen-edge"
+                                                            name="abilities" value="keen-edge" autocomplete="off">
+                                                        <label class="btn ability-toggle" for="ability-keen-edge"
+                                                            data-bs-toggle="tooltip"
+                                                            data-bs-title="Critical hits with a sword deal 20% extra damage.">Keen
+                                                            Edge</label>
+                                                    </div>
+
+                                                    <h6 class="fw-bold">Axe</h6>
+                                                    <div class="d-flex flex-wrap gap-2 mb-3">
+                                                        <input type="checkbox" class="btn-check" id="ability-cleave"
+                                                            name="abilities" value="cleave" autocomplete="off">
+                                                        <label class="btn ability-toggle" for="ability-cleave"
+                                                            data-bs-toggle="tooltip"
+                                                            data-bs-title="Your swings also hit one enemy standing next to your target.">Cleave</label>
+                                                        <input type="checkbox" class="btn-check" id="ability-rend"
+                                                            name="abilities" value="rend" autocomplete="off">
+                                                        <label class="btn ability-toggle" for="ability-rend"
+                                                            data-bs-toggle="tooltip"
+                                                            data-bs-title="Axe hits cause bleeding damage over time.">Rend</label>
+                                                    </div>
+
+                                                    <h6 class="fw-bold">Mace</h6>
+                                                    <div class="d-flex flex-wrap gap-2 mb-3">
+                                                        <input type="checkbox" class="btn-check" id="ability-crushing-blow"
+                                                            name="abilities" value="crushing-blow" autocomplete="off">
+                                                        <label class="btn ability-toggle" for="ability-crushing-blow"
+                                                            data-bs-toggle="tooltip"
+                                                            data-bs-title="Mace attacks ignore 25% of the target's armor.">Crushing
+                                                            Blow</label>
+                                                        <input type="checkbox" class="btn-check" id="ability-stagger"
+                                                            name="abilities" value="stagger" autocomplete="off">
+                                                        <label class="btn ability-toggle" for="ability-stagger"
+                                                            data-bs-toggle="tooltip"
+                                                            data-bs-title="Heavy hits have a chance to stun the target.">Stagger</label>
+                                                    </div>
+
+                                                    <h6 class="fw-bold">Dagger</h6>
+                                                    <div class="d-flex flex-wrap gap-2">
+                                                        <input type="checkbox" class="btn-check" id="ability-backstab"
+                                                            name="abilities" value="backstab" autocomplete="off">
+                                                        <label class="btn ability-toggle" for="ability-backstab"
+                                                            data-bs-toggle="tooltip"
+                                                            data-bs-title="Deal double damage when attacking from behind.">Backstab</label>
+                                                        <input type="checkbox" class="btn-check" id="ability-quick-strikes"
+                                                            name="abilities" value="quick-strikes" autocomplete="off">
+                                                        <label class="btn ability-toggle" for="ability-quick-strikes"
+                                                            data-bs-toggle="tooltip"
+                                                            data-bs-title="Attack 15% faster with daggers.">Quick
+                                                            Strikes</label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Medium Armor -->
+                                        <div class="accordion-item">
+                                            <div class="d-flex align-items-center">
+                                                <h2 class="accordion-header flex-grow-1">
+                                                    <button class="accordion-button collapsed" type="button"
+                                                        data-bs-toggle="collapse"
+                                                        data-bs-target="#abilities-collapseMediumArmor"
+                                                        aria-expanded="false"
+                                                        aria-controls="abilities-collapseMediumArmor">
+                                                        <h5>Medium Armor</h5>
+                                                    </button>
+                                                </h2>
+                                                <!-- Add Skill UI: add ability skill (Medium Armor) -->
+                                                <div class="dropdown px-2">
+                                                    <button class="btn btn-sm btn-outline-primary" type="button"
+                                                        data-bs-toggle="dropdown"
+                                                        data-bs-auto-close="outside"
+                                                        aria-expanded="false"
+                                                        aria-label="Add Medium Armor skill">
+                                                        +
+                                                    </button>
+                                                    <div class="dropdown-menu dropdown-menu-end add-skill-menu p-3">
+                                                        <label for="addAbilityMediumArmorSkill"
+                                                            class="form-label fw-semibold">Choose a skill</label>
+                                                        <select class="form-select mb-2" id="addAbilityMediumArmorSkill">
+                                                            <option selected disabled>Select a skill...</option>
+                                                            <option>Studded Leather</option>
+                                                            <option>Ring Mail</option>
+                                                            <option>Lamellar</option>
+                                                        </select>
+                                                        <button type="button"
+                                                            class="btn btn-primary btn-sm w-100">Add</button>
+                                                    </div>
+                                                </div>
+                                                <!-- End Add Skill UI -->
+                                            </div>
+                                            <div id="abilities-collapseMediumArmor" class="accordion-collapse collapse">
+                                                <div class="accordion-body">
+                                                    <h6 class="fw-bold">Chainmail</h6>
+                                                    <div class="d-flex flex-wrap gap-2 mb-3">
+                                                        <input type="checkbox" class="btn-check" id="ability-linked-rings"
+                                                            name="abilities" value="linked-rings" autocomplete="off">
+                                                        <label class="btn ability-toggle" for="ability-linked-rings"
+                                                            data-bs-toggle="tooltip"
+                                                            data-bs-title="Adds extra defense against slashing attacks.">Linked
+                                                            Rings</label>
+                                                        <input type="checkbox" class="btn-check" id="ability-deflect"
+                                                            name="abilities" value="deflect" autocomplete="off">
+                                                        <label class="btn ability-toggle" for="ability-deflect"
+                                                            data-bs-toggle="tooltip"
+                                                            data-bs-title="Chance for incoming blows to glance off for half damage.">Deflect</label>
+                                                    </div>
+
+                                                    <h6 class="fw-bold">Scale Mail</h6>
+                                                    <div class="d-flex flex-wrap gap-2 mb-3">
+                                                        <input type="checkbox" class="btn-check"
+                                                            id="ability-overlapping-plates" name="abilities"
+                                                            value="overlapping-plates" autocomplete="off">
+                                                        <label class="btn ability-toggle" for="ability-overlapping-plates"
+                                                            data-bs-toggle="tooltip"
+                                                            data-bs-title="Adds extra defense against arrows and piercing attacks.">Overlapping
+                                                            Plates</label>
+                                                        <input type="checkbox" class="btn-check" id="ability-hardened-scales"
+                                                            name="abilities" value="hardened-scales" autocomplete="off">
+                                                        <label class="btn ability-toggle" for="ability-hardened-scales"
+                                                            data-bs-toggle="tooltip"
+                                                            data-bs-title="Gain bonus defense while below half health.">Hardened
+                                                            Scales</label>
+                                                    </div>
+
+                                                    <h6 class="fw-bold">Brigandine</h6>
+                                                    <div class="d-flex flex-wrap gap-2">
+                                                        <input type="checkbox" class="btn-check" id="ability-riveted-guard"
+                                                            name="abilities" value="riveted-guard" autocomplete="off">
+                                                        <label class="btn ability-toggle" for="ability-riveted-guard"
+                                                            data-bs-toggle="tooltip"
+                                                            data-bs-title="Increases overall defense by 10%.">Riveted
+                                                            Guard</label>
+                                                        <input type="checkbox" class="btn-check" id="ability-light-step"
+                                                            name="abilities" value="light-step" autocomplete="off">
+                                                        <label class="btn ability-toggle" for="ability-light-step"
+                                                            data-bs-toggle="tooltip"
+                                                            data-bs-title="Armor drains less stamina while running.">Light
+                                                            Step</label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
 
                                     <div class="card-navigation">
@@ -429,9 +873,570 @@
                                 <div class="character-step d-none" data-step="spells">
                                     <h3 class="card-title">Spells</h3>
 
-                                    <div class="mb-3">
-                                        <label for="spells" class="form-label">Spells</label>
-                                        <textarea class="form-control" id="spells" name="spells" rows="4"></textarea>
+                                    <p class="mb-4 text-dark">Spells are grouped by school of magic. Click Learn to add a spell to your spellbook.</p>
+
+                                    <!-- Spells by School of Magic -->
+                                    <div class="accordion mb-3" id="spellsAccordion">
+                                        <!-- Abjuration -->
+                                        <div class="accordion-item">
+                                            <div class="d-flex align-items-center">
+                                                <h2 class="accordion-header flex-grow-1">
+                                                    <button class="accordion-button collapsed" type="button"
+                                                        data-bs-toggle="collapse"
+                                                        data-bs-target="#spells-collapseAbjuration"
+                                                        aria-expanded="false"
+                                                        aria-controls="spells-collapseAbjuration">
+                                                        <h5>Abjuration</h5>
+                                                    </button>
+                                                </h2>
+                                                <!-- Add Spell UI: add spell (Abjuration) -->
+                                                <div class="dropdown px-2">
+                                                    <button class="btn btn-sm btn-outline-primary" type="button"
+                                                        data-bs-toggle="dropdown"
+                                                        data-bs-auto-close="outside"
+                                                        aria-expanded="false"
+                                                        aria-label="Add Abjuration spell">
+                                                        +
+                                                    </button>
+                                                    <div class="dropdown-menu dropdown-menu-end add-skill-menu p-3">
+                                                        <label for="addSpellAbjuration" class="form-label fw-semibold">Choose a spell</label>
+                                                        <select class="form-select mb-2" id="addSpellAbjuration">
+                                                            <option selected disabled>Select a spell...</option>
+                                                            <option>Shield</option>
+                                                            <option>Counterspell</option>
+                                                            <option>Banishment</option>
+                                                        </select>
+                                                        <button type="button" class="btn btn-primary btn-sm w-100">Add</button>
+                                                    </div>
+                                                </div>
+                                                <!-- End Add Spell UI -->
+                                            </div>
+                                            <div id="spells-collapseAbjuration" class="accordion-collapse collapse">
+                                                <div class="accordion-body">
+                                                    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
+                                                        <div class="col">
+                                                            <div class="card h-100 p-3 bg-light border-primary-subtle shadow-sm">
+                                                                <h5 class="card-title">Arcane Ward</h5>
+                                                                <div class="mb-2">
+                                                                    <span class="badge bg-primary">Level 1</span>
+                                                                    <span class="badge bg-secondary text-dark">10 Mana</span>
+                                                                </div>
+                                                                <p class="flex-grow-1 mb-3 small text-secondary">Surround yourself with a shimmering barrier that absorbs damage.</p>
+                                                                <input type="checkbox" class="btn-check" id="spell-arcane-ward" name="spells"
+                                                                    value="arcane-ward" autocomplete="off">
+                                                                <label class="btn btn-sm ability-toggle align-self-start"
+                                                                    for="spell-arcane-ward">Learn</label>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col">
+                                                            <div class="card h-100 p-3 bg-light border-primary-subtle shadow-sm">
+                                                                <h5 class="card-title">Dispel Magic</h5>
+                                                                <div class="mb-2">
+                                                                    <span class="badge bg-primary">Level 3</span>
+                                                                    <span class="badge bg-secondary text-dark">25 Mana</span>
+                                                                </div>
+                                                                <p class="flex-grow-1 mb-3 small text-secondary">End a magical effect on a creature or object.</p>
+                                                                <input type="checkbox" class="btn-check" id="spell-dispel-magic" name="spells"
+                                                                    value="dispel-magic" autocomplete="off">
+                                                                <label class="btn btn-sm ability-toggle align-self-start"
+                                                                    for="spell-dispel-magic">Learn</label>
+                                                            </div>
+                                                        </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                        <!-- Conjuration -->
+                                        <div class="accordion-item">
+                                            <div class="d-flex align-items-center">
+                                                <h2 class="accordion-header flex-grow-1">
+                                                    <button class="accordion-button collapsed" type="button"
+                                                        data-bs-toggle="collapse"
+                                                        data-bs-target="#spells-collapseConjuration"
+                                                        aria-expanded="false"
+                                                        aria-controls="spells-collapseConjuration">
+                                                        <h5>Conjuration</h5>
+                                                    </button>
+                                                </h2>
+                                                <!-- Add Spell UI: add spell (Conjuration) -->
+                                                <div class="dropdown px-2">
+                                                    <button class="btn btn-sm btn-outline-primary" type="button"
+                                                        data-bs-toggle="dropdown"
+                                                        data-bs-auto-close="outside"
+                                                        aria-expanded="false"
+                                                        aria-label="Add Conjuration spell">
+                                                        +
+                                                    </button>
+                                                    <div class="dropdown-menu dropdown-menu-end add-skill-menu p-3">
+                                                        <label for="addSpellConjuration" class="form-label fw-semibold">Choose a spell</label>
+                                                        <select class="form-select mb-2" id="addSpellConjuration">
+                                                            <option selected disabled>Select a spell...</option>
+                                                            <option>Web</option>
+                                                            <option>Cloudkill</option>
+                                                            <option>Teleport</option>
+                                                        </select>
+                                                        <button type="button" class="btn btn-primary btn-sm w-100">Add</button>
+                                                    </div>
+                                                </div>
+                                                <!-- End Add Spell UI -->
+                                            </div>
+                                            <div id="spells-collapseConjuration" class="accordion-collapse collapse">
+                                                <div class="accordion-body">
+                                                    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
+                                                        <div class="col">
+                                                            <div class="card h-100 p-3 bg-light border-primary-subtle shadow-sm">
+                                                                <h5 class="card-title">Summon Familiar</h5>
+                                                                <div class="mb-2">
+                                                                    <span class="badge bg-primary">Level 1</span>
+                                                                    <span class="badge bg-secondary text-dark">10 Mana</span>
+                                                                </div>
+                                                                <p class="flex-grow-1 mb-3 small text-secondary">Call a small spirit animal to scout and assist you.</p>
+                                                                <input type="checkbox" class="btn-check" id="spell-summon-familiar" name="spells"
+                                                                    value="summon-familiar" autocomplete="off">
+                                                                <label class="btn btn-sm ability-toggle align-self-start"
+                                                                    for="spell-summon-familiar">Learn</label>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col">
+                                                            <div class="card h-100 p-3 bg-light border-primary-subtle shadow-sm">
+                                                                <h5 class="card-title">Misty Step</h5>
+                                                                <div class="mb-2">
+                                                                    <span class="badge bg-primary">Level 2</span>
+                                                                    <span class="badge bg-secondary text-dark">15 Mana</span>
+                                                                </div>
+                                                                <p class="flex-grow-1 mb-3 small text-secondary">Teleport a short distance in a puff of silver mist.</p>
+                                                                <input type="checkbox" class="btn-check" id="spell-misty-step" name="spells"
+                                                                    value="misty-step" autocomplete="off">
+                                                                <label class="btn btn-sm ability-toggle align-self-start"
+                                                                    for="spell-misty-step">Learn</label>
+                                                            </div>
+                                                        </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                        <!-- Divination -->
+                                        <div class="accordion-item">
+                                            <div class="d-flex align-items-center">
+                                                <h2 class="accordion-header flex-grow-1">
+                                                    <button class="accordion-button collapsed" type="button"
+                                                        data-bs-toggle="collapse"
+                                                        data-bs-target="#spells-collapseDivination"
+                                                        aria-expanded="false"
+                                                        aria-controls="spells-collapseDivination">
+                                                        <h5>Divination</h5>
+                                                    </button>
+                                                </h2>
+                                                <!-- Add Spell UI: add spell (Divination) -->
+                                                <div class="dropdown px-2">
+                                                    <button class="btn btn-sm btn-outline-primary" type="button"
+                                                        data-bs-toggle="dropdown"
+                                                        data-bs-auto-close="outside"
+                                                        aria-expanded="false"
+                                                        aria-label="Add Divination spell">
+                                                        +
+                                                    </button>
+                                                    <div class="dropdown-menu dropdown-menu-end add-skill-menu p-3">
+                                                        <label for="addSpellDivination" class="form-label fw-semibold">Choose a spell</label>
+                                                        <select class="form-select mb-2" id="addSpellDivination">
+                                                            <option selected disabled>Select a spell...</option>
+                                                            <option>Identify</option>
+                                                            <option>Locate Object</option>
+                                                            <option>True Seeing</option>
+                                                        </select>
+                                                        <button type="button" class="btn btn-primary btn-sm w-100">Add</button>
+                                                    </div>
+                                                </div>
+                                                <!-- End Add Spell UI -->
+                                            </div>
+                                            <div id="spells-collapseDivination" class="accordion-collapse collapse">
+                                                <div class="accordion-body">
+                                                    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
+                                                        <div class="col">
+                                                            <div class="card h-100 p-3 bg-light border-primary-subtle shadow-sm">
+                                                                <h5 class="card-title">Detect Magic</h5>
+                                                                <div class="mb-2">
+                                                                    <span class="badge bg-primary">Level 1</span>
+                                                                    <span class="badge bg-secondary text-dark">5 Mana</span>
+                                                                </div>
+                                                                <p class="flex-grow-1 mb-3 small text-secondary">Sense the presence of magic nearby.</p>
+                                                                <input type="checkbox" class="btn-check" id="spell-detect-magic" name="spells"
+                                                                    value="detect-magic" autocomplete="off">
+                                                                <label class="btn btn-sm ability-toggle align-self-start"
+                                                                    for="spell-detect-magic">Learn</label>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col">
+                                                            <div class="card h-100 p-3 bg-light border-primary-subtle shadow-sm">
+                                                                <h5 class="card-title">Clairvoyance</h5>
+                                                                <div class="mb-2">
+                                                                    <span class="badge bg-primary">Level 3</span>
+                                                                    <span class="badge bg-secondary text-dark">30 Mana</span>
+                                                                </div>
+                                                                <p class="flex-grow-1 mb-3 small text-secondary">See and hear a distant place you have visited before.</p>
+                                                                <input type="checkbox" class="btn-check" id="spell-clairvoyance" name="spells"
+                                                                    value="clairvoyance" autocomplete="off">
+                                                                <label class="btn btn-sm ability-toggle align-self-start"
+                                                                    for="spell-clairvoyance">Learn</label>
+                                                            </div>
+                                                        </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                        <!-- Enchantment -->
+                                        <div class="accordion-item">
+                                            <div class="d-flex align-items-center">
+                                                <h2 class="accordion-header flex-grow-1">
+                                                    <button class="accordion-button collapsed" type="button"
+                                                        data-bs-toggle="collapse"
+                                                        data-bs-target="#spells-collapseEnchantment"
+                                                        aria-expanded="false"
+                                                        aria-controls="spells-collapseEnchantment">
+                                                        <h5>Enchantment</h5>
+                                                    </button>
+                                                </h2>
+                                                <!-- Add Spell UI: add spell (Enchantment) -->
+                                                <div class="dropdown px-2">
+                                                    <button class="btn btn-sm btn-outline-primary" type="button"
+                                                        data-bs-toggle="dropdown"
+                                                        data-bs-auto-close="outside"
+                                                        aria-expanded="false"
+                                                        aria-label="Add Enchantment spell">
+                                                        +
+                                                    </button>
+                                                    <div class="dropdown-menu dropdown-menu-end add-skill-menu p-3">
+                                                        <label for="addSpellEnchantment" class="form-label fw-semibold">Choose a spell</label>
+                                                        <select class="form-select mb-2" id="addSpellEnchantment">
+                                                            <option selected disabled>Select a spell...</option>
+                                                            <option>Sleep</option>
+                                                            <option>Suggestion</option>
+                                                            <option>Confusion</option>
+                                                        </select>
+                                                        <button type="button" class="btn btn-primary btn-sm w-100">Add</button>
+                                                    </div>
+                                                </div>
+                                                <!-- End Add Spell UI -->
+                                            </div>
+                                            <div id="spells-collapseEnchantment" class="accordion-collapse collapse">
+                                                <div class="accordion-body">
+                                                    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
+                                                        <div class="col">
+                                                            <div class="card h-100 p-3 bg-light border-primary-subtle shadow-sm">
+                                                                <h5 class="card-title">Charm Person</h5>
+                                                                <div class="mb-2">
+                                                                    <span class="badge bg-primary">Level 1</span>
+                                                                    <span class="badge bg-secondary text-dark">10 Mana</span>
+                                                                </div>
+                                                                <p class="flex-grow-1 mb-3 small text-secondary">Make a humanoid treat you as a friendly acquaintance.</p>
+                                                                <input type="checkbox" class="btn-check" id="spell-charm-person" name="spells"
+                                                                    value="charm-person" autocomplete="off">
+                                                                <label class="btn btn-sm ability-toggle align-self-start"
+                                                                    for="spell-charm-person">Learn</label>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col">
+                                                            <div class="card h-100 p-3 bg-light border-primary-subtle shadow-sm">
+                                                                <h5 class="card-title">Hold Person</h5>
+                                                                <div class="mb-2">
+                                                                    <span class="badge bg-primary">Level 2</span>
+                                                                    <span class="badge bg-secondary text-dark">20 Mana</span>
+                                                                </div>
+                                                                <p class="flex-grow-1 mb-3 small text-secondary">Freeze a humanoid in place for a short time.</p>
+                                                                <input type="checkbox" class="btn-check" id="spell-hold-person" name="spells"
+                                                                    value="hold-person" autocomplete="off">
+                                                                <label class="btn btn-sm ability-toggle align-self-start"
+                                                                    for="spell-hold-person">Learn</label>
+                                                            </div>
+                                                        </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                        <!-- Evocation -->
+                                        <div class="accordion-item">
+                                            <div class="d-flex align-items-center">
+                                                <h2 class="accordion-header flex-grow-1">
+                                                    <button class="accordion-button collapsed" type="button"
+                                                        data-bs-toggle="collapse"
+                                                        data-bs-target="#spells-collapseEvocation"
+                                                        aria-expanded="false"
+                                                        aria-controls="spells-collapseEvocation">
+                                                        <h5>Evocation</h5>
+                                                    </button>
+                                                </h2>
+                                                <!-- Add Spell UI: add spell (Evocation) -->
+                                                <div class="dropdown px-2">
+                                                    <button class="btn btn-sm btn-outline-primary" type="button"
+                                                        data-bs-toggle="dropdown"
+                                                        data-bs-auto-close="outside"
+                                                        aria-expanded="false"
+                                                        aria-label="Add Evocation spell">
+                                                        +
+                                                    </button>
+                                                    <div class="dropdown-menu dropdown-menu-end add-skill-menu p-3">
+                                                        <label for="addSpellEvocation" class="form-label fw-semibold">Choose a spell</label>
+                                                        <select class="form-select mb-2" id="addSpellEvocation">
+                                                            <option selected disabled>Select a spell...</option>
+                                                            <option>Lightning Bolt</option>
+                                                            <option>Ice Storm</option>
+                                                            <option>Cone of Cold</option>
+                                                        </select>
+                                                        <button type="button" class="btn btn-primary btn-sm w-100">Add</button>
+                                                    </div>
+                                                </div>
+                                                <!-- End Add Spell UI -->
+                                            </div>
+                                            <div id="spells-collapseEvocation" class="accordion-collapse collapse">
+                                                <div class="accordion-body">
+                                                    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
+                                                        <div class="col">
+                                                            <div class="card h-100 p-3 bg-light border-primary-subtle shadow-sm">
+                                                                <h5 class="card-title">Magic Missile</h5>
+                                                                <div class="mb-2">
+                                                                    <span class="badge bg-primary">Level 1</span>
+                                                                    <span class="badge bg-secondary text-dark">10 Mana</span>
+                                                                </div>
+                                                                <p class="flex-grow-1 mb-3 small text-secondary">Three glowing darts that never miss their target.</p>
+                                                                <input type="checkbox" class="btn-check" id="spell-magic-missile" name="spells"
+                                                                    value="magic-missile" autocomplete="off">
+                                                                <label class="btn btn-sm ability-toggle align-self-start"
+                                                                    for="spell-magic-missile">Learn</label>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col">
+                                                            <div class="card h-100 p-3 bg-light border-primary-subtle shadow-sm">
+                                                                <h5 class="card-title">Fireball</h5>
+                                                                <div class="mb-2">
+                                                                    <span class="badge bg-primary">Level 3</span>
+                                                                    <span class="badge bg-secondary text-dark">30 Mana</span>
+                                                                </div>
+                                                                <p class="flex-grow-1 mb-3 small text-secondary">A burst of flame that engulfs everything in the blast.</p>
+                                                                <input type="checkbox" class="btn-check" id="spell-fireball" name="spells"
+                                                                    value="fireball" autocomplete="off">
+                                                                <label class="btn btn-sm ability-toggle align-self-start"
+                                                                    for="spell-fireball">Learn</label>
+                                                            </div>
+                                                        </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                        <!-- Illusion -->
+                                        <div class="accordion-item">
+                                            <div class="d-flex align-items-center">
+                                                <h2 class="accordion-header flex-grow-1">
+                                                    <button class="accordion-button collapsed" type="button"
+                                                        data-bs-toggle="collapse"
+                                                        data-bs-target="#spells-collapseIllusion"
+                                                        aria-expanded="false"
+                                                        aria-controls="spells-collapseIllusion">
+                                                        <h5>Illusion</h5>
+                                                    </button>
+                                                </h2>
+                                                <!-- Add Spell UI: add spell (Illusion) -->
+                                                <div class="dropdown px-2">
+                                                    <button class="btn btn-sm btn-outline-primary" type="button"
+                                                        data-bs-toggle="dropdown"
+                                                        data-bs-auto-close="outside"
+                                                        aria-expanded="false"
+                                                        aria-label="Add Illusion spell">
+                                                        +
+                                                    </button>
+                                                    <div class="dropdown-menu dropdown-menu-end add-skill-menu p-3">
+                                                        <label for="addSpellIllusion" class="form-label fw-semibold">Choose a spell</label>
+                                                        <select class="form-select mb-2" id="addSpellIllusion">
+                                                            <option selected disabled>Select a spell...</option>
+                                                            <option>Disguise Self</option>
+                                                            <option>Mirror Image</option>
+                                                            <option>Phantasmal Force</option>
+                                                        </select>
+                                                        <button type="button" class="btn btn-primary btn-sm w-100">Add</button>
+                                                    </div>
+                                                </div>
+                                                <!-- End Add Spell UI -->
+                                            </div>
+                                            <div id="spells-collapseIllusion" class="accordion-collapse collapse">
+                                                <div class="accordion-body">
+                                                    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
+                                                        <div class="col">
+                                                            <div class="card h-100 p-3 bg-light border-primary-subtle shadow-sm">
+                                                                <h5 class="card-title">Minor Illusion</h5>
+                                                                <div class="mb-2">
+                                                                    <span class="badge bg-primary">Cantrip</span>
+                                                                    <span class="badge bg-secondary text-dark">5 Mana</span>
+                                                                </div>
+                                                                <p class="flex-grow-1 mb-3 small text-secondary">Create a small sound or image to fool onlookers.</p>
+                                                                <input type="checkbox" class="btn-check" id="spell-minor-illusion" name="spells"
+                                                                    value="minor-illusion" autocomplete="off">
+                                                                <label class="btn btn-sm ability-toggle align-self-start"
+                                                                    for="spell-minor-illusion">Learn</label>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col">
+                                                            <div class="card h-100 p-3 bg-light border-primary-subtle shadow-sm">
+                                                                <h5 class="card-title">Invisibility</h5>
+                                                                <div class="mb-2">
+                                                                    <span class="badge bg-primary">Level 2</span>
+                                                                    <span class="badge bg-secondary text-dark">20 Mana</span>
+                                                                </div>
+                                                                <p class="flex-grow-1 mb-3 small text-secondary">Turn a creature invisible until it attacks.</p>
+                                                                <input type="checkbox" class="btn-check" id="spell-invisibility" name="spells"
+                                                                    value="invisibility" autocomplete="off">
+                                                                <label class="btn btn-sm ability-toggle align-self-start"
+                                                                    for="spell-invisibility">Learn</label>
+                                                            </div>
+                                                        </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                        <!-- Necromancy -->
+                                        <div class="accordion-item">
+                                            <div class="d-flex align-items-center">
+                                                <h2 class="accordion-header flex-grow-1">
+                                                    <button class="accordion-button collapsed" type="button"
+                                                        data-bs-toggle="collapse"
+                                                        data-bs-target="#spells-collapseNecromancy"
+                                                        aria-expanded="false"
+                                                        aria-controls="spells-collapseNecromancy">
+                                                        <h5>Necromancy</h5>
+                                                    </button>
+                                                </h2>
+                                                <!-- Add Spell UI: add spell (Necromancy) -->
+                                                <div class="dropdown px-2">
+                                                    <button class="btn btn-sm btn-outline-primary" type="button"
+                                                        data-bs-toggle="dropdown"
+                                                        data-bs-auto-close="outside"
+                                                        aria-expanded="false"
+                                                        aria-label="Add Necromancy spell">
+                                                        +
+                                                    </button>
+                                                    <div class="dropdown-menu dropdown-menu-end add-skill-menu p-3">
+                                                        <label for="addSpellNecromancy" class="form-label fw-semibold">Choose a spell</label>
+                                                        <select class="form-select mb-2" id="addSpellNecromancy">
+                                                            <option selected disabled>Select a spell...</option>
+                                                            <option>False Life</option>
+                                                            <option>Vampiric Touch</option>
+                                                            <option>Blight</option>
+                                                        </select>
+                                                        <button type="button" class="btn btn-primary btn-sm w-100">Add</button>
+                                                    </div>
+                                                </div>
+                                                <!-- End Add Spell UI -->
+                                            </div>
+                                            <div id="spells-collapseNecromancy" class="accordion-collapse collapse">
+                                                <div class="accordion-body">
+                                                    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
+                                                        <div class="col">
+                                                            <div class="card h-100 p-3 bg-light border-primary-subtle shadow-sm">
+                                                                <h5 class="card-title">Chill Touch</h5>
+                                                                <div class="mb-2">
+                                                                    <span class="badge bg-primary">Cantrip</span>
+                                                                    <span class="badge bg-secondary text-dark">5 Mana</span>
+                                                                </div>
+                                                                <p class="flex-grow-1 mb-3 small text-secondary">A ghostly hand that drains life and stops healing.</p>
+                                                                <input type="checkbox" class="btn-check" id="spell-chill-touch" name="spells"
+                                                                    value="chill-touch" autocomplete="off">
+                                                                <label class="btn btn-sm ability-toggle align-self-start"
+                                                                    for="spell-chill-touch">Learn</label>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col">
+                                                            <div class="card h-100 p-3 bg-light border-primary-subtle shadow-sm">
+                                                                <h5 class="card-title">Animate Dead</h5>
+                                                                <div class="mb-2">
+                                                                    <span class="badge bg-primary">Level 3</span>
+                                                                    <span class="badge bg-secondary text-dark">35 Mana</span>
+                                                                </div>
+                                                                <p class="flex-grow-1 mb-3 small text-secondary">Raise a skeleton or zombie to serve you.</p>
+                                                                <input type="checkbox" class="btn-check" id="spell-animate-dead" name="spells"
+                                                                    value="animate-dead" autocomplete="off">
+                                                                <label class="btn btn-sm ability-toggle align-self-start"
+                                                                    for="spell-animate-dead">Learn</label>
+                                                            </div>
+                                                        </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                        <!-- Transmutation -->
+                                        <div class="accordion-item">
+                                            <div class="d-flex align-items-center">
+                                                <h2 class="accordion-header flex-grow-1">
+                                                    <button class="accordion-button collapsed" type="button"
+                                                        data-bs-toggle="collapse"
+                                                        data-bs-target="#spells-collapseTransmutation"
+                                                        aria-expanded="false"
+                                                        aria-controls="spells-collapseTransmutation">
+                                                        <h5>Transmutation</h5>
+                                                    </button>
+                                                </h2>
+                                                <!-- Add Spell UI: add spell (Transmutation) -->
+                                                <div class="dropdown px-2">
+                                                    <button class="btn btn-sm btn-outline-primary" type="button"
+                                                        data-bs-toggle="dropdown"
+                                                        data-bs-auto-close="outside"
+                                                        aria-expanded="false"
+                                                        aria-label="Add Transmutation spell">
+                                                        +
+                                                    </button>
+                                                    <div class="dropdown-menu dropdown-menu-end add-skill-menu p-3">
+                                                        <label for="addSpellTransmutation" class="form-label fw-semibold">Choose a spell</label>
+                                                        <select class="form-select mb-2" id="addSpellTransmutation">
+                                                            <option selected disabled>Select a spell...</option>
+                                                            <option>Enlarge/Reduce</option>
+                                                            <option>Stoneskin</option>
+                                                            <option>Polymorph</option>
+                                                        </select>
+                                                        <button type="button" class="btn btn-primary btn-sm w-100">Add</button>
+                                                    </div>
+                                                </div>
+                                                <!-- End Add Spell UI -->
+                                            </div>
+                                            <div id="spells-collapseTransmutation" class="accordion-collapse collapse">
+                                                <div class="accordion-body">
+                                                    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
+                                                        <div class="col">
+                                                            <div class="card h-100 p-3 bg-light border-primary-subtle shadow-sm">
+                                                                <h5 class="card-title">Feather Fall</h5>
+                                                                <div class="mb-2">
+                                                                    <span class="badge bg-primary">Level 1</span>
+                                                                    <span class="badge bg-secondary text-dark">5 Mana</span>
+                                                                </div>
+                                                                <p class="flex-grow-1 mb-3 small text-secondary">Slow the fall of up to five creatures.</p>
+                                                                <input type="checkbox" class="btn-check" id="spell-feather-fall" name="spells"
+                                                                    value="feather-fall" autocomplete="off">
+                                                                <label class="btn btn-sm ability-toggle align-self-start"
+                                                                    for="spell-feather-fall">Learn</label>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col">
+                                                            <div class="card h-100 p-3 bg-light border-primary-subtle shadow-sm">
+                                                                <h5 class="card-title">Haste</h5>
+                                                                <div class="mb-2">
+                                                                    <span class="badge bg-primary">Level 3</span>
+                                                                    <span class="badge bg-secondary text-dark">30 Mana</span>
+                                                                </div>
+                                                                <p class="flex-grow-1 mb-3 small text-secondary">Double a creature's speed and grant an extra action.</p>
+                                                                <input type="checkbox" class="btn-check" id="spell-haste" name="spells"
+                                                                    value="haste" autocomplete="off">
+                                                                <label class="btn btn-sm ability-toggle align-self-start"
+                                                                    for="spell-haste">Learn</label>
+                                                            </div>
+                                                        </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
                                     </div>
 
                                     <div class="card-navigation">
@@ -449,9 +1454,201 @@
                                 <div class="character-step d-none" data-step="items">
                                     <h3 class="card-title">Items</h3>
 
-                                    <div class="mb-3">
-                                        <label for="items" class="form-label">Items</label>
-                                        <textarea class="form-control" id="items" name="items" rows="4"></textarea>
+                                    <p class="mb-4 text-dark">Equip gear on the left. Manage your inventory on the
+                                        right. Hover an item for details.</p>
+
+                                    <div class="row row-cols-1 row-cols-lg-2 g-3 mb-3">
+                                        <!-- Gear -->
+                                        <div class="col">
+                                            <div class="card h-100 p-3 bg-light border-primary-subtle shadow-sm">
+                                                <h5 class="card-title">Gear</h5>
+
+                                                <div class="mb-3" data-slot="head">
+                                                    <label for="gearHead" class="form-label fw-semibold">Head</label>
+                                                    <select class="form-select" id="gearHead" name="gearHead">
+                                                        <option value="" selected>— Empty —</option>
+                                                        <option value="iron-helm">Iron Helm</option>
+                                                        <option value="leather-hood">Leather Hood</option>
+                                                    </select>
+                                                </div>
+
+                                                <div class="mb-3" data-slot="hand">
+                                                    <label for="gearLeftHand" class="form-label fw-semibold">L.
+                                                        Hand</label>
+                                                    <select class="form-select" id="gearLeftHand" name="gearLeftHand">
+                                                        <option value="" selected>— Empty —</option>
+                                                        <option value="short-sword">Short Sword</option>
+                                                        <option value="hand-axe">Hand Axe</option>
+                                                        <option value="wooden-shield">Wooden Shield</option>
+                                                        <option value="dagger">Dagger</option>
+                                                    </select>
+                                                </div>
+
+                                                <div class="mb-3" data-slot="hand">
+                                                    <label for="gearRightHand" class="form-label fw-semibold">R.
+                                                        Hand</label>
+                                                    <select class="form-select" id="gearRightHand" name="gearRightHand">
+                                                        <option value="" selected>— Empty —</option>
+                                                        <option value="short-sword">Short Sword</option>
+                                                        <option value="hand-axe">Hand Axe</option>
+                                                        <option value="wooden-shield">Wooden Shield</option>
+                                                        <option value="dagger">Dagger</option>
+                                                    </select>
+                                                </div>
+
+                                                <div class="mb-3" data-slot="legs">
+                                                    <label for="gearLegs" class="form-label fw-semibold">Legs</label>
+                                                    <select class="form-select" id="gearLegs" name="gearLegs">
+                                                        <option value="" selected>— Empty —</option>
+                                                        <option value="chainmail-leggings">Chainmail Leggings</option>
+                                                        <option value="leather-pants">Leather Pants</option>
+                                                    </select>
+                                                </div>
+
+                                                <div class="mb-3" data-slot="accessory">
+                                                    <label for="gearAccessory1" class="form-label fw-semibold">Accessory
+                                                        1</label>
+                                                    <select class="form-select" id="gearAccessory1" name="gearAccessory1">
+                                                        <option value="" selected>— Empty —</option>
+                                                        <option value="ring-of-vigor">Ring of Vigor</option>
+                                                        <option value="amulet-of-warding">Amulet of Warding</option>
+                                                        <option value="lucky-charm">Lucky Charm</option>
+                                                    </select>
+                                                </div>
+
+                                                <div data-slot="accessory">
+                                                    <label for="gearAccessory2" class="form-label fw-semibold">Accessory
+                                                        2</label>
+                                                    <select class="form-select" id="gearAccessory2" name="gearAccessory2">
+                                                        <option value="" selected>— Empty —</option>
+                                                        <option value="ring-of-vigor">Ring of Vigor</option>
+                                                        <option value="amulet-of-warding">Amulet of Warding</option>
+                                                        <option value="lucky-charm">Lucky Charm</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Inventory -->
+                                        <div class="col">
+                                            <div class="card h-100 p-3 bg-light border-primary-subtle shadow-sm">
+                                                <div class="d-flex align-items-center gap-2 mb-3">
+                                                    <h5 class="card-title mb-0">Inventory</h5>
+                                                    <!-- Add Item UI: add inventory item -->
+                                                    <div class="dropdown">
+                                                        <button class="btn btn-sm btn-outline-primary" type="button"
+                                                            data-bs-toggle="dropdown"
+                                                            data-bs-auto-close="outside"
+                                                            aria-expanded="false"
+                                                            aria-label="Add item">
+                                                            +
+                                                        </button>
+                                                        <div class="dropdown-menu add-skill-menu p-3">
+                                                            <label for="addInventoryItem"
+                                                                class="form-label fw-semibold">Choose an item</label>
+                                                            <select class="form-select mb-2" id="addInventoryItem">
+                                                                <option selected disabled>Select an item...</option>
+                                                                <option>Leather Hood</option>
+                                                                <option>Hand Axe</option>
+                                                                <option>Dagger</option>
+                                                                <option>Leather Pants</option>
+                                                                <option>Lucky Charm</option>
+                                                                <option>Antidote</option>
+                                                                <option>Torch</option>
+                                                                <option>Rope</option>
+                                                                <option>Bread</option>
+                                                            </select>
+                                                            <button type="button"
+                                                                class="btn btn-primary btn-sm w-100">Add</button>
+                                                        </div>
+                                                    </div>
+                                                    <!-- End Add Item UI -->
+                                                </div>
+
+                                                <ul class="list-group">
+                                                    <li class="list-group-item d-flex justify-content-between align-items-center"
+                                                        draggable="true" data-item-slot="head"
+                                                        data-bs-toggle="tooltip"
+                                                        data-bs-title="+5 defense. A sturdy helm of hammered iron.">
+                                                        Iron Helm
+                                                        <span>
+                                                            <span class="badge bg-primary">Head</span>
+                                                            <span class="badge bg-secondary text-dark rounded-pill">×1</span>
+                                                        </span>
+                                                    </li>
+                                                    <li class="list-group-item d-flex justify-content-between align-items-center"
+                                                        draggable="true" data-item-slot="hand"
+                                                        data-bs-toggle="tooltip"
+                                                        data-bs-title="+4 slashing damage. Light and quick to swing.">
+                                                        Short Sword
+                                                        <span>
+                                                            <span class="badge bg-primary">Hand</span>
+                                                            <span class="badge bg-secondary text-dark rounded-pill">×1</span>
+                                                        </span>
+                                                    </li>
+                                                    <li class="list-group-item d-flex justify-content-between align-items-center"
+                                                        draggable="true" data-item-slot="hand"
+                                                        data-bs-toggle="tooltip"
+                                                        data-bs-title="+3 defense. 20% chance to block an attack.">
+                                                        Wooden Shield
+                                                        <span>
+                                                            <span class="badge bg-primary">Hand</span>
+                                                            <span class="badge bg-secondary text-dark rounded-pill">×1</span>
+                                                        </span>
+                                                    </li>
+                                                    <li class="list-group-item d-flex justify-content-between align-items-center"
+                                                        draggable="true" data-item-slot="legs"
+                                                        data-bs-toggle="tooltip"
+                                                        data-bs-title="+4 defense. Extra protection against slashing attacks.">
+                                                        Chainmail Leggings
+                                                        <span>
+                                                            <span class="badge bg-primary">Legs</span>
+                                                            <span class="badge bg-secondary text-dark rounded-pill">×1</span>
+                                                        </span>
+                                                    </li>
+                                                    <li class="list-group-item d-flex justify-content-between align-items-center"
+                                                        draggable="true" data-item-slot="accessory"
+                                                        data-bs-toggle="tooltip"
+                                                        data-bs-title="+10 max health while worn.">
+                                                        Ring of Vigor
+                                                        <span>
+                                                            <span class="badge bg-primary">Accessory</span>
+                                                            <span class="badge bg-secondary text-dark rounded-pill">×1</span>
+                                                        </span>
+                                                    </li>
+                                                    <li class="list-group-item d-flex justify-content-between align-items-center"
+                                                        draggable="true" data-item-slot="accessory"
+                                                        data-bs-toggle="tooltip"
+                                                        data-bs-title="Reduces magic damage taken by 10%.">
+                                                        Amulet of Warding
+                                                        <span>
+                                                            <span class="badge bg-primary">Accessory</span>
+                                                            <span class="badge bg-secondary text-dark rounded-pill">×1</span>
+                                                        </span>
+                                                    </li>
+                                                    <li class="list-group-item d-flex justify-content-between align-items-center"
+                                                        draggable="true" data-item-slot="consumable"
+                                                        data-bs-toggle="tooltip"
+                                                        data-bs-title="Restores 50 health when used.">
+                                                        Health Potion
+                                                        <span>
+                                                            <span class="badge bg-primary">Consumable</span>
+                                                            <span class="badge bg-secondary text-dark rounded-pill">×3</span>
+                                                        </span>
+                                                    </li>
+                                                    <li class="list-group-item d-flex justify-content-between align-items-center"
+                                                        draggable="true" data-item-slot="consumable"
+                                                        data-bs-toggle="tooltip"
+                                                        data-bs-title="Restores 40 mana when used.">
+                                                        Mana Potion
+                                                        <span>
+                                                            <span class="badge bg-primary">Consumable</span>
+                                                            <span class="badge bg-secondary text-dark rounded-pill">×2</span>
+                                                        </span>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
                                     </div>
 
                                     <div class="card-navigation">

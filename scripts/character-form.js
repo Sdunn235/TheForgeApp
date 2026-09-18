@@ -130,6 +130,10 @@ if (characterForm) {
         }
     });
 
+    
+    characterForm.querySelectorAll('[data-bs-toggle="tooltip"]')
+        .forEach((element) => new bootstrap.Tooltip(element));
+
     characterForm.addEventListener("submit", (event) => {
         event.preventDefault();
 
