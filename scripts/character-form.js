@@ -27,6 +27,14 @@ if (characterForm) {
         "[data-character-message]"
     );
 
+    // Step tracker above the form
+    const stepProgress = characterForm.querySelector("[data-step-progress]");
+    const stepDots = characterForm.querySelectorAll("[data-step-dot]");
+
+    // Modal shown by the Finish button on the last step
+    const confirmSaveModal = document.getElementById("confirmSaveModal");
+    const confirmSaveButton = document.querySelector("[data-confirm-save]");
+
     // Page-scoped: the Level slider sits outside the form, in the Vitals card
     const statRanges = document.querySelectorAll(
         'input[type="range"][name]'
@@ -107,10 +115,36 @@ if (characterForm) {
 
     };
 
-    // Show one step and hide the rest
+    // Fill the tracker bar to the current step and light up its dots
+    const updateStepTracker = (stepIndex) => {
+        const percent = (stepIndex / (steps.length - 1)) * 100;
+
+        if (stepProgress) {
+            stepProgress.setAttribute("aria-valuenow", Math.round(percent));
+            stepProgress.querySelector(".progress-bar")
+                .style.width = `${percent}%`;
+        }
+
+        stepDots.forEach((dot, index) => {
+            const reached = index <= stepIndex;
+
+            dot.classList.toggle("btn-primary", reached);
+            dot.classList.toggle("btn-secondary", !reached);
+        });
+    };
+
+    // Show one step and hide the rest, then bring it into view so the page
+    // does not stay scrolled down at the Vitals card above the form
     const showStep = (stepIndex) => {
         steps.forEach((step, index) => {
             step.classList.toggle("d-none", index !== stepIndex);
+        });
+
+        updateStepTracker(stepIndex);
+
+        steps[stepIndex].scrollIntoView({
+            behavior: "smooth",
+            block: "start"
         });
     };
 
@@ -150,7 +184,7 @@ if (characterForm) {
         .forEach((element) => new bootstrap.Tooltip(element));
 
     // Each Save button submits the form and moves to the next step.
-    // On the last step, show the success message instead.
+    // On the last step, ask for confirmation before saving.
     characterForm.addEventListener("submit", (event) => {
         event.preventDefault();
 
@@ -166,15 +200,36 @@ if (characterForm) {
 
         if (nextStepIndex < steps.length) {
             showStep(nextStepIndex);
-        } else {
+        } else if (confirmSaveModal) {
+            bootstrap.Modal.getOrCreateInstance(confirmSaveModal).show();
+        }
+    });
+
+    // Confirming the save clears the form and starts over at step one.
+    // A real save would send characterState to the server first.
+    if (confirmSaveButton) {
+        confirmSaveButton.addEventListener("click", () => {
+            const savedName = characterState.name;
+
+            console.log("Complete character:", characterState);
+
+            characterForm.reset();
+
+            // reset() restores the markup defaults, so the pieces driven by
+            // JS have to be put back by hand
+            statRanges.forEach((range) => {
+                range.dispatchEvent(new Event("input"));
+            });
+
+            updateCharacterType();
+            showStep(0);
+
             message.classList.remove("d-none", "alert-danger");
             message.classList.add("alert-success");
             message.textContent =
-                `Character "${characterState.name}" is ready to save.`;
-
-            console.log("Complete character:", characterState);
-        }
-    });
+                `Character "${savedName}" saved. Starting a new character.`;
+        });
+    }
 
     // Back buttons step backwards, stopping at the first step
     backButtons.forEach((button) => {
@@ -187,6 +242,7 @@ if (characterForm) {
         });
     });
 
-    // Set the right ID field on first load
+    // Set the right ID field and tracker state on first load
     updateCharacterType();
+    updateStepTracker(getCurrentStepIndex());
 }

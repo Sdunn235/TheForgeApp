@@ -17,14 +17,52 @@
 
 <body>
     <!-- Navbar -->
-    <nav class="navbar fixed-top navbar-expand-lg bg-primary" data-bs-theme="dark">
+    <!-- Hidden below lg, where the bottom bar takes over -->
+    <nav class="navbar fixed-top navbar-expand-lg bg-primary d-none d-lg-flex" data-bs-theme="dark">
         <div class="container-fluid">
             <a class="navbar-brand" href="./index.html" data-bs-toggle="modal" data-bs-target="#leavePageModal">The
                 Forge</a>
+
+            <!-- Hidden on small screens, where the bottom bar takes over -->
+            <ul class="navbar-nav flex-row ms-auto me-3 d-none d-lg-flex">
+                <li class="nav-item">
+                    <a class="nav-link" href="./view-characters.html" data-bs-toggle="modal"
+                        data-bs-target="#leaveToRosterModal">View Characters</a>
+                </li>
+            </ul>
+
             <!-- Close button asks before leaving, since the form has unsaved work -->
             <button type="button" class="btn-close" aria-label="Close" data-bs-toggle="modal"
                 data-bs-target="#leavePageModal">
             </button>
+        </div>
+    </nav>
+
+    <!-- Mobile bottom bar. Replaces the top nav links below the lg breakpoint. -->
+    <nav class="navbar fixed-bottom bg-primary d-lg-none mobile-bottom-nav" data-bs-theme="dark">
+        <div class="container-fluid">
+            <ul class="navbar-nav flex-row w-100 justify-content-around">
+                <li class="nav-item">
+                    <a class="nav-link text-center" href="./index.html" data-bs-toggle="modal"
+                        data-bs-target="#leavePageModal">
+                        <i class="bi bi-house-door d-block"></i>
+                        Home
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-center active" href="./creation-character.html" aria-current="page">
+                        <i class="bi bi-hammer d-block"></i>
+                        Create
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-center" href="./view-characters.html" data-bs-toggle="modal"
+                        data-bs-target="#leaveToRosterModal">
+                        <i class="bi bi-people d-block"></i>
+                        Roster
+                    </a>
+                </li>
+            </ul>
         </div>
     </nav>
 
@@ -76,30 +114,30 @@
                                     <!-- HP / MP / SP -->
                                     <div class="col">
                                         <div class="d-flex align-items-center gap-2 mb-2">
-                                            <span class="form-label mb-0 vitals-label">Health</span>
-                                            <div class="progress flex-grow-1" role="progressbar" aria-label="Health"
+                                            <span class="form-label mb-0 vitals-label">HP</span>
+                                            <div class="progress flex-grow-1" role="progressbar" aria-label="HP"
                                                 aria-valuenow="42" aria-valuemin="0" aria-valuemax="50">
                                                 <div class="progress-bar bg-health" style="width: 84%"></div>
                                             </div>
-                                            <span class="badge bg-secondary text-dark">42 / 50</span>
+                                            <span class="badge vitals-value bg-secondary text-dark">42 / 50</span>
                                         </div>
 
                                         <div class="d-flex align-items-center gap-2 mb-2">
-                                            <span class="form-label mb-0 vitals-label">Mana</span>
-                                            <div class="progress flex-grow-1" role="progressbar" aria-label="Mana"
+                                            <span class="form-label mb-0 vitals-label">MP</span>
+                                            <div class="progress flex-grow-1" role="progressbar" aria-label="MP"
                                                 aria-valuenow="12" aria-valuemin="0" aria-valuemax="40">
                                                 <div class="progress-bar bg-mana" style="width: 30%"></div>
                                             </div>
-                                            <span class="badge bg-secondary text-dark">12 / 40</span>
+                                            <span class="badge vitals-value bg-secondary text-dark">12 / 40</span>
                                         </div>
 
                                         <div class="d-flex align-items-center gap-2 mb-2">
-                                            <span class="form-label mb-0 vitals-label">Stamina</span>
-                                            <div class="progress flex-grow-1" role="progressbar" aria-label="Stamina"
+                                            <span class="form-label mb-0 vitals-label">SP</span>
+                                            <div class="progress flex-grow-1" role="progressbar" aria-label="SP"
                                                 aria-valuenow="28" aria-valuemin="0" aria-valuemax="45">
                                                 <div class="progress-bar bg-stamina" style="width: 62%"></div>
                                             </div>
-                                            <span class="badge bg-secondary text-dark">28 / 45</span>
+                                            <span class="badge vitals-value bg-secondary text-dark">28 / 45</span>
                                         </div>
 
                                         <div class="form-text">
@@ -206,6 +244,34 @@
                         </div>
 
                         <form class="character-form">
+                            <!-- Step tracker. The dots are positioned along the bar with
+                                 position utilities, so they stay put as the bar fills. -->
+                            <div class="position-relative mx-4 my-5 step-tracker">
+                                <div class="progress" role="progressbar" aria-label="Character creation progress"
+                                    aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" data-step-progress>
+                                    <div class="progress-bar" style="width: 0%"></div>
+                                </div>
+
+                                <button type="button"
+                                    class="position-absolute top-0 start-0 translate-middle btn btn-primary rounded-pill step-dot"
+                                    data-step-dot="0" aria-label="Step 1, Character">1</button>
+                                <button type="button"
+                                    class="position-absolute top-0 start-20 translate-middle btn btn-secondary rounded-pill step-dot"
+                                    data-step-dot="1" aria-label="Step 2, Stats">2</button>
+                                <button type="button"
+                                    class="position-absolute top-0 start-40 translate-middle btn btn-secondary rounded-pill step-dot"
+                                    data-step-dot="2" aria-label="Step 3, Skills">3</button>
+                                <button type="button"
+                                    class="position-absolute top-0 start-60 translate-middle btn btn-secondary rounded-pill step-dot"
+                                    data-step-dot="3" aria-label="Step 4, Abilities">4</button>
+                                <button type="button"
+                                    class="position-absolute top-0 start-80 translate-middle btn btn-secondary rounded-pill step-dot"
+                                    data-step-dot="4" aria-label="Step 5, Spells">5</button>
+                                <button type="button"
+                                    class="position-absolute top-0 start-100 translate-middle btn btn-secondary rounded-pill step-dot"
+                                    data-step-dot="5" aria-label="Step 6, Items">6</button>
+                            </div>
+
                             <div class="character-step" data-step="character">
                                 <h3 class="card-title-dark">Character Information</h3>
                                 <p class="mb-4 text-body-secondary">Character Needs ID and name before creation.</p>
@@ -254,9 +320,11 @@
                                 </div>
 
                                 <div class="card-navigation">
-                                    <button type="button" class="btn btn-outline-secondary" disabled>
-                                        &laquo; Backwards
+                                    <!-- Disabled: this is the first step, so there is nowhere to go back to -->
+                                    <button type="button" class="btn btn-outline-primary" disabled>
+                                        &laquo; Back
                                     </button>
+
                                     <button type="submit" class="btn btn-primary" data-info-submit disabled>
                                         Save Info &raquo;
                                     </button>
@@ -394,7 +462,7 @@
                                 <div class="d-flex align-items-center gap-2 mb-3">
                                     <h3 class="card-title mb-0">Skills</h3>
                                     <!-- Add skill category menu -->
-                                    <button class="btn btn-outline-primary btn-icon me-2" type="button"
+                                    <button class="btn btn-outline-primary btn-icon" type="button"
                                         data-bs-toggle="dropdown" aria-expanded="false"
                                         aria-label="Add skill category"><i class="bi bi-plus-lg"></i></button>
                                     <ul class="dropdown-menu add-skill-menu">
@@ -426,7 +494,7 @@
                                                     </button>
                                                 </h2>
                                                 <!-- Add skill menu: Gathering -->
-                                                <button class="btn btn-outline-primary btn-icon me-2" type="button"
+                                                <button class="btn btn-outline-primary btn-icon" type="button"
                                                     data-bs-toggle="dropdown" aria-expanded="false"
                                                     aria-label="Add Gathering skill"><i
                                                         class="bi bi-plus-lg"></i></button>
@@ -521,7 +589,7 @@
                                                     </button>
                                                 </h2>
                                                 <!-- Add skill menu: One-Handed Weapons -->
-                                                <button class="btn btn-outline-primary btn-icon me-2" type="button"
+                                                <button class="btn btn-outline-primary btn-icon" type="button"
                                                     data-bs-toggle="dropdown" aria-expanded="false"
                                                     aria-label="Add One-Handed Weapons skill"><i
                                                         class="bi bi-plus-lg"></i></button>
@@ -628,7 +696,7 @@
                                                         Medium Armor
                                                     </button>
                                                 </h2>
-                                                <button class="btn btn-outline-primary btn-icon me-2" type="button"
+                                                <button class="btn btn-outline-primary btn-icon" type="button"
                                                     data-bs-toggle="dropdown" aria-expanded="false"
                                                     aria-label="Add Medium Armor skill"><i
                                                         class="bi bi-plus-lg"></i></button>
@@ -644,29 +712,67 @@
                                                     </li>
                                                 </ul>
 
+                                                <!-- End add menu -->
                                             </div>
                                             <div id="panelsStayOpen-collapseThree" class="accordion-collapse collapse">
                                                 <div class="accordion-body">
-                                                    <strong>This is the third item’s accordion
-                                                        body.</strong> It is
-                                                    hidden by default, until the collapse plugin adds
-                                                    the
-                                                    appropriate classes that we use to style each
-                                                    element.
-                                                    These
-                                                    classes control the overall appearance, as well as
-                                                    the
-                                                    showing
-                                                    and hiding via CSS transitions. You can modify any
-                                                    of
-                                                    this with
-                                                    custom CSS or overriding our default variables. It’s
-                                                    also worth
-                                                    noting that just about any HTML can go within the
-                                                    <code>.accordion-body</code>, though the transition
-                                                    does
-                                                    limit
-                                                    overflow.
+                                                    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
+                                                        <div class="col">
+                                                            <div
+                                                                class="card h-100 p-3 bg-light border-primary-subtle shadow-sm">
+                                                                <div class="card-body d-flex flex-column">
+                                                                    <h5 class="card-title">Chainmail</h5>
+                                                                    <label for="chainmail"
+                                                                        class="form-label fw-semibold visually-hidden">Chainmail</label>
+                                                                    <p class="flex-grow-1 mb-3 text-body-secondary">
+                                                                        Linked rings that turn aside slashing blows.</p>
+                                                                    <input type="range" class="form-range"
+                                                                        id="chainmail" name="chainmail" min="1" max="100"
+                                                                        value="1">
+                                                                    <output for="chainmail" id="chainmailValue"
+                                                                        class="badge bg-secondary text-dark align-self-center fs-3 mt-2"
+                                                                        aria-hidden="true">1</output>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col">
+                                                            <div
+                                                                class="card h-100 p-3 bg-light border-primary-subtle shadow-sm">
+                                                                <div class="card-body d-flex flex-column">
+                                                                    <h5 class="card-title">Scale Mail</h5>
+                                                                    <label for="scaleMail"
+                                                                        class="form-label fw-semibold visually-hidden">Scale
+                                                                        Mail</label>
+                                                                    <p class="flex-grow-1 mb-3 text-body-secondary">
+                                                                        Overlapping plates that spread out an impact.</p>
+                                                                    <input type="range" class="form-range"
+                                                                        id="scaleMail" name="scaleMail" min="1" max="100"
+                                                                        value="1">
+                                                                    <output for="scaleMail" id="scaleMailValue"
+                                                                        class="badge bg-secondary text-dark align-self-center fs-3 mt-2"
+                                                                        aria-hidden="true">1</output>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col">
+                                                            <div
+                                                                class="card h-100 p-3 bg-light border-primary-subtle shadow-sm">
+                                                                <div class="card-body d-flex flex-column">
+                                                                    <h5 class="card-title">Brigandine</h5>
+                                                                    <label for="brigandine"
+                                                                        class="form-label fw-semibold visually-hidden">Brigandine</label>
+                                                                    <p class="flex-grow-1 mb-3 text-body-secondary">
+                                                                        Riveted plates in cloth for quiet movement.</p>
+                                                                    <input type="range" class="form-range"
+                                                                        id="brigandine" name="brigandine" min="1"
+                                                                        max="100" value="1">
+                                                                    <output for="brigandine" id="brigandineValue"
+                                                                        class="badge bg-secondary text-dark align-self-center fs-3 mt-2"
+                                                                        aria-hidden="true">1</output>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -695,35 +801,35 @@
                                         <div class="card h-100 p-3 bg-light border-primary-subtle shadow-sm">
                                             <div class="card-body d-flex flex-column">
                                                 <div class="d-flex align-items-center gap-2 mb-2">
-                                    <h5 class="card-title mb-0">Feats</h5>
-                                    <!-- Add feat menu -->
-                                    <button class="btn btn-outline-primary btn-icon me-2" type="button"
-                                        data-bs-toggle="dropdown" aria-expanded="false"
-                                        aria-label="Add feat"><i class="bi bi-plus-lg"></i></button>
-                                    <ul class="dropdown-menu add-skill-menu">
-                                    <li>
-                                    <h6 class="dropdown-header">Ability Points</h6>
-                                    </li>
-                                    <li><button class="dropdown-item" type="button">+2 Ability
-                                    Points</button></li>
-                                    <li>
-                                    <hr class="dropdown-divider">
-                                    </li>
-                                    <li>
-                                    <h6 class="dropdown-header">Special Features</h6>
-                                    </li>
-                                    <li><button class="dropdown-item" type="button">Toughness
-                                    &mdash; +10 max HP</button></li>
-                                    <li><button class="dropdown-item" type="button">Iron Will
-                                    &mdash; resist fear and charm</button></li>
-                                    <li><button class="dropdown-item" type="button">Quick Draw
-                                    &mdash; act first in a fight</button></li>
-                                    <li><button class="dropdown-item" type="button">Arcane Gift
-                                    &mdash; +15 max MP</button></li>
-                                    <li><button class="dropdown-item" type="button">Sure-Footed
-                                    &mdash; ignore rough terrain</button></li>
-                                    </ul>
-                                </div>
+                                                    <h5 class="card-title mb-0">Feats</h5>
+                                                    <!-- Add feat menu -->
+                                                    <button class="btn btn-outline-primary btn-icon me-2" type="button"
+                                                        data-bs-toggle="dropdown" aria-expanded="false"
+                                                        aria-label="Add feat"><i class="bi bi-plus-lg"></i></button>
+                                                    <ul class="dropdown-menu add-skill-menu">
+                                                        <li>
+                                                            <h6 class="dropdown-header">Ability Points</h6>
+                                                        </li>
+                                                        <li><button class="dropdown-item" type="button">+2 Ability
+                                                                Points</button></li>
+                                                        <li>
+                                                            <hr class="dropdown-divider">
+                                                        </li>
+                                                        <li>
+                                                            <h6 class="dropdown-header">Special Features</h6>
+                                                        </li>
+                                                        <li><button class="dropdown-item" type="button">Toughness
+                                                                &mdash; +10 max HP</button></li>
+                                                        <li><button class="dropdown-item" type="button">Iron Will
+                                                                &mdash; resist fear and charm</button></li>
+                                                        <li><button class="dropdown-item" type="button">Quick Draw
+                                                                &mdash; act first in a fight</button></li>
+                                                        <li><button class="dropdown-item" type="button">Arcane Gift
+                                                                &mdash; +15 max MP</button></li>
+                                                        <li><button class="dropdown-item" type="button">Sure-Footed
+                                                                &mdash; ignore rough terrain</button></li>
+                                                    </ul>
+                                                </div>
 
                                                 <!-- Feat counter -->
                                                 <div class="d-flex flex-wrap align-items-center gap-3 mb-2">
@@ -744,7 +850,7 @@
                                                 <div id="featCountHelp" class="form-text mb-3">One feat every 4
                                                     levels. You may take more, never fewer.</div>
 
-                                                
+
                                                 <!-- Current Feats -->
                                                 <h6>Current Feats</h6>
                                                 <div class="feat-list">
@@ -845,7 +951,7 @@
                                                 </button>
                                             </h2>
                                             <!-- Add ability menu: Gathering -->
-                                            <button class="btn btn-outline-primary btn-icon me-2" type="button"
+                                            <button class="btn btn-outline-primary btn-icon" type="button"
                                                 data-bs-toggle="dropdown" aria-expanded="false"
                                                 aria-label="Add Gathering skill"><i class="bi bi-plus-lg"></i></button>
                                             <ul class="dropdown-menu dropdown-menu-end add-skill-menu">
@@ -929,7 +1035,7 @@
                                                 </button>
                                             </h2>
                                             <!-- Add ability menu: One-Handed Weapons -->
-                                            <button class="btn btn-outline-primary btn-icon me-2" type="button"
+                                            <button class="btn btn-outline-primary btn-icon" type="button"
                                                 data-bs-toggle="dropdown" aria-expanded="false"
                                                 aria-label="Add One-Handed Weapons skill"><i
                                                     class="bi bi-plus-lg"></i></button>
@@ -1026,7 +1132,7 @@
                                                 </button>
                                             </h2>
                                             <!-- Add ability menu: Medium Armor -->
-                                            <button class="btn btn-outline-primary btn-icon me-2" type="button"
+                                            <button class="btn btn-outline-primary btn-icon" type="button"
                                                 data-bs-toggle="dropdown" aria-expanded="false"
                                                 aria-label="Add Medium Armor skill"><i
                                                     class="bi bi-plus-lg"></i></button>
@@ -1134,7 +1240,7 @@
                                                 </button>
                                             </h2>
                                             <!-- Add spell menu: Abjuration -->
-                                            <button class="btn btn-outline-primary btn-icon me-2" type="button"
+                                            <button class="btn btn-outline-primary btn-icon" type="button"
                                                 data-bs-toggle="dropdown" aria-expanded="false"
                                                 aria-label="Add Abjuration spell"><i class="bi bi-plus-lg"></i></button>
                                             <ul class="dropdown-menu dropdown-menu-end add-skill-menu">
@@ -1214,7 +1320,7 @@
                                                 </button>
                                             </h2>
                                             <!-- Add spell menu: Conjuration -->
-                                            <button class="btn btn-outline-primary btn-icon me-2" type="button"
+                                            <button class="btn btn-outline-primary btn-icon" type="button"
                                                 data-bs-toggle="dropdown" aria-expanded="false"
                                                 aria-label="Add Conjuration spell"><i
                                                     class="bi bi-plus-lg"></i></button>
@@ -1295,7 +1401,7 @@
                                                 </button>
                                             </h2>
                                             <!-- Add spell menu: Divination -->
-                                            <button class="btn btn-outline-primary btn-icon me-2" type="button"
+                                            <button class="btn btn-outline-primary btn-icon" type="button"
                                                 data-bs-toggle="dropdown" aria-expanded="false"
                                                 aria-label="Add Divination spell"><i class="bi bi-plus-lg"></i></button>
                                             <ul class="dropdown-menu dropdown-menu-end add-skill-menu">
@@ -1376,7 +1482,7 @@
                                                 </button>
                                             </h2>
                                             <!-- Add spell menu: Enchantment -->
-                                            <button class="btn btn-outline-primary btn-icon me-2" type="button"
+                                            <button class="btn btn-outline-primary btn-icon" type="button"
                                                 data-bs-toggle="dropdown" aria-expanded="false"
                                                 aria-label="Add Enchantment spell"><i
                                                     class="bi bi-plus-lg"></i></button>
@@ -1456,7 +1562,7 @@
                                                 </button>
                                             </h2>
                                             <!-- Add spell menu: Evocation -->
-                                            <button class="btn btn-outline-primary btn-icon me-2" type="button"
+                                            <button class="btn btn-outline-primary btn-icon" type="button"
                                                 data-bs-toggle="dropdown" aria-expanded="false"
                                                 aria-label="Add Evocation spell"><i class="bi bi-plus-lg"></i></button>
                                             <ul class="dropdown-menu dropdown-menu-end add-skill-menu">
@@ -1536,7 +1642,7 @@
                                                 </button>
                                             </h2>
                                             <!-- Add spell menu: Illusion -->
-                                            <button class="btn btn-outline-primary btn-icon me-2" type="button"
+                                            <button class="btn btn-outline-primary btn-icon" type="button"
                                                 data-bs-toggle="dropdown" aria-expanded="false"
                                                 aria-label="Add Illusion spell"><i class="bi bi-plus-lg"></i></button>
                                             <ul class="dropdown-menu dropdown-menu-end add-skill-menu">
@@ -1617,7 +1723,7 @@
                                                 </button>
                                             </h2>
                                             <!-- Add spell menu: Necromancy -->
-                                            <button class="btn btn-outline-primary btn-icon me-2" type="button"
+                                            <button class="btn btn-outline-primary btn-icon" type="button"
                                                 data-bs-toggle="dropdown" aria-expanded="false"
                                                 aria-label="Add Necromancy spell"><i class="bi bi-plus-lg"></i></button>
                                             <ul class="dropdown-menu dropdown-menu-end add-skill-menu">
@@ -1696,7 +1802,7 @@
                                                 </button>
                                             </h2>
                                             <!-- Add spell menu: Transmutation -->
-                                            <button class="btn btn-outline-primary btn-icon me-2" type="button"
+                                            <button class="btn btn-outline-primary btn-icon" type="button"
                                                 data-bs-toggle="dropdown" aria-expanded="false"
                                                 aria-label="Add Transmutation spell"><i
                                                     class="bi bi-plus-lg"></i></button>
@@ -1995,8 +2101,10 @@
                                         &laquo; Back
                                     </button>
 
+                                    <!-- Stays a submit so the form still validates; the
+                                         handler opens the confirmation modal -->
                                     <button type="submit" class="btn btn-primary">
-                                        Save Items &raquo;
+                                        Finish &raquo;
                                     </button>
                                 </div>
                             </div>
@@ -2031,6 +2139,69 @@
                     </button>
 
                     <a href="index.html" class="btn btn-danger">
+                        Yes
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Final save confirmation, opened from the Finish button -->
+    <div class="modal fade" id="confirmSaveModal" tabindex="-1" aria-labelledby="confirmSaveModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmSaveModalLabel">
+                        Save This Character?
+                    </h5>
+
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    This will save the character and start a new blank form.
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        Keep Editing
+                    </button>
+
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal" data-confirm-save>
+                        Save Character
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Same warning, but for the roster. A modal can only point at one
+         destination, so each exit gets its own. -->
+    <div class="modal fade" id="leaveToRosterModal" tabindex="-1" aria-labelledby="leaveToRosterModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="leaveToRosterModalLabel">
+                        Leave Character Design?
+                    </h5>
+
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    You will lose all unsaved data. Are you sure you want to view the roster?
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        No
+                    </button>
+
+                    <a href="view-characters.html" class="btn btn-danger">
                         Yes
                     </a>
                 </div>

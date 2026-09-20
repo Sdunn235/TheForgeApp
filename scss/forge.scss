@@ -16,7 +16,7 @@ $form-range-track-height: 1.5rem;
 $form-range-thumb-bg: $success;
 
 // Form text sizing
-$form-label-font-size: 1.5rem;
+$form-label-font-size: 1rem;
 $form-label-font-weight: bold;
 $input-font-size: 1.5rem;
 // Selects keep the 1rem default; only text inputs are enlarged
@@ -76,6 +76,15 @@ $forge-colors: (
 
 $theme-colors: map-merge($theme-colors, $forge-colors);
 
+// Bootstrap ships .start-0, .start-50 and .start-100 only. The six-step
+// tracker needs fifths, so add them to the map it builds those from.
+$position-values: map-merge($position-values, (
+    20: 20%,
+    40: 40%,
+    60: 60%,
+    80: 80%
+));
+
 // 5. The rest of Bootstrap
 @import "../node_modules/bootstrap/scss/bootstrap";
 
@@ -112,6 +121,14 @@ $theme-colors: map-merge($theme-colors, $forge-colors);
 // ---------------------------------------------------------------------------
 
 
+// Save / Back button sizing. The small-screen set keeps the labels on one
+// line once there is no room for the full-size padding and text.
+$card-nav-btn-padding-y: 1rem;
+$card-nav-btn-padding-x: 1.5rem;
+$card-nav-btn-font-size: 1.5rem;
+$card-nav-btn-padding-x-sm: .75rem;
+$card-nav-btn-font-size-sm: 1.1rem;
+
 // Cards
 .card {
     .card-navigation {
@@ -123,10 +140,20 @@ $theme-colors: map-merge($theme-colors, $forge-colors);
 
         // Sizes every step's Save and Back button in one place
         .btn {
-            --bs-btn-padding-y: 1rem;
-            --bs-btn-padding-x: 1.5rem;
-            --bs-btn-font-size: 1.5rem;
+            --bs-btn-padding-y: #{$card-nav-btn-padding-y};
+            --bs-btn-padding-x: #{$card-nav-btn-padding-x};
+            --bs-btn-font-size: #{$card-nav-btn-font-size};
             --bs-btn-border-radius: .5rem;
+
+            // Keeps "Save Skills »" on one line instead of wrapping
+            white-space: nowrap;
+
+            // Below the sm breakpoint the full-size labels no longer fit,
+            // so trim the text and side padding rather than let them wrap.
+            @include media-breakpoint-down(sm) {
+                --bs-btn-padding-x: #{$card-nav-btn-padding-x-sm};
+                --bs-btn-font-size: #{$card-nav-btn-font-size-sm};
+            }
         }
     }
 
@@ -158,11 +185,16 @@ $theme-colors: map-merge($theme-colors, $forge-colors);
     font-weight: $form-label-font-weight;
 }
 
+// Stops the fixed navbar covering a step heading when the form scrolls
+// to the next step. Needs to clear .fixed-top's height.
+$character-step-scroll-offset: 7rem;
+
 .character-step {
     display: flex;
     flex-direction: column;
     padding: 1rem;
     background-color: $secondary;
+    scroll-margin-top: $character-step-scroll-offset;
 }
 .card-img-top {
     height: 50px;
@@ -252,7 +284,16 @@ img.roster-portrait {
 
 // Keeps the HP/MP/SP bars lined up with each other.
 .vitals-label {
-    min-width: 6.5rem;
+    min-width: 1rem;
+}
+
+// Left padding for the HP/MP/SP value badges only. Bootstrap builds badge
+// padding from a two-value shorthand, so --bs-badge-padding-x moves both
+// edges at once. The start edge needs its own declaration to move alone.
+$vitals-value-padding-start: 0;
+
+.badge.vitals-value {
+    padding-inline-start: $vitals-value-padding-start;
 }
 
 // Stops the feat stepper stretching across the row.
@@ -284,6 +325,8 @@ img.roster-portrait {
     .bi {
         -webkit-text-stroke: $icon-stroke currentColor;
     }
+    margin: 0.5rem;
+
 }
 
 // Ability toggles: grey by default, green when selected.
@@ -399,16 +442,98 @@ img.roster-portrait {
     padding-bottom: 1rem;
 }
 
+$navbar-fixed-height: 100px;
+
+// How tall the scrolling menu may grow before it scrolls. Bootstrap reads
+// this from --bs-scroll-height; its own default is 75vh.
+$navbar-scroll-height: 60vh;
+
+.navbar-nav-scroll {
+    --bs-scroll-height: #{$navbar-scroll-height};
+}
+
 .fixed-top {
     // No Bootstrap variable for the close button size
     .btn-close {
         font-size: 2rem;
     }
-    height: 100px;
+
+    // min-height, not height: an expanded mobile menu grows past 100px, and
+    // a fixed height would clip the background out from under it.
+    min-height: $navbar-fixed-height;
+}
+
+// Step tracker above the form. The docs example sets these inline; keeping
+// them here means the bar and dots stay in step with each other.
+$step-tracker-bar-height: 4px;
+$step-tracker-dot-size: 2.75rem;
+// Ring around every dot, so the steps still read as circles before
+// they are reached. .btn-secondary would otherwise give them a border
+// the same colour as their own fill.
+$step-tracker-dot-border-width: 3px;
+$step-tracker-dot-border-color: $primary;
+
+.step-tracker {
+    // Progress ships a CSS variable for this, so set that rather than
+    // overriding the height property it builds from
+    .progress {
+        --bs-progress-height: #{$step-tracker-bar-height};
+    }
+
+    // Square so rounded-pill gives a circle, and sized past .btn's padding
+    .step-dot {
+        width: $step-tracker-dot-size;
+        height: $step-tracker-dot-size;
+        padding: 0;
+        --bs-btn-font-size: 1rem;
+        --bs-btn-line-height: 1;
+
+        // Outranks .btn-secondary, so the ring survives either state
+        --bs-btn-border-width: #{$step-tracker-dot-border-width};
+        --bs-btn-border-color: #{$step-tracker-dot-border-color};
+        --bs-btn-hover-border-color: #{$step-tracker-dot-border-color};
+        --bs-btn-disabled-border-color: #{$step-tracker-dot-border-color};
+    }
+}
+
+// Mobile bottom bar, shown below the lg breakpoint only.
+$mobile-nav-height: 4.5rem;
+$mobile-nav-icon-size: 1.4rem;
+$mobile-nav-font-size: .8rem;
+// Extra room under the page so the last row clears the bar
+$mobile-nav-clearance: 1.5rem;
+
+.mobile-bottom-nav {
+    // Fixed rather than min-height, so the body padding below can match it
+    height: $mobile-nav-height;
+    padding-block: 0;
+
+    .nav-link {
+        // Bootstrap pads .nav-link on its own, which pushed the bar taller
+        // than $mobile-nav-height and hid the bottom of the page
+        padding-block: .15rem;
+        font-size: $mobile-nav-font-size;
+        line-height: 1.2;
+    }
+
+    .bi {
+        font-size: $mobile-nav-icon-size;
+    }
+}
+
+// The bar is fixed, so it floats over the end of the page. Pad the body by
+// its height to keep the last Save button reachable.
+@include media-breakpoint-down(lg) {
+    body:has(.mobile-bottom-nav) {
+        padding-bottom: $mobile-nav-height + $mobile-nav-clearance;
+    }
 }
 
 // Range sliders. Height is left to Bootstrap so the focus ring is not
 // clipped; this is spacing below the track only.
 .form-range {
     padding-bottom: 1rem;
+}
+.badge {
+    margin: 0.25rem;
 }
