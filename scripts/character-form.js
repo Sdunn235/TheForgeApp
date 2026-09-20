@@ -1,6 +1,12 @@
+// Drives the character creation form: swaps the ID field between player and
+// NPC, steps through the cards, and gathers the values on submit.
+
 const characterForm = document.querySelector(".character-form");
 
+// Only run on pages that actually have the form.
 if (characterForm) {
+
+    // Grab everything we need once, up front
     const typeInputs = characterForm.querySelectorAll(
         'input[name="characterType"]'
     );
@@ -21,10 +27,12 @@ if (characterForm) {
         "[data-character-message]"
     );
 
-    const statRanges = characterForm.querySelectorAll(
+    // Page-scoped: the Level slider sits outside the form, in the Vitals card
+    const statRanges = document.querySelectorAll(
         'input[type="range"][name]'
     );
 
+    // Everything we collect, filled in step by step
     const characterState = {
         name: "",
         type: "",
@@ -42,6 +50,8 @@ if (characterForm) {
         items: []
     };
 
+    // Show the ID field for the selected type and hide the other.
+    // Disabling the unused one keeps it out of the submitted data.
     const updateCharacterType = () => {
         const selectedType = characterForm.elements.characterType.value;
         const isNpc = selectedType === "npc";
@@ -58,6 +68,7 @@ if (characterForm) {
         updateInfoButton();
     };
 
+    // Grey out the first Save button until a name and an ID are both filled in
     const updateInfoButton = () => {
         const selectedType = characterForm.elements.characterType.value;
         const activeIdInput = selectedType === "npc"
@@ -66,11 +77,11 @@ if (characterForm) {
         const isComplete = characterNameInput.value.trim() !== ""
             && activeIdInput.value.trim() !== "";
 
-        infoSubmitButton.classList.toggle("btn-disabled", !isComplete);
-        infoSubmitButton.classList.toggle("btn-primary", isComplete);
-        infoSubmitButton.setAttribute("aria-disabled", String(!isComplete));
+        // Bootstrap styles .btn:disabled, and the attribute blocks submitting
+        infoSubmitButton.disabled = !isComplete;
     };
 
+    // Copy the current form values into characterState
     const saveFormData = () => {
         const formData = new FormData(characterForm);
         const selectedType = formData.get("characterType");
@@ -96,18 +107,21 @@ if (characterForm) {
 
     };
 
+    // Show one step and hide the rest
     const showStep = (stepIndex) => {
         steps.forEach((step, index) => {
             step.classList.toggle("d-none", index !== stepIndex);
         });
     };
 
+    // The visible step is the only one without d-none on it
     const getCurrentStepIndex = () => {
         return steps.findIndex(
             (step) => !step.classList.contains("d-none")
         );
     };
 
+    // Listeners
     typeInputs.forEach((input) => {
         input.addEventListener("change", updateCharacterType);
     });
@@ -116,6 +130,7 @@ if (characterForm) {
     userIdInput.addEventListener("input", updateInfoButton);
     npcIdInput.addEventListener("input", updateInfoButton);
 
+    // Each slider writes its value into the matching <output> badge
     statRanges.forEach((range) => {
         const output = document.getElementById(`${range.id}Value`);
 
@@ -130,10 +145,12 @@ if (characterForm) {
         }
     });
 
-    
-    characterForm.querySelectorAll('[data-bs-toggle="tooltip"]')
+    // Start the tooltips for the whole page
+    document.querySelectorAll('[data-bs-toggle="tooltip"]')
         .forEach((element) => new bootstrap.Tooltip(element));
 
+    // Each Save button submits the form and moves to the next step.
+    // On the last step, show the success message instead.
     characterForm.addEventListener("submit", (event) => {
         event.preventDefault();
 
@@ -159,6 +176,7 @@ if (characterForm) {
         }
     });
 
+    // Back buttons step backwards, stopping at the first step
     backButtons.forEach((button) => {
         button.addEventListener("click", () => {
             const currentStepIndex = getCurrentStepIndex();
@@ -169,5 +187,6 @@ if (characterForm) {
         });
     });
 
+    // Set the right ID field on first load
     updateCharacterType();
 }

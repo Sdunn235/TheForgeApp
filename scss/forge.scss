@@ -1,18 +1,118 @@
 @use "sass:color";
 
-// Define variables first
+// Bootstrap customization follows the documented import order:
+// https://getbootstrap.com/docs/5.3/customize/sass/
+
+// 1. Functions first, so Bootstrap's color helpers are loaded before we override
+@import "../node_modules/bootstrap/scss/functions";
+
+// 2. Default variable overrides
 $primary: #8034fc;
 $secondary: #d0c0e9;
 $disabled: #756a86;
 $success: #198754;
-$form-range-track-height: 1rem;
+$body-bg: #f0e7ff;
+$form-range-track-height: 1.5rem;
 $form-range-thumb-bg: $success;
 
-// Include Bootstrap
+// Form text sizing
+$form-label-font-size: 1.5rem;
+$form-label-font-weight: bold;
+$input-font-size: 1.5rem;
+// Selects keep the 1rem default; only text inputs are enlarged
+$form-select-font-size: 1.5rem;
+
+// Component sizing
+$badge-font-size: 1.25rem;
+$badge-border-radius: 1rem;
+$lead-font-size: 1.25rem;
+$navbar-brand-font-size: 2rem;
+
+// Typography knobs
+$h6-font-size: 1.5rem;
+$h5-font-size: 1.75rem;
+$h4-font-size: 2rem;
+// .small is fine print again. Body copy - including .text-body-secondary,
+// which is a colour utility with no size - is sized by $font-size-base.
+$small-font-size: 1.25rem;
+$font-size-base: 1.5rem;
+
+// Buttons size independently of body copy. Without these, $btn-font-size
+// inherits from $font-size-base and scaling a button scales paragraphs too.
+$btn-font-size: 1.25rem;
+// The .btn-sm / .btn-group-sm > .btn block is built from these four.
+// Change them here rather than overriding the compiled class.
+$btn-padding-y-sm: .25rem;
+$btn-padding-x-sm: .5rem;
+$btn-font-size-sm: .875rem;
+$btn-border-radius-sm: .375rem;
+// How much to thicken icon-font glyphs (they have no bold weight)
+$icon-stroke: 1px;
+
+// Sets the chevron's width, height and background-size together.
+// To recolour it, set $accordion-icon-color to a literal value.
+$accordion-icon-width: 2rem;
+// Gap between the left-hand chevron and the header text
+$accordion-chevron-gap: .75rem;
+
+// Bootstrap has no $list-group-font-size. Item text is sized by the <h6>
+// inside it, so $h6-font-size drives that; these control row spacing.
+$list-group-item-padding-y: .65rem;
+$list-group-item-padding-x: 1rem;
+
+// 3. Required Bootstrap stylesheets
+@import "../node_modules/bootstrap/scss/variables";
+@import "../node_modules/bootstrap/scss/variables-dark";
+
+// 4. Map overrides. Adding colors here makes Bootstrap build .bg-health,
+//    .text-mana, .btn-buff and the rest for us.
+$forge-colors: (
+    "health": #b3313c,
+    "mana": #2f6fd0,
+    "stamina": #c9a227,
+    "buff": #2e9e5b,
+    "debuff": #8a2be2
+);
+
+$theme-colors: map-merge($theme-colors, $forge-colors);
+
+// 5. The rest of Bootstrap
 @import "../node_modules/bootstrap/scss/bootstrap";
 
+// 6. Our own styles below
 
-// Card Styles
+// ---------------------------------------------------------------------------
+// Styling pattern for stats, skills, abilities, spells and items.
+// These are Bootstrap utility classes, not custom CSS. Follow the recipes
+// below so every step of the character form looks the same.
+//
+// Item card (one recipe, used everywhere):
+//   <div class="card h-100 p-3 bg-light border-primary-subtle shadow-sm">
+//     <h5 class="card-title">Name</h5>
+//     <p class="flex-grow-1 mb-3 text-body-secondary">Description</p>
+//
+// Step intro copy:
+//   <p class="mb-4 text-body-secondary">
+//
+// Badges carry meaning by color. Pick the one that matches the job:
+//   bg-primary               names a thing   (category, slot, school, type)
+//   bg-secondary text-dark   a value         (slider value, level, points)
+//   bg-success               a state         (learned, earned, active)
+//   add rounded-pill         when it is a count (x3, "2 buffs")
+//
+// Two rules worth remembering:
+//   - bg-secondary is light lavender, so its badges always need text-dark.
+//     Without it you get white on lavender at 1.69:1, which is unreadable.
+//   - Use text-body-secondary for muted copy, never text-secondary. In
+//     Bootstrap 5.3 text-secondary means the secondary THEME color, so on
+//     a bg-light card it renders lavender on near-white. text-muted is
+//     deprecated in 5.3; text-body-secondary replaces it.
+//   - text-body-secondary sets color only. Its size comes from
+//     $font-size-base, so do not reach for .small to make copy bigger.
+// ---------------------------------------------------------------------------
+
+
+// Cards
 .card {
     .card-navigation {
         display: flex;
@@ -20,6 +120,14 @@ $form-range-thumb-bg: $success;
         align-items: center;
         margin-top: 40px;
         background-color: $secondary;
+
+        // Sizes every step's Save and Back button in one place
+        .btn {
+            --bs-btn-padding-y: 1rem;
+            --bs-btn-padding-x: 1.5rem;
+            --bs-btn-font-size: 1.5rem;
+            --bs-btn-border-radius: .5rem;
+        }
     }
 
     .btn-close {
@@ -34,25 +142,20 @@ $form-range-thumb-bg: $success;
         height: 180px;
         object-fit: contain;
         border-radius: 0.25rem 0.25rem 0 0;
+        background-color: $secondary;
     }
 
     .card-body {
         background-color: $secondary;
         border-radius: 0 0 0.25rem 0.25rem;
     }
+}
 
-    .btn-disabled {
-        color: #fff;
-        background-color: $disabled;
-        border-color: $disabled;
-
-        &:hover,
-        &:focus {
-            color: #fff;
-            background-color: color.adjust($disabled, $lightness: -8%);
-            border-color: color.adjust($disabled, $lightness: -8%);
-        }
-    }
+// Bootstrap sizes .form-label but not .form-check-label, which leaves radio
+// and checkbox text smaller than every other label. Reuse the same variables.
+.form-check-label {
+    font-size: $form-label-font-size;
+    font-weight: $form-label-font-weight;
 }
 
 .character-step {
@@ -61,26 +164,60 @@ $form-range-thumb-bg: $success;
     padding: 1rem;
     background-color: $secondary;
 }
-.form-label {
-    font-weight: bold;
-    font-size: 1.2rem;
-}
-.form-control {
-    font-size: 1.4rem;
-}
-
 .card-img-top {
     height: 50px;
     object-fit: cover;
 
 }
 
+// Roster table portraits. Needs to beat the .card img rule above.
+// One knob for the size:
+$roster-portrait-size: 4rem;
+
+.card img.roster-portrait,
+img.roster-portrait {
+    width: $roster-portrait-size;
+    height: $roster-portrait-size;
+    object-fit: cover;
+    // .card img sets display:block, so the table's text-align cannot centre
+    // these. Auto side margins do it instead.
+    margin-inline: auto;
+}
+// Spaces the card title and its close button apart
 .card-header-row {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
 }
 
+// Roster expand toggles. Trims the full-width accordion header styling
+// down to fit inside a table cell.
+.accordion-button.btn-expand {
+    width: auto;
+    padding: .25rem .5rem;
+    background-color: transparent;
+    box-shadow: none;
+
+    &::after {
+        margin-right: 0;
+    }
+}
+
+// Accordion header text. Bootstrap has no $accordion-button-font-size,
+// so this is the knob.
+.accordion-button {
+    font-size: $h5-font-size;
+}
+
+// Moves the chevron ahead of the header text. .accordion-button is a flex
+// container, so order:-1 reorders the ::after chevron.
+.accordion-button::after {
+    order: -1;
+    margin-left: 0;
+    margin-right: $accordion-chevron-gap;
+}
+
+// Dropdowns
 .dropdown-menu {
     width: 100%;
 
@@ -101,13 +238,62 @@ $form-range-thumb-bg: $success;
     }
 }
 
+// Keeps the add-skill menu from stretching across the row.
 .add-skill-menu {
     width: auto;
     min-width: 16rem;
 }
 
-// Ability toggles: grey by default, green when selected
+// Scrolls a long feat list instead of stretching the step.
+.feat-list {
+    max-height: 16rem;
+    overflow-y: auto;
+}
+
+// Keeps the HP/MP/SP bars lined up with each other.
+.vitals-label {
+    min-width: 6.5rem;
+}
+
+// Stops the feat stepper stretching across the row.
+.feat-count-input {
+    max-width: 7rem;
+}
+
+// Every compact icon button: the add toggles and the roster controls
+.btn-icon {
+    // Matches .btn-group-sm > .btn, which outranks this rule on the roster's
+    // grouped buttons, so both render the same either way.
+    --bs-btn-padding-y: #{$btn-padding-y-sm};
+    --bs-btn-padding-x: #{$btn-padding-x-sm};
+    --bs-btn-font-size: #{$btn-font-size-sm};
+    --bs-btn-border-radius: #{$btn-border-radius-sm};
+    --bs-btn-line-height: 1;
+    --bs-btn-border-width: 2px;
+    --bs-btn-font-weight: bold;
+
+    // Square, and matched to the badge height beside it
+    // (a badge is line-height 1 plus .35em padding, so font-size x 1.7).
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: $badge-font-size * 1.7;
+    min-height: $badge-font-size * 1.7;
+
+    // Icon fonts have no bold weight, so stroke the glyph to thicken it
+    .bi {
+        -webkit-text-stroke: $icon-stroke currentColor;
+    }
+}
+
+// Ability toggles: grey by default, green when selected.
+// Sizing lives here so the Learn buttons scale on their own.
 .ability-toggle {
+    --bs-btn-padding-y: 1rem;
+    --bs-btn-padding-x: 1.5rem;
+    --bs-btn-font-size: 1.5rem;
+    --bs-btn-border-radius: .5rem;
+
     --bs-btn-color: #fff;
     --bs-btn-bg: #{$disabled};
     --bs-btn-border-color: #{$disabled};
@@ -119,15 +305,15 @@ $form-range-thumb-bg: $success;
     --bs-btn-active-border-color: #{$success};
 }
 
-//####
+// Page layout
 
-// Video hero banner
+// Video banner behind the page heading
 .video-hero {
     position: relative;
     height: 800px;
     overflow: hidden;
     background-color: #000;
-
+    // Fill the container and centre the video
     iframe {
         position: absolute;
         top: 50%;
@@ -137,7 +323,7 @@ $form-range-thumb-bg: $success;
         transform: translate(-50%, -50%);
         pointer-events: none;
     }
-
+    // Dark overlay so the text stays readable
     &::after {
         content: "";
         position: absolute;
@@ -146,17 +332,13 @@ $form-range-thumb-bg: $success;
     }
 }
 
-//####
-
-.page-content {
-    position: relative;
-}
+// Containers, switches and badges
 
 .row-cols-md-1 {
     border-radius: .4rem;
 }
 
-// Character Type Switch Styles
+// Player / NPC switch
 .character-type-switch {
     display: flex;
     align-items: start;
@@ -172,7 +354,7 @@ $form-range-thumb-bg: $success;
         cursor: pointer;
     }
 }
-
+// Label colours for the switch
 .character-type-switch {
     display: flex;
     align-items: center;
@@ -183,25 +365,24 @@ $form-range-thumb-bg: $success;
         color: #6c757d;
         font-weight: bold;
     }
-
+    // The switch keeps the primary colour either way
     .character-type-input {
         &:not(:checked) {
             background-color: $primary;
             border-color: $primary;
         }
-
         &:checked {
             background-color: $primary;
             border-color: $primary;
         }
     }
-
+    // Player selected: highlight the player label
     &:not(:has(.character-type-input:checked)) {
         .player-label {
             color: $primary;
         }
     }
-
+    // NPC selected: highlight the NPC label
     &:has(.character-type-input:checked) {
         .npc-label {
             color: $primary;
@@ -210,29 +391,24 @@ $form-range-thumb-bg: $success;
 
 }
 
-.badge {
-    font-size: 1rem;
-}
+// Text sizing and the fixed navbar
 
-//####
-
+// Spacing only; the size comes from $lead-font-size
 .lead {
     margin-bottom: 0;
-    font-size: 1.25rem;
     padding-bottom: 1rem;
 }
 
 .fixed-top {
-    .navbar-brand {
-        font-size: 3rem;
-    }
+    // No Bootstrap variable for the close button size
     .btn-close {
-        font-size: 3rem;
+        font-size: 2rem;
     }
     height: 100px;
 }
 
+// Range sliders. Height is left to Bootstrap so the focus ring is not
+// clipped; this is spacing below the track only.
 .form-range {
-    height: 1rem;
     padding-bottom: 1rem;
 }
