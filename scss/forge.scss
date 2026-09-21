@@ -229,7 +229,6 @@ $character-step-scroll-offset: 7rem;
 .character-step {
     display: flex;
     flex-direction: column;
-    padding: 1rem;
     background-color: $secondary;
     scroll-margin-top: $character-step-scroll-offset;
 }

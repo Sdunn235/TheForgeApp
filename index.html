@@ -71,187 +71,33 @@
 
     <!-- Main content: one card per design area -->
     <!-- Page heading -->
-    <div class="container text-start mt-5 pt-5">
+    <div id="app" class="container text-start mt-5 pt-5">
         <div class="row bg-secondary mb-4 px-2 row-cols-1 g-0 page-heading">
             <div class="container col">
-                <h1 class="display-1 pb-2 border-bottom border-primary">Welcome to The Forge</h1>
-                <p class="lead">This is the description for The Forge. Explain Use and design in a high top-down
-                    approach.</p>
+                <h1 class="display-1 pb-2 border-bottom border-primary">{{ appName }}</h1>
+                <p class="lead">{{ tagline }}</p>
             </div>
         </div>
 
-        <!-- Character Design card -->
+        <!-- One card per forge. The shape lives here once; the words for each
+            one live in forges in app.js. -->
         <div class="row row-cols-1 row-cols-md-2 g-4">
-            <div class="col">
-                <div class="card h-100"><img src="Assets/Images/anvil.png" alt="Hammer Anvil">
+            <div class="col" v-for="forge in forges" :key="forge.title">
+                <div class="card h-100"><img :src="forge.image" :alt="forge.alt">
                     <div class="card-body">
-                        <h3 class="card-title">Character Design</h3>
-                        <p class="card-text pt-2">
-                            This is where you will be able to do most things character related. Be it creating,
-                            editing, or viewing characters in the world. This will not only be players, but also
-                            NPCs, and other characters that may be in the world. This will be the main hub for
-                            character design and management.
-                        </p>
+                        <h3 class="card-title">{{ forge.title }}</h3>
+                        <p class="card-text pt-2">{{ forge.description }}</p>
                     </div>
                     <div class="card-body flex-grow-0">
                         <div class="dropdown d-grid">
                             <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown"
                                 aria-expanded="false">
-                                Forge Characters
+                                {{ forge.buttonLabel }}
                             </button>
                             <ul class="dropdown-menu dropdown-menu-lg-end">
-                                <li><a class="dropdown-item" href="creation-character.html">Create/Edit</a></li>
-                                <li><a class="dropdown-item" href="view-characters.html">View Characters</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <!-- Attributes Design card -->
-            <div class="col">
-                <div class="card h-100"><img src="Assets/Images/anvil.png" alt="Hammer Anvil">
-                    <div class="card-body">
-                        <h3 class="card-title">Attributes Design</h3>
-                        <p class="card-text pt-2">
-                            This is where the raw numbers behind every character are shaped. Strength,
-                            dexterity, constitution, intelligence, wisdom and charisma: what each one means, the
-                            range it can be rolled in, and how it feeds the vitals derived from it.
-                        </p>
-                    </div>
-                    <div class="card-body flex-grow-0">
-                        <div class="dropdown d-grid">
-                            <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown"
-                                aria-expanded="false">
-                                Forge Attributes
-                            </button>
-                            <ul class="dropdown-menu dropdown-menu-lg-end">
-                                <li><a class="dropdown-item" href="#">Create/Edit</a></li>
-                                <li><a class="dropdown-item" href="#">View Attributes</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <!-- Skill Design card -->
-            <div class="col">
-                <div class="card h-100"><img src="Assets/Images/anvil.png" alt="Hammer Anvil">
-                    <div class="card-body">
-                        <h3 class="card-title">Skill Design</h3>
-                        <p class="card-text pt-2">
-                            This is where skills are defined and grouped into categories. Gathering, weapon
-                            handling, armor training and whatever else the world needs, each with its
-                            description and the range a character levels it through.
-                        </p>
-                    </div>
-                    <div class="card-body flex-grow-0">
-                        <div class="dropdown d-grid">
-                            <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown"
-                                aria-expanded="false">
-                                Forge Skills
-                            </button>
-                            <ul class="dropdown-menu dropdown-menu-lg-end">
-                                <li><a class="dropdown-item" href="#">Create/Edit</a></li>
-                                <li><a class="dropdown-item" href="#">View Skills</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <!-- Ability Design card -->
-            <div class="col">
-                <div class="card h-100"><img src="Assets/Images/anvil.png" alt="Hammer Anvil">
-                    <div class="card-body">
-                        <h3 class="card-title">Ability Design</h3>
-                        <p class="card-text pt-2">
-                            This is where abilities are written. These are what a character unlocks as a skill
-                            grows: what each one does, which skill category it belongs under, and what it takes
-                            to learn.
-                        </p>
-                    </div>
-                    <div class="card-body flex-grow-0">
-                        <div class="dropdown d-grid">
-                            <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown"
-                                aria-expanded="false">
-                                Forge Abilities
-                            </button>
-                            <ul class="dropdown-menu dropdown-menu-lg-end">
-                                <li><a class="dropdown-item" href="#">Create/Edit</a></li>
-                                <li><a class="dropdown-item" href="#">View Abilities</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <!-- Feat Design card -->
-            <div class="col">
-                <div class="card h-100"><img src="Assets/Images/anvil.png" alt="Hammer Anvil">
-                    <div class="card-body">
-                        <h3 class="card-title">Feat Design</h3>
-                        <p class="card-text pt-2">
-                            This is where feats are written. These are the perks a character earns every few
-                            levels: what each one grants, whether it is earned or given as a bonus, and how many
-                            a character may hold.
-                        </p>
-                    </div>
-                    <div class="card-body flex-grow-0">
-                        <div class="dropdown d-grid">
-                            <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown"
-                                aria-expanded="false">
-                                Forge Feats
-                            </button>
-                            <ul class="dropdown-menu dropdown-menu-lg-end">
-                                <li><a class="dropdown-item" href="#">Create/Edit</a></li>
-                                <li><a class="dropdown-item" href="#">View Feats</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <!-- Spell Design card -->
-            <div class="col">
-                <div class="card h-100"><img src="Assets/Images/anvil.png" alt="Hammer Anvil">
-                    <div class="card-body">
-                        <h3 class="card-title">Spell Design</h3>
-                        <p class="card-text pt-2">
-                            This is where spells are written and sorted into schools. Abjuration through
-                            transmutation, each spell carrying its level, its mana cost, and what happens when
-                            it is cast.
-                        </p>
-                    </div>
-                    <div class="card-body flex-grow-0">
-                        <div class="dropdown d-grid">
-                            <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown"
-                                aria-expanded="false">
-                                Forge Spells
-                            </button>
-                            <ul class="dropdown-menu dropdown-menu-lg-end">
-                                <li><a class="dropdown-item" href="#">Create/Edit</a></li>
-                                <li><a class="dropdown-item" href="#">View Spells</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <!-- Item Design card -->
-            <div class="col">
-                <div class="card h-100"><img src="Assets/Images/anvil.png" alt="Hammer Anvil">
-                    <div class="card-body">
-                        <h3 class="card-title">Item Design</h3>
-                        <p class="card-text pt-2">
-                            This is where gear and inventory are made. Weapons, armor, consumables and
-                            curiosities, each with the slot it fills, the quantity it stacks to, and what it
-                            does for whoever carries it.
-                        </p>
-                    </div>
-                    <div class="card-body flex-grow-0">
-                        <div class="dropdown d-grid">
-                            <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown"
-                                aria-expanded="false">
-                                Forge Items
-                            </button>
-                            <ul class="dropdown-menu dropdown-menu-lg-end">
-                                <li><a class="dropdown-item" href="#">Create/Edit</a></li>
-                                <li><a class="dropdown-item" href="#">View Items</a></li>
+                                <li v-for="link in forge.links" :key="link.label">
+                                    <a class="dropdown-item" :href="link.href">{{ link.label }}</a>
+                                </li>
                             </ul>
                         </div>
                     </div>
@@ -267,6 +113,11 @@
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"
         integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r"
         crossorigin="anonymous"></script>
+    <!-- Vue: mounts the app onto #app -->
+    <script type="module">
+        import app from "./scripts/app.js";
+        app.mount("#app");
+    </script>
 </body>
 
 </html>

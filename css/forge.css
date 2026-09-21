@@ -12641,7 +12641,6 @@ textarea.form-control-lg {
 .character-step {
   display: flex;
   flex-direction: column;
-  padding: 1rem;
   background-color: #d0c0e9;
   scroll-margin-top: 7rem;
 }
