@@ -1,6 +1,7 @@
 # Dependencies
 node_modules/
 
+
 # Compiled Sass source maps
 css/*.map
 
@@ -14,3 +15,4 @@ Thumbs.db
 [Dd]esktop.ini
 *.swp
 .DS_Store
+

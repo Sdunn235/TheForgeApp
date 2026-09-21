@@ -17,43 +17,48 @@
 
 <body>
     <!-- Navbar -->
-    <nav class="navbar fixed-top navbar-expand-lg bg-primary" data-bs-theme="dark">
+    <!-- Hidden below lg, where the bottom bar takes over -->
+    <nav class="navbar fixed-top navbar-expand-lg bg-primary d-none d-lg-flex" data-bs-theme="dark">
         <div class="container-fluid">
             <a class="navbar-brand" href="./index.html">The Forge</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarScroll"
-                aria-controls="navbarScroll" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarScroll">
-                <!-- Scroll height is set in forge.scss, not inline -->
-                <ul class="navbar-nav justify-content-center me-auto my-2 my-lg-0 navbar-nav-scroll">
-                    <li class="nav-item">
-                        <a class="nav-link" href="./creation-character.html">Forge Character</a>
-                    </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
-                            aria-expanded="false">
-                            Link
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="#">Action</a></li>
-                            <li><a class="dropdown-item" href="#">Another action</a></li>
-                            <li>
-                                <hr class="dropdown-divider">
-                            </li>
-                            <li><a class="dropdown-item" href="#">Something else here</a></li>
-                        </ul>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link disabled" aria-disabled="true">Link</a>
-                    </li>
-                </ul>
-                <form class="d-flex" role="search">
-                    <input class="form-control me-2" data-bs-theme="dark" type="search" placeholder="Search"
-                        aria-label="Search" />
-                    <button class="btn btn-secondary" type="submit">Search</button>
-                </form>
-            </div>
+
+            <ul class="navbar-nav flex-row ms-auto me-3">
+                <li class="nav-item">
+                    <a class="nav-link px-3 active" href="./index.html" aria-current="page">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link px-3" href="./creation-character.html">Forge Character</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link px-3" href="./view-characters.html">Roster</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Takes over below lg, where the top bar is hidden -->
+    <nav class="navbar fixed-bottom bg-primary d-lg-none mobile-bottom-nav" data-bs-theme="dark">
+        <div class="container-fluid">
+            <ul class="navbar-nav flex-row w-100 justify-content-around">
+                <li class="nav-item">
+                    <a class="nav-link text-center active" href="./index.html" aria-current="page">
+                        <i class="bi bi-house-door d-block"></i>
+                        Home
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-center" href="./creation-character.html">
+                        <i class="bi bi-hammer d-block"></i>
+                        Create
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-center" href="./view-characters.html">
+                        <i class="bi bi-people d-block"></i>
+                        Roster
+                    </a>
+                </li>
+            </ul>
         </div>
     </nav>
 
@@ -67,7 +72,7 @@
     <!-- Main content: one card per design area -->
     <!-- Page heading -->
     <div class="container text-start mt-5 pt-5">
-        <div class="row bg-secondary mb-4 px-2 row-cols-1 row-cols-md-1 g-0">
+        <div class="row bg-secondary mb-4 px-2 row-cols-1 g-0 page-heading">
             <div class="container col">
                 <h1 class="display-1 pb-2 border-bottom border-primary">Welcome to The Forge</h1>
                 <p class="lead">This is the description for The Forge. Explain Use and design in a high top-down
@@ -78,17 +83,17 @@
         <!-- Character Design card -->
         <div class="row row-cols-1 row-cols-md-2 g-4">
             <div class="col">
-                <div class="card mb-3"><img src="Assets\Images\anvil.png" alt="Hammer Anvil">
+                <div class="card h-100"><img src="Assets/Images/anvil.png" alt="Hammer Anvil">
                     <div class="card-body">
                         <h3 class="card-title">Character Design</h3>
-                        <p class="card-text pt-2">This is where you will be able do most things character related.
-                            Be it creating, editing, or viewing characters in the world. This will not only be
-                            players,
-                            but also NPCs, and other characters that may be in the world. This will be the main
-                            hub for character design and management.
+                        <p class="card-text pt-2">
+                            This is where you will be able to do most things character related. Be it creating,
+                            editing, or viewing characters in the world. This will not only be players, but also
+                            NPCs, and other characters that may be in the world. This will be the main hub for
+                            character design and management.
                         </p>
                     </div>
-                    <div class="card-body">
+                    <div class="card-body flex-grow-0">
                         <div class="dropdown d-grid">
                             <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown"
                                 aria-expanded="false">
@@ -104,26 +109,23 @@
             </div>
             <!-- Attributes Design card -->
             <div class="col">
-                <div class="card mb-3"><img src="Assets\Images\anvil.png" alt="Hammer Anvil">
+                <div class="card h-100"><img src="Assets/Images/anvil.png" alt="Hammer Anvil">
                     <div class="card-body">
                         <h3 class="card-title">Attributes Design</h3>
-                        <p class="card-text pt-2">This is where you will be able do most things charaacter
-                            related.
-                            Be it creating, editing, or viewing characters in the world. This will not only be
-                            players,
-                            but also NPCs, and other characters that may be in the world. This will be the main
-                            hub for
-                            character design and management.
+                        <p class="card-text pt-2">
+                            This is where the raw numbers behind every character are shaped. Strength,
+                            dexterity, constitution, intelligence, wisdom and charisma: what each one means, the
+                            range it can be rolled in, and how it feeds the vitals derived from it.
                         </p>
                     </div>
-                    <div class="card-body">
+                    <div class="card-body flex-grow-0">
                         <div class="dropdown d-grid">
                             <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown"
                                 aria-expanded="false">
-                                Create, edit, or view attributes in the world.
+                                Forge Attributes
                             </button>
                             <ul class="dropdown-menu dropdown-menu-lg-end">
-                                <li><a class="dropdown-item" href="#">Create Attributes</a></li>
+                                <li><a class="dropdown-item" href="#">Create/Edit</a></li>
                                 <li><a class="dropdown-item" href="#">View Attributes</a></li>
                             </ul>
                         </div>
@@ -132,26 +134,23 @@
             </div>
             <!-- Skill Design card -->
             <div class="col">
-                <div class="card mb-3"><img src="Assets\Images\anvil.png" alt="Hammer Anvil">
+                <div class="card h-100"><img src="Assets/Images/anvil.png" alt="Hammer Anvil">
                     <div class="card-body">
                         <h3 class="card-title">Skill Design</h3>
-                        <p class="card-text pt-2">This is where you will be able do most things charaacter
-                            related.
-                            Be it creating, editing, or viewing characters in the world. This will not only be
-                            players,
-                            but also NPCs, and other characters that may be in the world. This will be the main
-                            hub for
-                            character design and management.
+                        <p class="card-text pt-2">
+                            This is where skills are defined and grouped into categories. Gathering, weapon
+                            handling, armor training and whatever else the world needs, each with its
+                            description and the range a character levels it through.
                         </p>
                     </div>
-                    <div class="card-body">
+                    <div class="card-body flex-grow-0">
                         <div class="dropdown d-grid">
                             <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown"
                                 aria-expanded="false">
-                                Create, edit, or view skills in the world.
+                                Forge Skills
                             </button>
                             <ul class="dropdown-menu dropdown-menu-lg-end">
-                                <li><a class="dropdown-item" href="#">Create Skill</a></li>
+                                <li><a class="dropdown-item" href="#">Create/Edit</a></li>
                                 <li><a class="dropdown-item" href="#">View Skills</a></li>
                             </ul>
                         </div>
@@ -160,24 +159,23 @@
             </div>
             <!-- Ability Design card -->
             <div class="col">
-                <div class="card mb-3"><img src="Assets\Images\anvil.png" alt="Hammer Anvil">
+                <div class="card h-100"><img src="Assets/Images/anvil.png" alt="Hammer Anvil">
                     <div class="card-body">
                         <h3 class="card-title">Ability Design</h3>
-                        <p class="card-text pt-2">This is where you will be able do most things character related.
-                            Be it creating, editing, or viewing characters in the world. This will not only be
-                            players,
-                            but also NPCs, and other characters that may be in the world. This will be the main
-                            hub for character design and management.
+                        <p class="card-text pt-2">
+                            This is where abilities are written. These are what a character unlocks as a skill
+                            grows: what each one does, which skill category it belongs under, and what it takes
+                            to learn.
                         </p>
                     </div>
-                    <div class="card-body">
+                    <div class="card-body flex-grow-0">
                         <div class="dropdown d-grid">
                             <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown"
                                 aria-expanded="false">
-                                Create, edit, or view Abilities in the world.
+                                Forge Abilities
                             </button>
                             <ul class="dropdown-menu dropdown-menu-lg-end">
-                                <li><a class="dropdown-item" href="#">Create Ability</a></li>
+                                <li><a class="dropdown-item" href="#">Create/Edit</a></li>
                                 <li><a class="dropdown-item" href="#">View Abilities</a></li>
                             </ul>
                         </div>
@@ -186,26 +184,23 @@
             </div>
             <!-- Feat Design card -->
             <div class="col">
-                <div class="card mb-3"><img src="Assets\Images\anvil.png" alt="Hammer Anvil">
+                <div class="card h-100"><img src="Assets/Images/anvil.png" alt="Hammer Anvil">
                     <div class="card-body">
                         <h3 class="card-title">Feat Design</h3>
-                        <p class="card-text pt-2">This is where you will be able do most things charaacter
-                            related.
-                            Be it creating, editing, or viewing characters in the world. This will not only be
-                            players,
-                            but also NPCs, and other characters that may be in the world. This will be the main
-                            hub for
-                            character design and management.
+                        <p class="card-text pt-2">
+                            This is where feats are written. These are the perks a character earns every few
+                            levels: what each one grants, whether it is earned or given as a bonus, and how many
+                            a character may hold.
                         </p>
                     </div>
-                    <div class="card-body">
+                    <div class="card-body flex-grow-0">
                         <div class="dropdown d-grid">
                             <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown"
                                 aria-expanded="false">
-                                Create, edit, or view feats in the world.
+                                Forge Feats
                             </button>
                             <ul class="dropdown-menu dropdown-menu-lg-end">
-                                <li><a class="dropdown-item" href="#">Create Feats</a></li>
+                                <li><a class="dropdown-item" href="#">Create/Edit</a></li>
                                 <li><a class="dropdown-item" href="#">View Feats</a></li>
                             </ul>
                         </div>
@@ -214,28 +209,24 @@
             </div>
             <!-- Spell Design card -->
             <div class="col">
-                <div class="card mb-3"><img src="Assets\Images\anvil.png" alt="Hammer Anvil">
+                <div class="card h-100"><img src="Assets/Images/anvil.png" alt="Hammer Anvil">
                     <div class="card-body">
                         <h3 class="card-title">Spell Design</h3>
-                        <p class="card-text pt-2">This is where you will be able do most things charaacter
-                            related.
-                            Be it creating, editing, or viewing characters in the world. This will not only be
-                            players,
-                            but also NPCs, and other characters that may be in the world. This will be the main
-                            hub for
-                            character design and management.
+                        <p class="card-text pt-2">
+                            This is where spells are written and sorted into schools. Abjuration through
+                            transmutation, each spell carrying its level, its mana cost, and what happens when
+                            it is cast.
                         </p>
                     </div>
-                    <div class="card-body">
+                    <div class="card-body flex-grow-0">
                         <div class="dropdown d-grid">
                             <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown"
                                 aria-expanded="false">
-                                Create, edit, or view characters in the world.
+                                Forge Spells
                             </button>
                             <ul class="dropdown-menu dropdown-menu-lg-end">
-                                <li><a class="dropdown-item" href="#">Create Character</a></li>
-                                <li><a class="dropdown-item" href="#">Edit Character</a></li>
-                                <li><a class="dropdown-item" href="#">View Characters</a></li>
+                                <li><a class="dropdown-item" href="#">Create/Edit</a></li>
+                                <li><a class="dropdown-item" href="#">View Spells</a></li>
                             </ul>
                         </div>
                     </div>
@@ -243,28 +234,24 @@
             </div>
             <!-- Item Design card -->
             <div class="col">
-                <div class="card mb-3"><img src="Assets\Images\anvil.png" alt="Hammer Anvil">
+                <div class="card h-100"><img src="Assets/Images/anvil.png" alt="Hammer Anvil">
                     <div class="card-body">
                         <h3 class="card-title">Item Design</h3>
-                        <p class="card-text pt-2">This is where you will be able do most things charaacter
-                            related.
-                            Be it creating, editing, or viewing characters in the world. This will not only be
-                            players,
-                            but also NPCs, and other characters that may be in the world. This will be the main
-                            hub for
-                            character design and management.
+                        <p class="card-text pt-2">
+                            This is where gear and inventory are made. Weapons, armor, consumables and
+                            curiosities, each with the slot it fills, the quantity it stacks to, and what it
+                            does for whoever carries it.
                         </p>
                     </div>
-                    <div class="card-body">
+                    <div class="card-body flex-grow-0">
                         <div class="dropdown d-grid">
                             <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown"
                                 aria-expanded="false">
-                                Create, edit, or view characters in the world.
+                                Forge Items
                             </button>
                             <ul class="dropdown-menu dropdown-menu-lg-end">
-                                <li><a class="dropdown-item" href="#">Create Character</a></li>
-                                <li><a class="dropdown-item" href="#">Edit Character</a></li>
-                                <li><a class="dropdown-item" href="#">View Character</a></li>
+                                <li><a class="dropdown-item" href="#">Create/Edit</a></li>
+                                <li><a class="dropdown-item" href="#">View Items</a></li>
                             </ul>
                         </div>
                     </div>

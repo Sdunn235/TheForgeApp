@@ -164,19 +164,30 @@ if (characterForm) {
     userIdInput.addEventListener("input", updateInfoButton);
     npcIdInput.addEventListener("input", updateInfoButton);
 
-    // Each slider writes its value into the matching <output> badge
-    statRanges.forEach((range) => {
+    // Each slider writes its value into the matching <output> badge and into
+    // --range-fill, which forge.scss paints the filled part of the track from.
+    // data-show-max prints "42 / 50" instead of a bare number.
+    const syncRange = (range) => {
         const output = document.getElementById(`${range.id}Value`);
+        const min = Number(range.min);
+        const span = Number(range.max) - min;
+        const filled = span === 0
+            ? 0
+            : ((Number(range.value) - min) / span) * 100;
+
+        range.style.setProperty("--range-fill", `${filled}%`);
 
         if (output) {
             output.value = range.value;
-            output.textContent = range.value;
-
-            range.addEventListener("input", () => {
-                output.value = range.value;
-                output.textContent = range.value;
-            });
+            output.textContent = range.dataset.showMax === undefined
+                ? range.value
+                : `${range.value} / ${range.max}`;
         }
+    };
+
+    statRanges.forEach((range) => {
+        syncRange(range);
+        range.addEventListener("input", () => syncRange(range));
     });
 
     // Start the tooltips for the whole page

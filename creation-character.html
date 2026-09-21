@@ -20,31 +20,33 @@
     <!-- Hidden below lg, where the bottom bar takes over -->
     <nav class="navbar fixed-top navbar-expand-lg bg-primary d-none d-lg-flex" data-bs-theme="dark">
         <div class="container-fluid">
-            <a class="navbar-brand" href="./index.html" data-bs-toggle="modal" data-bs-target="#leavePageModal">The
-                Forge</a>
+            <a class="navbar-brand" href="./index.html" data-bs-toggle="modal" data-bs-target="#leavePageModal">The Forge</a>
 
-            <!-- Hidden on small screens, where the bottom bar takes over -->
-            <ul class="navbar-nav flex-row ms-auto me-3 d-none d-lg-flex">
+            <ul class="navbar-nav flex-row ms-auto me-3">
                 <li class="nav-item">
-                    <a class="nav-link" href="./view-characters.html" data-bs-toggle="modal"
-                        data-bs-target="#leaveToRosterModal">View Characters</a>
+                    <a class="nav-link px-3" href="./index.html" data-bs-toggle="modal" data-bs-target="#leavePageModal">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link px-3 active" href="./creation-character.html" aria-current="page">Forge Character</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link px-3" href="./view-characters.html" data-bs-toggle="modal" data-bs-target="#leaveToRosterModal">Roster</a>
                 </li>
             </ul>
 
-            <!-- Close button asks before leaving, since the form has unsaved work -->
-            <button type="button" class="btn-close" aria-label="Close" data-bs-toggle="modal"
-                data-bs-target="#leavePageModal">
+            <!-- Leaving the form is an action, not navigation, so it asks first -->
+            <button type="button" class="btn-close" aria-label="Close"
+                data-bs-toggle="modal" data-bs-target="#leavePageModal">
             </button>
         </div>
     </nav>
 
-    <!-- Mobile bottom bar. Replaces the top nav links below the lg breakpoint. -->
+    <!-- Takes over below lg, where the top bar is hidden -->
     <nav class="navbar fixed-bottom bg-primary d-lg-none mobile-bottom-nav" data-bs-theme="dark">
         <div class="container-fluid">
             <ul class="navbar-nav flex-row w-100 justify-content-around">
                 <li class="nav-item">
-                    <a class="nav-link text-center" href="./index.html" data-bs-toggle="modal"
-                        data-bs-target="#leavePageModal">
+                    <a class="nav-link text-center" href="./index.html" data-bs-toggle="modal" data-bs-target="#leavePageModal">
                         <i class="bi bi-house-door d-block"></i>
                         Home
                     </a>
@@ -56,8 +58,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-center" href="./view-characters.html" data-bs-toggle="modal"
-                        data-bs-target="#leaveToRosterModal">
+                    <a class="nav-link text-center" href="./view-characters.html" data-bs-toggle="modal" data-bs-target="#leaveToRosterModal">
                         <i class="bi bi-people d-block"></i>
                         Roster
                     </a>
@@ -76,7 +77,7 @@
     <!-- Main content -->
     <!-- Page heading -->
     <div class="container text-start mt-5 pt-5">
-        <div class="row bg-secondary mb-4 px-2 row-cols-1 row-cols-md-1 g-0">
+        <div class="row bg-secondary mb-4 px-2 row-cols-1 g-0 page-heading">
             <div class="container col">
                 <h1 class="display-1 pb-2 border-bottom border-primary">Forging New Characters</h1>
                 <p class="lead">This is where you will be able do most things character related.
@@ -107,37 +108,34 @@
                                         aria-hidden="true">1</output></label>
                                 <p class="mb-3 text-body-secondary">Your character's
                                     overall experience level.</p>
-                                <input type="range" class="form-range" id="level" name="level" min="1" max="50"
+                                <input type="range" class="form-range range-level" id="level" name="level" min="1" max="50"
                                     value="1">
 
                                 <div class="row row-cols-1 row-cols-lg-2 g-4">
                                     <!-- HP / MP / SP -->
                                     <div class="col">
                                         <div class="d-flex align-items-center gap-2 mb-2">
-                                            <span class="form-label mb-0 vitals-label">HP</span>
-                                            <div class="progress flex-grow-1" role="progressbar" aria-label="HP"
-                                                aria-valuenow="42" aria-valuemin="0" aria-valuemax="50">
-                                                <div class="progress-bar bg-health" style="width: 84%"></div>
-                                            </div>
-                                            <span class="badge vitals-value bg-secondary text-dark">42 / 50</span>
+                                            <label for="hp" class="form-label mb-0 vitals-label">HP</label>
+                                            <input type="range" class="form-range flex-grow-1 range-health"
+                                                id="hp" name="hp" min="0" max="50" value="42" data-show-max>
+                                            <output for="hp" id="hpValue" class="badge vitals-value bg-secondary text-dark"
+                                                aria-hidden="true">42 / 50</output>
                                         </div>
 
                                         <div class="d-flex align-items-center gap-2 mb-2">
-                                            <span class="form-label mb-0 vitals-label">MP</span>
-                                            <div class="progress flex-grow-1" role="progressbar" aria-label="MP"
-                                                aria-valuenow="12" aria-valuemin="0" aria-valuemax="40">
-                                                <div class="progress-bar bg-mana" style="width: 30%"></div>
-                                            </div>
-                                            <span class="badge vitals-value bg-secondary text-dark">12 / 40</span>
+                                            <label for="mp" class="form-label mb-0 vitals-label">MP</label>
+                                            <input type="range" class="form-range flex-grow-1 range-mana"
+                                                id="mp" name="mp" min="0" max="40" value="12" data-show-max>
+                                            <output for="mp" id="mpValue" class="badge vitals-value bg-secondary text-dark"
+                                                aria-hidden="true">12 / 40</output>
                                         </div>
 
                                         <div class="d-flex align-items-center gap-2 mb-2">
-                                            <span class="form-label mb-0 vitals-label">SP</span>
-                                            <div class="progress flex-grow-1" role="progressbar" aria-label="SP"
-                                                aria-valuenow="28" aria-valuemin="0" aria-valuemax="45">
-                                                <div class="progress-bar bg-stamina" style="width: 62%"></div>
-                                            </div>
-                                            <span class="badge vitals-value bg-secondary text-dark">28 / 45</span>
+                                            <label for="sp" class="form-label mb-0 vitals-label">SP</label>
+                                            <input type="range" class="form-range flex-grow-1 range-stamina"
+                                                id="sp" name="sp" min="0" max="45" value="28" data-show-max>
+                                            <output for="sp" id="spValue" class="badge vitals-value bg-secondary text-dark"
+                                                aria-hidden="true">28 / 45</output>
                                         </div>
 
                                         <div class="form-text">
@@ -174,24 +172,42 @@
                                                     <!-- End add menu -->
                                                 </div>
                                                 <ul class="list-group list-group-flush">
-                                                    <li class="list-group-item d-flex justify-content-between align-items-center"
+                                                    <li class="list-group-item d-flex flex-wrap justify-content-between align-items-center gap-2"
                                                         data-bs-toggle="tooltip"
                                                         data-bs-title="+2 to all saving throws.">
                                                         <h6 class="mb-0">Blessed</h6>
-                                                        <span>
+                                                        <span class="d-flex flex-wrap align-items-center gap-2">
                                                             <span class="badge bg-buff">Buff</span>
-                                                            <span
-                                                                class="badge bg-secondary text-dark rounded-pill">10m</span>
+                                                            <span class="badge bg-secondary text-dark rounded-pill">10m</span>
+                                                            <span class="btn-group btn-group-sm" role="group" aria-label="Actions for Blessed">
+                                                                <button type="button" class="btn btn-outline-primary btn-icon"
+                                                                    data-bs-toggle="tooltip" data-bs-title="Edit Blessed">
+                                                                    <i class="bi bi-pencil-square"></i>
+                                                                </button>
+                                                                <button type="button" class="btn btn-outline-danger btn-icon"
+                                                                    data-bs-toggle="tooltip" data-bs-title="Remove Blessed">
+                                                                    <i class="bi bi-trash"></i>
+                                                                </button>
+                                                            </span>
                                                         </span>
                                                     </li>
-                                                    <li class="list-group-item d-flex justify-content-between align-items-center"
+                                                    <li class="list-group-item d-flex flex-wrap justify-content-between align-items-center gap-2"
                                                         data-bs-toggle="tooltip"
                                                         data-bs-title="+5 max HP while active.">
                                                         <h6 class="mb-0">Hearty</h6>
-                                                        <span>
+                                                        <span class="d-flex flex-wrap align-items-center gap-2">
                                                             <span class="badge bg-buff">Buff</span>
-                                                            <span
-                                                                class="badge bg-secondary text-dark rounded-pill">30m</span>
+                                                            <span class="badge bg-secondary text-dark rounded-pill">30m</span>
+                                                            <span class="btn-group btn-group-sm" role="group" aria-label="Actions for Hearty">
+                                                                <button type="button" class="btn btn-outline-primary btn-icon"
+                                                                    data-bs-toggle="tooltip" data-bs-title="Edit Hearty">
+                                                                    <i class="bi bi-pencil-square"></i>
+                                                                </button>
+                                                                <button type="button" class="btn btn-outline-danger btn-icon"
+                                                                    data-bs-toggle="tooltip" data-bs-title="Remove Hearty">
+                                                                    <i class="bi bi-trash"></i>
+                                                                </button>
+                                                            </span>
                                                         </span>
                                                     </li>
                                                 </ul>
@@ -221,14 +237,23 @@
                                                     <!-- End add menu -->
                                                 </div>
                                                 <ul class="list-group list-group-flush">
-                                                    <li class="list-group-item d-flex justify-content-between align-items-center"
+                                                    <li class="list-group-item d-flex flex-wrap justify-content-between align-items-center gap-2"
                                                         data-bs-toggle="tooltip"
                                                         data-bs-title="Lose 1 HP every 6 seconds.">
                                                         <h6 class="mb-0">Poisoned</h6>
-                                                        <span>
+                                                        <span class="d-flex flex-wrap align-items-center gap-2">
                                                             <span class="badge bg-debuff">Debuff</span>
-                                                            <span
-                                                                class="badge bg-secondary text-dark rounded-pill">2m</span>
+                                                            <span class="badge bg-secondary text-dark rounded-pill">2m</span>
+                                                            <span class="btn-group btn-group-sm" role="group" aria-label="Actions for Poisoned">
+                                                                <button type="button" class="btn btn-outline-primary btn-icon"
+                                                                    data-bs-toggle="tooltip" data-bs-title="Edit Poisoned">
+                                                                    <i class="bi bi-pencil-square"></i>
+                                                                </button>
+                                                                <button type="button" class="btn btn-outline-danger btn-icon"
+                                                                    data-bs-toggle="tooltip" data-bs-title="Remove Poisoned">
+                                                                    <i class="bi bi-trash"></i>
+                                                                </button>
+                                                            </span>
                                                         </span>
                                                     </li>
                                                     <!-- Empty state so the column keeps its shape -->
@@ -352,7 +377,7 @@
                                                     class="form-label fw-semibold visually-hidden">Strength</label>
                                                 <p class="flex-grow-1 mb-3 text-body-secondary">Physical power,
                                                     lifting, and close-combat force.</p>
-                                                <input type="range" class="form-range" id="strength" name="strength"
+                                                <input type="range" class="form-range range-stat" id="strength" name="strength"
                                                     min="1" max="20" value="1">
                                                 <output for="strength" id="strengthValue"
                                                     class="badge bg-secondary text-dark align-self-center fs-3 mt-2"
@@ -369,7 +394,7 @@
                                                     class="form-label fw-semibold visually-hidden">Dexterity</label>
                                                 <p class="flex-grow-1 mb-3 text-body-secondary">Speed,
                                                     coordination, balance, and precision.</p>
-                                                <input type="range" class="form-range" id="dexterity" name="dexterity"
+                                                <input type="range" class="form-range range-stat" id="dexterity" name="dexterity"
                                                     min="1" max="20" value="1">
                                                 <output for="dexterity" id="dexterityValue"
                                                     class="badge bg-secondary text-dark align-self-center fs-3 mt-2"
@@ -386,7 +411,7 @@
                                                     class="form-label fw-semibold visually-hidden">Constitution</label>
                                                 <p class="flex-grow-1 mb-3 text-body-secondary">Endurance,
                                                     toughness, and resistance to harm.</p>
-                                                <input type="range" class="form-range" id="constitution"
+                                                <input type="range" class="form-range range-stat" id="constitution"
                                                     name="constitution" min="1" max="20" value="1">
                                                 <output for="constitution" id="constitutionValue"
                                                     class="badge bg-secondary text-dark align-self-center fs-3 mt-2"
@@ -403,7 +428,7 @@
                                                     class="form-label fw-semibold visually-hidden">Intelligence</label>
                                                 <p class="flex-grow-1 mb-3 text-body-secondary">Reasoning,
                                                     memory, learning, and problem-solving.</p>
-                                                <input type="range" class="form-range" id="intelligence"
+                                                <input type="range" class="form-range range-stat" id="intelligence"
                                                     name="intelligence" min="1" max="20" value="1">
                                                 <output for="intelligence" id="intelligenceValue"
                                                     class="badge bg-secondary text-dark align-self-center fs-3 mt-2"
@@ -420,7 +445,7 @@
                                                     class="form-label fw-semibold visually-hidden">Wisdom</label>
                                                 <p class="flex-grow-1 mb-3 text-body-secondary">Awareness,
                                                     perception, judgment, and intuition.</p>
-                                                <input type="range" class="form-range" id="wisdom" name="wisdom" min="1"
+                                                <input type="range" class="form-range range-stat" id="wisdom" name="wisdom" min="1"
                                                     max="20" value="1">
                                                 <output for="wisdom" id="wisdomValue"
                                                     class="badge bg-secondary text-dark align-self-center fs-3 mt-2"
@@ -437,7 +462,7 @@
                                                     class="form-label fw-semibold visually-hidden">Charisma</label>
                                                 <p class="flex-grow-1 mb-3 text-body-secondary">Confidence,
                                                     presence, influence, and leadership.</p>
-                                                <input type="range" class="form-range" id="charisma" name="charisma"
+                                                <input type="range" class="form-range range-stat" id="charisma" name="charisma"
                                                     min="1" max="20" value="1">
                                                 <output for="charisma" id="charismaValue"
                                                     class="badge bg-secondary text-dark align-self-center fs-3 mt-2"
@@ -511,6 +536,10 @@
                                                 </ul>
 
                                                 <!-- End add menu -->
+                                                <button type="button" class="btn btn-outline-danger btn-icon"
+                                                    data-bs-toggle="tooltip" data-bs-title="Remove Gathering Skills">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
                                             </div>
                                             <div id="panelsStayOpen-collapseOne" class="accordion-collapse collapse">
                                                 <div class="accordion-body">
@@ -525,11 +554,22 @@
                                                                         earth.</p>
                                                                     <label for="mining"
                                                                         class="form-label fw-semibold visually-hidden">Mining</label>
-                                                                    <input type="range" class="form-range" id="mining"
+                                                                    <input type="range" class="form-range range-stat" id="mining"
                                                                         name="mining" min="1" max="100" value="1">
                                                                     <output for="mining" id="miningValue"
                                                                         class="badge bg-secondary text-dark align-self-center fs-3 mt-2"
                                                                         aria-hidden="true">1</output>
+
+                                                                    <span class="btn-group btn-group-sm align-self-center mt-2" role="group" aria-label="Actions for Mining">
+                                                                        <button type="button" class="btn btn-outline-primary btn-icon"
+                                                                            data-bs-toggle="tooltip" data-bs-title="Edit Mining">
+                                                                            <i class="bi bi-pencil-square"></i>
+                                                                        </button>
+                                                                        <button type="button" class="btn btn-outline-danger btn-icon"
+                                                                            data-bs-toggle="tooltip" data-bs-title="Remove Mining">
+                                                                            <i class="bi bi-trash"></i>
+                                                                        </button>
+                                                                    </span>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -544,11 +584,22 @@
                                                                         The
                                                                         skill of gathering food from the natural
                                                                         environment.</p>
-                                                                    <input type="range" class="form-range" id="foraging"
+                                                                    <input type="range" class="form-range range-stat" id="foraging"
                                                                         name="foraging" min="1" max="100" value="1">
                                                                     <output for="foraging" id="foragingValue"
                                                                         class="badge bg-secondary text-dark align-self-center fs-3 mt-2"
                                                                         aria-hidden="true">1</output>
+
+                                                                    <span class="btn-group btn-group-sm align-self-center mt-2" role="group" aria-label="Actions for Foraging">
+                                                                        <button type="button" class="btn btn-outline-primary btn-icon"
+                                                                            data-bs-toggle="tooltip" data-bs-title="Edit Foraging">
+                                                                            <i class="bi bi-pencil-square"></i>
+                                                                        </button>
+                                                                        <button type="button" class="btn btn-outline-danger btn-icon"
+                                                                            data-bs-toggle="tooltip" data-bs-title="Remove Foraging">
+                                                                            <i class="bi bi-trash"></i>
+                                                                        </button>
+                                                                    </span>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -564,12 +615,23 @@
                                                                         skill of cutting down trees and
                                                                         processing the
                                                                         wood.</p>
-                                                                    <input type="range" class="form-range"
+                                                                    <input type="range" class="form-range range-stat"
                                                                         id="lumberjacking" name="lumberjacking" min="1"
                                                                         max="100" value="1">
                                                                     <output for="lumberjacking" id="lumberjackingValue"
                                                                         class="badge bg-secondary text-dark align-self-center fs-3 mt-2"
                                                                         aria-hidden="true">1</output>
+
+                                                                    <span class="btn-group btn-group-sm align-self-center mt-2" role="group" aria-label="Actions for Lumberjacking">
+                                                                        <button type="button" class="btn btn-outline-primary btn-icon"
+                                                                            data-bs-toggle="tooltip" data-bs-title="Edit Lumberjacking">
+                                                                            <i class="bi bi-pencil-square"></i>
+                                                                        </button>
+                                                                        <button type="button" class="btn btn-outline-danger btn-icon"
+                                                                            data-bs-toggle="tooltip" data-bs-title="Remove Lumberjacking">
+                                                                            <i class="bi bi-trash"></i>
+                                                                        </button>
+                                                                    </span>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -608,6 +670,10 @@
                                                 </ul>
 
                                                 <!-- End add menu -->
+                                                <button type="button" class="btn btn-outline-danger btn-icon"
+                                                    data-bs-toggle="tooltip" data-bs-title="Remove One-Handed Weapons">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
                                             </div>
                                             <div id="panelsStayOpen-collapseTwo" class="accordion-collapse collapse">
                                                 <div class="accordion-body">
@@ -621,11 +687,22 @@
                                                                         class="form-label fw-semibold visually-hidden">Sword</label>
                                                                     <p class="flex-grow-1 mb-3 text-body-secondary">
                                                                         Balanced blades for quick cuts and thrusts.</p>
-                                                                    <input type="range" class="form-range" id="sword"
+                                                                    <input type="range" class="form-range range-stat" id="sword"
                                                                         name="sword" min="1" max="100" value="1">
                                                                     <output for="sword" id="swordValue"
                                                                         class="badge bg-secondary text-dark align-self-center fs-3 mt-2"
                                                                         aria-hidden="true">1</output>
+
+                                                                    <span class="btn-group btn-group-sm align-self-center mt-2" role="group" aria-label="Actions for Sword">
+                                                                        <button type="button" class="btn btn-outline-primary btn-icon"
+                                                                            data-bs-toggle="tooltip" data-bs-title="Edit Sword">
+                                                                            <i class="bi bi-pencil-square"></i>
+                                                                        </button>
+                                                                        <button type="button" class="btn btn-outline-danger btn-icon"
+                                                                            data-bs-toggle="tooltip" data-bs-title="Remove Sword">
+                                                                            <i class="bi bi-trash"></i>
+                                                                        </button>
+                                                                    </span>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -639,11 +716,22 @@
                                                                     <p class="flex-grow-1 mb-3 text-body-secondary">
                                                                         Heavy chopping blows that bite through shields.
                                                                     </p>
-                                                                    <input type="range" class="form-range" id="axe"
+                                                                    <input type="range" class="form-range range-stat" id="axe"
                                                                         name="axe" min="1" max="100" value="1">
                                                                     <output for="axe" id="axeValue"
                                                                         class="badge bg-secondary text-dark align-self-center fs-3 mt-2"
                                                                         aria-hidden="true">1</output>
+
+                                                                    <span class="btn-group btn-group-sm align-self-center mt-2" role="group" aria-label="Actions for Axe">
+                                                                        <button type="button" class="btn btn-outline-primary btn-icon"
+                                                                            data-bs-toggle="tooltip" data-bs-title="Edit Axe">
+                                                                            <i class="bi bi-pencil-square"></i>
+                                                                        </button>
+                                                                        <button type="button" class="btn btn-outline-danger btn-icon"
+                                                                            data-bs-toggle="tooltip" data-bs-title="Remove Axe">
+                                                                            <i class="bi bi-trash"></i>
+                                                                        </button>
+                                                                    </span>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -656,11 +744,22 @@
                                                                         class="form-label fw-semibold visually-hidden">Mace</label>
                                                                     <p class="flex-grow-1 mb-3 text-body-secondary">
                                                                         Blunt strikes that crush through armor.</p>
-                                                                    <input type="range" class="form-range" id="mace"
+                                                                    <input type="range" class="form-range range-stat" id="mace"
                                                                         name="mace" min="1" max="100" value="1">
                                                                     <output for="mace" id="maceValue"
                                                                         class="badge bg-secondary text-dark align-self-center fs-3 mt-2"
                                                                         aria-hidden="true">1</output>
+
+                                                                    <span class="btn-group btn-group-sm align-self-center mt-2" role="group" aria-label="Actions for Mace">
+                                                                        <button type="button" class="btn btn-outline-primary btn-icon"
+                                                                            data-bs-toggle="tooltip" data-bs-title="Edit Mace">
+                                                                            <i class="bi bi-pencil-square"></i>
+                                                                        </button>
+                                                                        <button type="button" class="btn btn-outline-danger btn-icon"
+                                                                            data-bs-toggle="tooltip" data-bs-title="Remove Mace">
+                                                                            <i class="bi bi-trash"></i>
+                                                                        </button>
+                                                                    </span>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -673,11 +772,22 @@
                                                                         class="form-label fw-semibold visually-hidden">Dagger</label>
                                                                     <p class="flex-grow-1 mb-3 text-body-secondary">
                                                                         Fast, close-range stabs and precise strikes.</p>
-                                                                    <input type="range" class="form-range" id="dagger"
+                                                                    <input type="range" class="form-range range-stat" id="dagger"
                                                                         name="dagger" min="1" max="100" value="1">
                                                                     <output for="dagger" id="daggerValue"
                                                                         class="badge bg-secondary text-dark align-self-center fs-3 mt-2"
                                                                         aria-hidden="true">1</output>
+
+                                                                    <span class="btn-group btn-group-sm align-self-center mt-2" role="group" aria-label="Actions for Dagger">
+                                                                        <button type="button" class="btn btn-outline-primary btn-icon"
+                                                                            data-bs-toggle="tooltip" data-bs-title="Edit Dagger">
+                                                                            <i class="bi bi-pencil-square"></i>
+                                                                        </button>
+                                                                        <button type="button" class="btn btn-outline-danger btn-icon"
+                                                                            data-bs-toggle="tooltip" data-bs-title="Remove Dagger">
+                                                                            <i class="bi bi-trash"></i>
+                                                                        </button>
+                                                                    </span>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -713,6 +823,10 @@
                                                 </ul>
 
                                                 <!-- End add menu -->
+                                                <button type="button" class="btn btn-outline-danger btn-icon"
+                                                    data-bs-toggle="tooltip" data-bs-title="Remove Medium Armor">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
                                             </div>
                                             <div id="panelsStayOpen-collapseThree" class="accordion-collapse collapse">
                                                 <div class="accordion-body">
@@ -726,12 +840,23 @@
                                                                         class="form-label fw-semibold visually-hidden">Chainmail</label>
                                                                     <p class="flex-grow-1 mb-3 text-body-secondary">
                                                                         Linked rings that turn aside slashing blows.</p>
-                                                                    <input type="range" class="form-range"
+                                                                    <input type="range" class="form-range range-stat"
                                                                         id="chainmail" name="chainmail" min="1" max="100"
                                                                         value="1">
                                                                     <output for="chainmail" id="chainmailValue"
                                                                         class="badge bg-secondary text-dark align-self-center fs-3 mt-2"
                                                                         aria-hidden="true">1</output>
+
+                                                                    <span class="btn-group btn-group-sm align-self-center mt-2" role="group" aria-label="Actions for Chainmail">
+                                                                        <button type="button" class="btn btn-outline-primary btn-icon"
+                                                                            data-bs-toggle="tooltip" data-bs-title="Edit Chainmail">
+                                                                            <i class="bi bi-pencil-square"></i>
+                                                                        </button>
+                                                                        <button type="button" class="btn btn-outline-danger btn-icon"
+                                                                            data-bs-toggle="tooltip" data-bs-title="Remove Chainmail">
+                                                                            <i class="bi bi-trash"></i>
+                                                                        </button>
+                                                                    </span>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -745,12 +870,23 @@
                                                                         Mail</label>
                                                                     <p class="flex-grow-1 mb-3 text-body-secondary">
                                                                         Overlapping plates that spread out an impact.</p>
-                                                                    <input type="range" class="form-range"
+                                                                    <input type="range" class="form-range range-stat"
                                                                         id="scaleMail" name="scaleMail" min="1" max="100"
                                                                         value="1">
                                                                     <output for="scaleMail" id="scaleMailValue"
                                                                         class="badge bg-secondary text-dark align-self-center fs-3 mt-2"
                                                                         aria-hidden="true">1</output>
+
+                                                                    <span class="btn-group btn-group-sm align-self-center mt-2" role="group" aria-label="Actions for Scale Mail">
+                                                                        <button type="button" class="btn btn-outline-primary btn-icon"
+                                                                            data-bs-toggle="tooltip" data-bs-title="Edit Scale Mail">
+                                                                            <i class="bi bi-pencil-square"></i>
+                                                                        </button>
+                                                                        <button type="button" class="btn btn-outline-danger btn-icon"
+                                                                            data-bs-toggle="tooltip" data-bs-title="Remove Scale Mail">
+                                                                            <i class="bi bi-trash"></i>
+                                                                        </button>
+                                                                    </span>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -763,12 +899,23 @@
                                                                         class="form-label fw-semibold visually-hidden">Brigandine</label>
                                                                     <p class="flex-grow-1 mb-3 text-body-secondary">
                                                                         Riveted plates in cloth for quiet movement.</p>
-                                                                    <input type="range" class="form-range"
+                                                                    <input type="range" class="form-range range-stat"
                                                                         id="brigandine" name="brigandine" min="1"
                                                                         max="100" value="1">
                                                                     <output for="brigandine" id="brigandineValue"
                                                                         class="badge bg-secondary text-dark align-self-center fs-3 mt-2"
                                                                         aria-hidden="true">1</output>
+
+                                                                    <span class="btn-group btn-group-sm align-self-center mt-2" role="group" aria-label="Actions for Brigandine">
+                                                                        <button type="button" class="btn btn-outline-primary btn-icon"
+                                                                            data-bs-toggle="tooltip" data-bs-title="Edit Brigandine">
+                                                                            <i class="bi bi-pencil-square"></i>
+                                                                        </button>
+                                                                        <button type="button" class="btn btn-outline-danger btn-icon"
+                                                                            data-bs-toggle="tooltip" data-bs-title="Remove Brigandine">
+                                                                            <i class="bi bi-trash"></i>
+                                                                        </button>
+                                                                    </span>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -862,9 +1009,16 @@
                                                             <span>
                                                                 <span class="badge bg-primary">Special</span>
                                                                 <span class="badge bg-success">Earned</span>
-                                                                <button type="button"
-                                                                    class="btn-close position-static ms-1"
-                                                                    aria-label="Remove Toughness"></button>
+                                                                <span class="btn-group btn-group-sm" role="group" aria-label="Actions for Toughness">
+                                                                    <button type="button" class="btn btn-outline-primary btn-icon"
+                                                                        data-bs-toggle="tooltip" data-bs-title="Edit Toughness">
+                                                                        <i class="bi bi-pencil-square"></i>
+                                                                    </button>
+                                                                    <button type="button" class="btn btn-outline-danger btn-icon"
+                                                                        data-bs-toggle="tooltip" data-bs-title="Remove Toughness">
+                                                                        <i class="bi bi-trash"></i>
+                                                                    </button>
+                                                                </span>
                                                             </span>
                                                         </li>
                                                         <li class="list-group-item d-flex justify-content-between align-items-center"
@@ -874,9 +1028,16 @@
                                                             <span>
                                                                 <span class="badge bg-primary">Special</span>
                                                                 <span class="badge bg-success">Earned</span>
-                                                                <button type="button"
-                                                                    class="btn-close position-static ms-1"
-                                                                    aria-label="Remove Iron Will"></button>
+                                                                <span class="btn-group btn-group-sm" role="group" aria-label="Actions for Iron Will">
+                                                                    <button type="button" class="btn btn-outline-primary btn-icon"
+                                                                        data-bs-toggle="tooltip" data-bs-title="Edit Iron Will">
+                                                                        <i class="bi bi-pencil-square"></i>
+                                                                    </button>
+                                                                    <button type="button" class="btn btn-outline-danger btn-icon"
+                                                                        data-bs-toggle="tooltip" data-bs-title="Remove Iron Will">
+                                                                        <i class="bi bi-trash"></i>
+                                                                    </button>
+                                                                </span>
                                                             </span>
                                                         </li>
                                                         <li class="list-group-item d-flex justify-content-between align-items-center"
@@ -886,9 +1047,16 @@
                                                             <span>
                                                                 <span class="badge bg-primary">Ability Points</span>
                                                                 <span class="badge bg-success">Earned</span>
-                                                                <button type="button"
-                                                                    class="btn-close position-static ms-1"
-                                                                    aria-label="Remove bonus ability points"></button>
+                                                                <span class="btn-group btn-group-sm" role="group" aria-label="Actions for ability points">
+                                                                    <button type="button" class="btn btn-outline-primary btn-icon"
+                                                                        data-bs-toggle="tooltip" data-bs-title="Edit ability points">
+                                                                        <i class="bi bi-pencil-square"></i>
+                                                                    </button>
+                                                                    <button type="button" class="btn btn-outline-danger btn-icon"
+                                                                        data-bs-toggle="tooltip" data-bs-title="Remove ability points">
+                                                                        <i class="bi bi-trash"></i>
+                                                                    </button>
+                                                                </span>
                                                             </span>
                                                         </li>
                                                         <li class="list-group-item d-flex justify-content-between align-items-center"
@@ -898,9 +1066,16 @@
                                                             <span>
                                                                 <span class="badge bg-primary">Special</span>
                                                                 <span class="badge bg-secondary text-dark">Bonus</span>
-                                                                <button type="button"
-                                                                    class="btn-close position-static ms-1"
-                                                                    aria-label="Remove Arcane Gift"></button>
+                                                                <span class="btn-group btn-group-sm" role="group" aria-label="Actions for Arcane Gift">
+                                                                    <button type="button" class="btn btn-outline-primary btn-icon"
+                                                                        data-bs-toggle="tooltip" data-bs-title="Edit Arcane Gift">
+                                                                        <i class="bi bi-pencil-square"></i>
+                                                                    </button>
+                                                                    <button type="button" class="btn btn-outline-danger btn-icon"
+                                                                        data-bs-toggle="tooltip" data-bs-title="Remove Arcane Gift">
+                                                                        <i class="bi bi-trash"></i>
+                                                                    </button>
+                                                                </span>
                                                             </span>
                                                         </li>
                                                     </ul>
@@ -967,57 +1142,133 @@
                                             </ul>
 
                                             <!-- End add menu -->
+                                            <button type="button" class="btn btn-outline-danger btn-icon"
+                                                data-bs-toggle="tooltip" data-bs-title="Remove Gathering Skills">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
                                         </div>
                                         <div id="abilities-collapseGathering" class="accordion-collapse collapse">
                                             <div class="accordion-body">
                                                 <h6 class="fw-bold">Mining</h6>
                                                 <div class="d-flex flex-wrap gap-2 mb-3" role="group"
                                                     aria-label="Mining abilities">
-                                                    <input type="checkbox" class="btn-check" id="ability-rich-veins"
-                                                        name="abilities" value="rich-veins" autocomplete="off">
-                                                    <label class="btn ability-toggle" for="ability-rich-veins"
-                                                        data-bs-toggle="tooltip"
-                                                        data-bs-title="Pull 25% more ore from every mining node.">Rich
-                                                        Veins</label>
-                                                    <input type="checkbox" class="btn-check" id="ability-steady-pick"
-                                                        name="abilities" value="steady-pick" autocomplete="off">
-                                                    <label class="btn ability-toggle" for="ability-steady-pick"
-                                                        data-bs-toggle="tooltip"
-                                                        data-bs-title="Your pickaxe loses durability half as fast.">Steady
-                                                        Pick</label>
+                                                    <span class="d-inline-flex align-items-center gap-1">
+                                                        <input type="checkbox" class="btn-check" id="ability-rich-veins"
+                                                            name="abilities" value="rich-veins" autocomplete="off">
+                                                        <label class="btn ability-toggle" for="ability-rich-veins"
+                                                            data-bs-toggle="tooltip"
+                                                            data-bs-title="Pull 25% more ore from every mining node.">Rich
+                                                            Veins</label>
+                                                        <span class="btn-group btn-group-sm" role="group" aria-label="Actions for Rich Veins">
+                                                            <button type="button" class="btn btn-outline-primary btn-icon"
+                                                                data-bs-toggle="tooltip" data-bs-title="Edit Rich Veins">
+                                                                <i class="bi bi-pencil-square"></i>
+                                                            </button>
+                                                            <button type="button" class="btn btn-outline-danger btn-icon"
+                                                                data-bs-toggle="tooltip" data-bs-title="Remove Rich Veins">
+                                                                <i class="bi bi-trash"></i>
+                                                            </button>
+                                                        </span>
+                                                    </span>
+                                                    <span class="d-inline-flex align-items-center gap-1">
+                                                        <input type="checkbox" class="btn-check" id="ability-steady-pick"
+                                                            name="abilities" value="steady-pick" autocomplete="off">
+                                                        <label class="btn ability-toggle" for="ability-steady-pick"
+                                                            data-bs-toggle="tooltip"
+                                                            data-bs-title="Your pickaxe loses durability half as fast.">Steady
+                                                            Pick</label>
+                                                        <span class="btn-group btn-group-sm" role="group" aria-label="Actions for Steady Pick">
+                                                            <button type="button" class="btn btn-outline-primary btn-icon"
+                                                                data-bs-toggle="tooltip" data-bs-title="Edit Steady Pick">
+                                                                <i class="bi bi-pencil-square"></i>
+                                                            </button>
+                                                            <button type="button" class="btn btn-outline-danger btn-icon"
+                                                                data-bs-toggle="tooltip" data-bs-title="Remove Steady Pick">
+                                                                <i class="bi bi-trash"></i>
+                                                            </button>
+                                                        </span>
+                                                    </span>
                                                 </div>
 
                                                 <h6 class="fw-bold">Foraging</h6>
                                                 <div class="d-flex flex-wrap gap-2 mb-3" role="group"
                                                     aria-label="Foraging abilities">
-                                                    <input type="checkbox" class="btn-check" id="ability-keen-eye"
-                                                        name="abilities" value="keen-eye" autocomplete="off">
-                                                    <label class="btn ability-toggle" for="ability-keen-eye"
-                                                        data-bs-toggle="tooltip"
-                                                        data-bs-title="Spot rare herbs and mushrooms more often.">Keen
-                                                        Eye</label>
-                                                    <input type="checkbox" class="btn-check"
-                                                        id="ability-bountiful-harvest" name="abilities"
-                                                        value="bountiful-harvest" autocomplete="off">
-                                                    <label class="btn ability-toggle" for="ability-bountiful-harvest"
-                                                        data-bs-toggle="tooltip"
-                                                        data-bs-title="Every harvest yields one extra item.">Bountiful
-                                                        Harvest</label>
+                                                    <span class="d-inline-flex align-items-center gap-1">
+                                                        <input type="checkbox" class="btn-check" id="ability-keen-eye"
+                                                            name="abilities" value="keen-eye" autocomplete="off">
+                                                        <label class="btn ability-toggle" for="ability-keen-eye"
+                                                            data-bs-toggle="tooltip"
+                                                            data-bs-title="Spot rare herbs and mushrooms more often.">Keen
+                                                            Eye</label>
+                                                        <span class="btn-group btn-group-sm" role="group" aria-label="Actions for Keen Eye">
+                                                            <button type="button" class="btn btn-outline-primary btn-icon"
+                                                                data-bs-toggle="tooltip" data-bs-title="Edit Keen Eye">
+                                                                <i class="bi bi-pencil-square"></i>
+                                                            </button>
+                                                            <button type="button" class="btn btn-outline-danger btn-icon"
+                                                                data-bs-toggle="tooltip" data-bs-title="Remove Keen Eye">
+                                                                <i class="bi bi-trash"></i>
+                                                            </button>
+                                                        </span>
+                                                    </span>
+                                                    <span class="d-inline-flex align-items-center gap-1">
+                                                        <input type="checkbox" class="btn-check"
+                                                            id="ability-bountiful-harvest" name="abilities"
+                                                            value="bountiful-harvest" autocomplete="off">
+                                                        <label class="btn ability-toggle" for="ability-bountiful-harvest"
+                                                            data-bs-toggle="tooltip"
+                                                            data-bs-title="Every harvest yields one extra item.">Bountiful
+                                                            Harvest</label>
+                                                        <span class="btn-group btn-group-sm" role="group" aria-label="Actions for Bountiful Harvest">
+                                                            <button type="button" class="btn btn-outline-primary btn-icon"
+                                                                data-bs-toggle="tooltip" data-bs-title="Edit Bountiful Harvest">
+                                                                <i class="bi bi-pencil-square"></i>
+                                                            </button>
+                                                            <button type="button" class="btn btn-outline-danger btn-icon"
+                                                                data-bs-toggle="tooltip" data-bs-title="Remove Bountiful Harvest">
+                                                                <i class="bi bi-trash"></i>
+                                                            </button>
+                                                        </span>
+                                                    </span>
                                                 </div>
 
                                                 <h6 class="fw-bold">Lumberjacking</h6>
                                                 <div class="d-flex flex-wrap gap-2">
-                                                    <input type="checkbox" class="btn-check" id="ability-clean-cut"
-                                                        name="abilities" value="clean-cut" autocomplete="off">
-                                                    <label class="btn ability-toggle" for="ability-clean-cut"
-                                                        data-bs-toggle="tooltip"
-                                                        data-bs-title="Trees produce larger, higher quality logs.">Clean
-                                                        Cut</label>
-                                                    <input type="checkbox" class="btn-check" id="ability-timber"
-                                                        name="abilities" value="timber" autocomplete="off">
-                                                    <label class="btn ability-toggle" for="ability-timber"
-                                                        data-bs-toggle="tooltip"
-                                                        data-bs-title="Fell trees 30% faster.">Timber!</label>
+                                                    <span class="d-inline-flex align-items-center gap-1">
+                                                        <input type="checkbox" class="btn-check" id="ability-clean-cut"
+                                                            name="abilities" value="clean-cut" autocomplete="off">
+                                                        <label class="btn ability-toggle" for="ability-clean-cut"
+                                                            data-bs-toggle="tooltip"
+                                                            data-bs-title="Trees produce larger, higher quality logs.">Clean
+                                                            Cut</label>
+                                                        <span class="btn-group btn-group-sm" role="group" aria-label="Actions for Clean Cut">
+                                                            <button type="button" class="btn btn-outline-primary btn-icon"
+                                                                data-bs-toggle="tooltip" data-bs-title="Edit Clean Cut">
+                                                                <i class="bi bi-pencil-square"></i>
+                                                            </button>
+                                                            <button type="button" class="btn btn-outline-danger btn-icon"
+                                                                data-bs-toggle="tooltip" data-bs-title="Remove Clean Cut">
+                                                                <i class="bi bi-trash"></i>
+                                                            </button>
+                                                        </span>
+                                                    </span>
+                                                    <span class="d-inline-flex align-items-center gap-1">
+                                                        <input type="checkbox" class="btn-check" id="ability-timber"
+                                                            name="abilities" value="timber" autocomplete="off">
+                                                        <label class="btn ability-toggle" for="ability-timber"
+                                                            data-bs-toggle="tooltip"
+                                                            data-bs-title="Fell trees 30% faster.">Timber!</label>
+                                                        <span class="btn-group btn-group-sm" role="group" aria-label="Actions for Timber!">
+                                                            <button type="button" class="btn btn-outline-primary btn-icon"
+                                                                data-bs-toggle="tooltip" data-bs-title="Edit Timber!">
+                                                                <i class="bi bi-pencil-square"></i>
+                                                            </button>
+                                                            <button type="button" class="btn btn-outline-danger btn-icon"
+                                                                data-bs-toggle="tooltip" data-bs-title="Remove Timber!">
+                                                                <i class="bi bi-trash"></i>
+                                                            </button>
+                                                        </span>
+                                                    </span>
                                                 </div>
                                             </div>
                                         </div>
@@ -1052,69 +1303,169 @@
                                             </ul>
 
                                             <!-- End add menu -->
+                                            <button type="button" class="btn btn-outline-danger btn-icon"
+                                                data-bs-toggle="tooltip" data-bs-title="Remove One-Handed Weapons">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
                                         </div>
                                         <div id="abilities-collapseOneHanded" class="accordion-collapse collapse">
                                             <div class="accordion-body">
                                                 <h6 class="fw-bold">Sword</h6>
                                                 <div class="d-flex flex-wrap gap-2 mb-3" role="group"
                                                     aria-label="Sword abilities">
-                                                    <input type="checkbox" class="btn-check" id="ability-riposte"
-                                                        name="abilities" value="riposte" autocomplete="off">
-                                                    <label class="btn ability-toggle" for="ability-riposte"
-                                                        data-bs-toggle="tooltip"
-                                                        data-bs-title="After a successful block, strike back instantly.">Riposte</label>
-                                                    <input type="checkbox" class="btn-check" id="ability-keen-edge"
-                                                        name="abilities" value="keen-edge" autocomplete="off">
-                                                    <label class="btn ability-toggle" for="ability-keen-edge"
-                                                        data-bs-toggle="tooltip"
-                                                        data-bs-title="Critical hits with a sword deal 20% extra damage.">Keen
-                                                        Edge</label>
+                                                    <span class="d-inline-flex align-items-center gap-1">
+                                                        <input type="checkbox" class="btn-check" id="ability-riposte"
+                                                            name="abilities" value="riposte" autocomplete="off">
+                                                        <label class="btn ability-toggle" for="ability-riposte"
+                                                            data-bs-toggle="tooltip"
+                                                            data-bs-title="After a successful block, strike back instantly.">Riposte</label>
+                                                        <span class="btn-group btn-group-sm" role="group" aria-label="Actions for Riposte">
+                                                            <button type="button" class="btn btn-outline-primary btn-icon"
+                                                                data-bs-toggle="tooltip" data-bs-title="Edit Riposte">
+                                                                <i class="bi bi-pencil-square"></i>
+                                                            </button>
+                                                            <button type="button" class="btn btn-outline-danger btn-icon"
+                                                                data-bs-toggle="tooltip" data-bs-title="Remove Riposte">
+                                                                <i class="bi bi-trash"></i>
+                                                            </button>
+                                                        </span>
+                                                    </span>
+                                                    <span class="d-inline-flex align-items-center gap-1">
+                                                        <input type="checkbox" class="btn-check" id="ability-keen-edge"
+                                                            name="abilities" value="keen-edge" autocomplete="off">
+                                                        <label class="btn ability-toggle" for="ability-keen-edge"
+                                                            data-bs-toggle="tooltip"
+                                                            data-bs-title="Critical hits with a sword deal 20% extra damage.">Keen
+                                                            Edge</label>
+                                                        <span class="btn-group btn-group-sm" role="group" aria-label="Actions for Keen Edge">
+                                                            <button type="button" class="btn btn-outline-primary btn-icon"
+                                                                data-bs-toggle="tooltip" data-bs-title="Edit Keen Edge">
+                                                                <i class="bi bi-pencil-square"></i>
+                                                            </button>
+                                                            <button type="button" class="btn btn-outline-danger btn-icon"
+                                                                data-bs-toggle="tooltip" data-bs-title="Remove Keen Edge">
+                                                                <i class="bi bi-trash"></i>
+                                                            </button>
+                                                        </span>
+                                                    </span>
                                                 </div>
 
                                                 <h6 class="fw-bold">Axe</h6>
                                                 <div class="d-flex flex-wrap gap-2 mb-3" role="group"
                                                     aria-label="Axe abilities">
-                                                    <input type="checkbox" class="btn-check" id="ability-cleave"
-                                                        name="abilities" value="cleave" autocomplete="off">
-                                                    <label class="btn ability-toggle" for="ability-cleave"
-                                                        data-bs-toggle="tooltip"
-                                                        data-bs-title="Your swings also hit one enemy standing next to your target.">Cleave</label>
-                                                    <input type="checkbox" class="btn-check" id="ability-rend"
-                                                        name="abilities" value="rend" autocomplete="off">
-                                                    <label class="btn ability-toggle" for="ability-rend"
-                                                        data-bs-toggle="tooltip"
-                                                        data-bs-title="Axe hits cause bleeding damage over time.">Rend</label>
+                                                    <span class="d-inline-flex align-items-center gap-1">
+                                                        <input type="checkbox" class="btn-check" id="ability-cleave"
+                                                            name="abilities" value="cleave" autocomplete="off">
+                                                        <label class="btn ability-toggle" for="ability-cleave"
+                                                            data-bs-toggle="tooltip"
+                                                            data-bs-title="Your swings also hit one enemy standing next to your target.">Cleave</label>
+                                                        <span class="btn-group btn-group-sm" role="group" aria-label="Actions for Cleave">
+                                                            <button type="button" class="btn btn-outline-primary btn-icon"
+                                                                data-bs-toggle="tooltip" data-bs-title="Edit Cleave">
+                                                                <i class="bi bi-pencil-square"></i>
+                                                            </button>
+                                                            <button type="button" class="btn btn-outline-danger btn-icon"
+                                                                data-bs-toggle="tooltip" data-bs-title="Remove Cleave">
+                                                                <i class="bi bi-trash"></i>
+                                                            </button>
+                                                        </span>
+                                                    </span>
+                                                    <span class="d-inline-flex align-items-center gap-1">
+                                                        <input type="checkbox" class="btn-check" id="ability-rend"
+                                                            name="abilities" value="rend" autocomplete="off">
+                                                        <label class="btn ability-toggle" for="ability-rend"
+                                                            data-bs-toggle="tooltip"
+                                                            data-bs-title="Axe hits cause bleeding damage over time.">Rend</label>
+                                                        <span class="btn-group btn-group-sm" role="group" aria-label="Actions for Rend">
+                                                            <button type="button" class="btn btn-outline-primary btn-icon"
+                                                                data-bs-toggle="tooltip" data-bs-title="Edit Rend">
+                                                                <i class="bi bi-pencil-square"></i>
+                                                            </button>
+                                                            <button type="button" class="btn btn-outline-danger btn-icon"
+                                                                data-bs-toggle="tooltip" data-bs-title="Remove Rend">
+                                                                <i class="bi bi-trash"></i>
+                                                            </button>
+                                                        </span>
+                                                    </span>
                                                 </div>
 
                                                 <h6 class="fw-bold">Mace</h6>
                                                 <div class="d-flex flex-wrap gap-2 mb-3" role="group"
                                                     aria-label="Mace abilities">
-                                                    <input type="checkbox" class="btn-check" id="ability-crushing-blow"
-                                                        name="abilities" value="crushing-blow" autocomplete="off">
-                                                    <label class="btn ability-toggle" for="ability-crushing-blow"
-                                                        data-bs-toggle="tooltip"
-                                                        data-bs-title="Mace attacks ignore 25% of the target's armor.">Crushing
-                                                        Blow</label>
-                                                    <input type="checkbox" class="btn-check" id="ability-stagger"
-                                                        name="abilities" value="stagger" autocomplete="off">
-                                                    <label class="btn ability-toggle" for="ability-stagger"
-                                                        data-bs-toggle="tooltip"
-                                                        data-bs-title="Heavy hits have a chance to stun the target.">Stagger</label>
+                                                    <span class="d-inline-flex align-items-center gap-1">
+                                                        <input type="checkbox" class="btn-check" id="ability-crushing-blow"
+                                                            name="abilities" value="crushing-blow" autocomplete="off">
+                                                        <label class="btn ability-toggle" for="ability-crushing-blow"
+                                                            data-bs-toggle="tooltip"
+                                                            data-bs-title="Mace attacks ignore 25% of the target's armor.">Crushing
+                                                            Blow</label>
+                                                        <span class="btn-group btn-group-sm" role="group" aria-label="Actions for Crushing Blow">
+                                                            <button type="button" class="btn btn-outline-primary btn-icon"
+                                                                data-bs-toggle="tooltip" data-bs-title="Edit Crushing Blow">
+                                                                <i class="bi bi-pencil-square"></i>
+                                                            </button>
+                                                            <button type="button" class="btn btn-outline-danger btn-icon"
+                                                                data-bs-toggle="tooltip" data-bs-title="Remove Crushing Blow">
+                                                                <i class="bi bi-trash"></i>
+                                                            </button>
+                                                        </span>
+                                                    </span>
+                                                    <span class="d-inline-flex align-items-center gap-1">
+                                                        <input type="checkbox" class="btn-check" id="ability-stagger"
+                                                            name="abilities" value="stagger" autocomplete="off">
+                                                        <label class="btn ability-toggle" for="ability-stagger"
+                                                            data-bs-toggle="tooltip"
+                                                            data-bs-title="Heavy hits have a chance to stun the target.">Stagger</label>
+                                                        <span class="btn-group btn-group-sm" role="group" aria-label="Actions for Stagger">
+                                                            <button type="button" class="btn btn-outline-primary btn-icon"
+                                                                data-bs-toggle="tooltip" data-bs-title="Edit Stagger">
+                                                                <i class="bi bi-pencil-square"></i>
+                                                            </button>
+                                                            <button type="button" class="btn btn-outline-danger btn-icon"
+                                                                data-bs-toggle="tooltip" data-bs-title="Remove Stagger">
+                                                                <i class="bi bi-trash"></i>
+                                                            </button>
+                                                        </span>
+                                                    </span>
                                                 </div>
 
                                                 <h6 class="fw-bold">Dagger</h6>
                                                 <div class="d-flex flex-wrap gap-2">
-                                                    <input type="checkbox" class="btn-check" id="ability-backstab"
-                                                        name="abilities" value="backstab" autocomplete="off">
-                                                    <label class="btn ability-toggle" for="ability-backstab"
-                                                        data-bs-toggle="tooltip"
-                                                        data-bs-title="Deal double damage when attacking from behind.">Backstab</label>
-                                                    <input type="checkbox" class="btn-check" id="ability-quick-strikes"
-                                                        name="abilities" value="quick-strikes" autocomplete="off">
-                                                    <label class="btn ability-toggle" for="ability-quick-strikes"
-                                                        data-bs-toggle="tooltip"
-                                                        data-bs-title="Attack 15% faster with daggers.">Quick
-                                                        Strikes</label>
+                                                    <span class="d-inline-flex align-items-center gap-1">
+                                                        <input type="checkbox" class="btn-check" id="ability-backstab"
+                                                            name="abilities" value="backstab" autocomplete="off">
+                                                        <label class="btn ability-toggle" for="ability-backstab"
+                                                            data-bs-toggle="tooltip"
+                                                            data-bs-title="Deal double damage when attacking from behind.">Backstab</label>
+                                                        <span class="btn-group btn-group-sm" role="group" aria-label="Actions for Backstab">
+                                                            <button type="button" class="btn btn-outline-primary btn-icon"
+                                                                data-bs-toggle="tooltip" data-bs-title="Edit Backstab">
+                                                                <i class="bi bi-pencil-square"></i>
+                                                            </button>
+                                                            <button type="button" class="btn btn-outline-danger btn-icon"
+                                                                data-bs-toggle="tooltip" data-bs-title="Remove Backstab">
+                                                                <i class="bi bi-trash"></i>
+                                                            </button>
+                                                        </span>
+                                                    </span>
+                                                    <span class="d-inline-flex align-items-center gap-1">
+                                                        <input type="checkbox" class="btn-check" id="ability-quick-strikes"
+                                                            name="abilities" value="quick-strikes" autocomplete="off">
+                                                        <label class="btn ability-toggle" for="ability-quick-strikes"
+                                                            data-bs-toggle="tooltip"
+                                                            data-bs-title="Attack 15% faster with daggers.">Quick
+                                                            Strikes</label>
+                                                        <span class="btn-group btn-group-sm" role="group" aria-label="Actions for Quick Strikes">
+                                                            <button type="button" class="btn btn-outline-primary btn-icon"
+                                                                data-bs-toggle="tooltip" data-bs-title="Edit Quick Strikes">
+                                                                <i class="bi bi-pencil-square"></i>
+                                                            </button>
+                                                            <button type="button" class="btn btn-outline-danger btn-icon"
+                                                                data-bs-toggle="tooltip" data-bs-title="Remove Quick Strikes">
+                                                                <i class="bi bi-trash"></i>
+                                                            </button>
+                                                        </span>
+                                                    </span>
                                                 </div>
                                             </div>
                                         </div>
@@ -1149,58 +1500,134 @@
                                             </ul>
 
                                             <!-- End add menu -->
+                                            <button type="button" class="btn btn-outline-danger btn-icon"
+                                                data-bs-toggle="tooltip" data-bs-title="Remove Medium Armor">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
                                         </div>
                                         <div id="abilities-collapseMediumArmor" class="accordion-collapse collapse">
                                             <div class="accordion-body">
                                                 <h6 class="fw-bold">Chainmail</h6>
                                                 <div class="d-flex flex-wrap gap-2 mb-3" role="group"
                                                     aria-label="Chainmail abilities">
-                                                    <input type="checkbox" class="btn-check" id="ability-linked-rings"
-                                                        name="abilities" value="linked-rings" autocomplete="off">
-                                                    <label class="btn ability-toggle" for="ability-linked-rings"
-                                                        data-bs-toggle="tooltip"
-                                                        data-bs-title="Adds extra defense against slashing attacks.">Linked
-                                                        Rings</label>
-                                                    <input type="checkbox" class="btn-check" id="ability-deflect"
-                                                        name="abilities" value="deflect" autocomplete="off">
-                                                    <label class="btn ability-toggle" for="ability-deflect"
-                                                        data-bs-toggle="tooltip"
-                                                        data-bs-title="Chance for incoming blows to glance off for half damage.">Deflect</label>
+                                                    <span class="d-inline-flex align-items-center gap-1">
+                                                        <input type="checkbox" class="btn-check" id="ability-linked-rings"
+                                                            name="abilities" value="linked-rings" autocomplete="off">
+                                                        <label class="btn ability-toggle" for="ability-linked-rings"
+                                                            data-bs-toggle="tooltip"
+                                                            data-bs-title="Adds extra defense against slashing attacks.">Linked
+                                                            Rings</label>
+                                                        <span class="btn-group btn-group-sm" role="group" aria-label="Actions for Linked Rings">
+                                                            <button type="button" class="btn btn-outline-primary btn-icon"
+                                                                data-bs-toggle="tooltip" data-bs-title="Edit Linked Rings">
+                                                                <i class="bi bi-pencil-square"></i>
+                                                            </button>
+                                                            <button type="button" class="btn btn-outline-danger btn-icon"
+                                                                data-bs-toggle="tooltip" data-bs-title="Remove Linked Rings">
+                                                                <i class="bi bi-trash"></i>
+                                                            </button>
+                                                        </span>
+                                                    </span>
+                                                    <span class="d-inline-flex align-items-center gap-1">
+                                                        <input type="checkbox" class="btn-check" id="ability-deflect"
+                                                            name="abilities" value="deflect" autocomplete="off">
+                                                        <label class="btn ability-toggle" for="ability-deflect"
+                                                            data-bs-toggle="tooltip"
+                                                            data-bs-title="Chance for incoming blows to glance off for half damage.">Deflect</label>
+                                                        <span class="btn-group btn-group-sm" role="group" aria-label="Actions for Deflect">
+                                                            <button type="button" class="btn btn-outline-primary btn-icon"
+                                                                data-bs-toggle="tooltip" data-bs-title="Edit Deflect">
+                                                                <i class="bi bi-pencil-square"></i>
+                                                            </button>
+                                                            <button type="button" class="btn btn-outline-danger btn-icon"
+                                                                data-bs-toggle="tooltip" data-bs-title="Remove Deflect">
+                                                                <i class="bi bi-trash"></i>
+                                                            </button>
+                                                        </span>
+                                                    </span>
                                                 </div>
 
                                                 <h6 class="fw-bold">Scale Mail</h6>
                                                 <div class="d-flex flex-wrap gap-2 mb-3" role="group"
                                                     aria-label="Scale Mail abilities">
-                                                    <input type="checkbox" class="btn-check"
-                                                        id="ability-overlapping-plates" name="abilities"
-                                                        value="overlapping-plates" autocomplete="off">
-                                                    <label class="btn ability-toggle" for="ability-overlapping-plates"
-                                                        data-bs-toggle="tooltip"
-                                                        data-bs-title="Adds extra defense against arrows and piercing attacks.">Overlapping
-                                                        Plates</label>
-                                                    <input type="checkbox" class="btn-check"
-                                                        id="ability-hardened-scales" name="abilities"
-                                                        value="hardened-scales" autocomplete="off">
-                                                    <label class="btn ability-toggle" for="ability-hardened-scales"
-                                                        data-bs-toggle="tooltip"
-                                                        data-bs-title="Gain bonus defense while below half health.">Hardened
-                                                        Scales</label>
+                                                    <span class="d-inline-flex align-items-center gap-1">
+                                                        <input type="checkbox" class="btn-check"
+                                                            id="ability-overlapping-plates" name="abilities"
+                                                            value="overlapping-plates" autocomplete="off">
+                                                        <label class="btn ability-toggle" for="ability-overlapping-plates"
+                                                            data-bs-toggle="tooltip"
+                                                            data-bs-title="Adds extra defense against arrows and piercing attacks.">Overlapping
+                                                            Plates</label>
+                                                        <span class="btn-group btn-group-sm" role="group" aria-label="Actions for Overlapping Plates">
+                                                            <button type="button" class="btn btn-outline-primary btn-icon"
+                                                                data-bs-toggle="tooltip" data-bs-title="Edit Overlapping Plates">
+                                                                <i class="bi bi-pencil-square"></i>
+                                                            </button>
+                                                            <button type="button" class="btn btn-outline-danger btn-icon"
+                                                                data-bs-toggle="tooltip" data-bs-title="Remove Overlapping Plates">
+                                                                <i class="bi bi-trash"></i>
+                                                            </button>
+                                                        </span>
+                                                    </span>
+                                                    <span class="d-inline-flex align-items-center gap-1">
+                                                        <input type="checkbox" class="btn-check"
+                                                            id="ability-hardened-scales" name="abilities"
+                                                            value="hardened-scales" autocomplete="off">
+                                                        <label class="btn ability-toggle" for="ability-hardened-scales"
+                                                            data-bs-toggle="tooltip"
+                                                            data-bs-title="Gain bonus defense while below half health.">Hardened
+                                                            Scales</label>
+                                                        <span class="btn-group btn-group-sm" role="group" aria-label="Actions for Hardened Scales">
+                                                            <button type="button" class="btn btn-outline-primary btn-icon"
+                                                                data-bs-toggle="tooltip" data-bs-title="Edit Hardened Scales">
+                                                                <i class="bi bi-pencil-square"></i>
+                                                            </button>
+                                                            <button type="button" class="btn btn-outline-danger btn-icon"
+                                                                data-bs-toggle="tooltip" data-bs-title="Remove Hardened Scales">
+                                                                <i class="bi bi-trash"></i>
+                                                            </button>
+                                                        </span>
+                                                    </span>
                                                 </div>
 
                                                 <h6 class="fw-bold">Brigandine</h6>
                                                 <div class="d-flex flex-wrap gap-2">
-                                                    <input type="checkbox" class="btn-check" id="ability-riveted-guard"
-                                                        name="abilities" value="riveted-guard" autocomplete="off">
-                                                    <label class="btn ability-toggle" for="ability-riveted-guard"
-                                                        data-bs-toggle="tooltip"
-                                                        data-bs-title="Increases overall defense by 10%.">Riveted
-                                                        Guard</label>
-                                                    <input type="checkbox" class="btn-check" id="ability-light-step"
-                                                        name="abilities" value="light-step" autocomplete="off">
-                                                    <label class="btn ability-toggle" for="ability-light-step"
-                                                        data-bs-toggle="tooltip"
-                                                        data-bs-title="Armor drains less stamina while running.">Light
-                                                        Step</label>
+                                                    <span class="d-inline-flex align-items-center gap-1">
+                                                        <input type="checkbox" class="btn-check" id="ability-riveted-guard"
+                                                            name="abilities" value="riveted-guard" autocomplete="off">
+                                                        <label class="btn ability-toggle" for="ability-riveted-guard"
+                                                            data-bs-toggle="tooltip"
+                                                            data-bs-title="Increases overall defense by 10%.">Riveted
+                                                            Guard</label>
+                                                        <span class="btn-group btn-group-sm" role="group" aria-label="Actions for Riveted Guard">
+                                                            <button type="button" class="btn btn-outline-primary btn-icon"
+                                                                data-bs-toggle="tooltip" data-bs-title="Edit Riveted Guard">
+                                                                <i class="bi bi-pencil-square"></i>
+                                                            </button>
+                                                            <button type="button" class="btn btn-outline-danger btn-icon"
+                                                                data-bs-toggle="tooltip" data-bs-title="Remove Riveted Guard">
+                                                                <i class="bi bi-trash"></i>
+                                                            </button>
+                                                        </span>
+                                                    </span>
+                                                    <span class="d-inline-flex align-items-center gap-1">
+                                                        <input type="checkbox" class="btn-check" id="ability-light-step"
+                                                            name="abilities" value="light-step" autocomplete="off">
+                                                        <label class="btn ability-toggle" for="ability-light-step"
+                                                            data-bs-toggle="tooltip"
+                                                            data-bs-title="Armor drains less stamina while running.">Light
+                                                            Step</label>
+                                                        <span class="btn-group btn-group-sm" role="group" aria-label="Actions for Light Step">
+                                                            <button type="button" class="btn btn-outline-primary btn-icon"
+                                                                data-bs-toggle="tooltip" data-bs-title="Edit Light Step">
+                                                                <i class="bi bi-pencil-square"></i>
+                                                            </button>
+                                                            <button type="button" class="btn btn-outline-danger btn-icon"
+                                                                data-bs-toggle="tooltip" data-bs-title="Remove Light Step">
+                                                                <i class="bi bi-trash"></i>
+                                                            </button>
+                                                        </span>
+                                                    </span>
                                                 </div>
                                             </div>
                                         </div>
@@ -1278,6 +1705,17 @@
                                                                 <label
                                                                     class="btn btn-sm ability-toggle align-self-start"
                                                                     for="spell-arcane-ward">Learn</label>
+
+                                                                <span class="btn-group btn-group-sm align-self-center mt-2" role="group" aria-label="Actions for Arcane Ward">
+                                                                    <button type="button" class="btn btn-outline-primary btn-icon"
+                                                                        data-bs-toggle="tooltip" data-bs-title="Edit Arcane Ward">
+                                                                        <i class="bi bi-pencil-square"></i>
+                                                                    </button>
+                                                                    <button type="button" class="btn btn-outline-danger btn-icon"
+                                                                        data-bs-toggle="tooltip" data-bs-title="Remove Arcane Ward">
+                                                                        <i class="bi bi-trash"></i>
+                                                                    </button>
+                                                                </span>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -1300,6 +1738,17 @@
                                                                 <label
                                                                     class="btn btn-sm ability-toggle align-self-start"
                                                                     for="spell-dispel-magic">Learn</label>
+
+                                                                <span class="btn-group btn-group-sm align-self-center mt-2" role="group" aria-label="Actions for Dispel Magic">
+                                                                    <button type="button" class="btn btn-outline-primary btn-icon"
+                                                                        data-bs-toggle="tooltip" data-bs-title="Edit Dispel Magic">
+                                                                        <i class="bi bi-pencil-square"></i>
+                                                                    </button>
+                                                                    <button type="button" class="btn btn-outline-danger btn-icon"
+                                                                        data-bs-toggle="tooltip" data-bs-title="Remove Dispel Magic">
+                                                                        <i class="bi bi-trash"></i>
+                                                                    </button>
+                                                                </span>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -1359,6 +1808,17 @@
                                                                 <label
                                                                     class="btn btn-sm ability-toggle align-self-start"
                                                                     for="spell-summon-familiar">Learn</label>
+
+                                                                <span class="btn-group btn-group-sm align-self-center mt-2" role="group" aria-label="Actions for Summon Familiar">
+                                                                    <button type="button" class="btn btn-outline-primary btn-icon"
+                                                                        data-bs-toggle="tooltip" data-bs-title="Edit Summon Familiar">
+                                                                        <i class="bi bi-pencil-square"></i>
+                                                                    </button>
+                                                                    <button type="button" class="btn btn-outline-danger btn-icon"
+                                                                        data-bs-toggle="tooltip" data-bs-title="Remove Summon Familiar">
+                                                                        <i class="bi bi-trash"></i>
+                                                                    </button>
+                                                                </span>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -1381,6 +1841,17 @@
                                                                 <label
                                                                     class="btn btn-sm ability-toggle align-self-start"
                                                                     for="spell-misty-step">Learn</label>
+
+                                                                <span class="btn-group btn-group-sm align-self-center mt-2" role="group" aria-label="Actions for Misty Step">
+                                                                    <button type="button" class="btn btn-outline-primary btn-icon"
+                                                                        data-bs-toggle="tooltip" data-bs-title="Edit Misty Step">
+                                                                        <i class="bi bi-pencil-square"></i>
+                                                                    </button>
+                                                                    <button type="button" class="btn btn-outline-danger btn-icon"
+                                                                        data-bs-toggle="tooltip" data-bs-title="Remove Misty Step">
+                                                                        <i class="bi bi-trash"></i>
+                                                                    </button>
+                                                                </span>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -1440,6 +1911,17 @@
                                                                 <label
                                                                     class="btn btn-sm ability-toggle align-self-start"
                                                                     for="spell-detect-magic">Learn</label>
+
+                                                                <span class="btn-group btn-group-sm align-self-center mt-2" role="group" aria-label="Actions for Detect Magic">
+                                                                    <button type="button" class="btn btn-outline-primary btn-icon"
+                                                                        data-bs-toggle="tooltip" data-bs-title="Edit Detect Magic">
+                                                                        <i class="bi bi-pencil-square"></i>
+                                                                    </button>
+                                                                    <button type="button" class="btn btn-outline-danger btn-icon"
+                                                                        data-bs-toggle="tooltip" data-bs-title="Remove Detect Magic">
+                                                                        <i class="bi bi-trash"></i>
+                                                                    </button>
+                                                                </span>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -1462,6 +1944,17 @@
                                                                 <label
                                                                     class="btn btn-sm ability-toggle align-self-start"
                                                                     for="spell-clairvoyance">Learn</label>
+
+                                                                <span class="btn-group btn-group-sm align-self-center mt-2" role="group" aria-label="Actions for Clairvoyance">
+                                                                    <button type="button" class="btn btn-outline-primary btn-icon"
+                                                                        data-bs-toggle="tooltip" data-bs-title="Edit Clairvoyance">
+                                                                        <i class="bi bi-pencil-square"></i>
+                                                                    </button>
+                                                                    <button type="button" class="btn btn-outline-danger btn-icon"
+                                                                        data-bs-toggle="tooltip" data-bs-title="Remove Clairvoyance">
+                                                                        <i class="bi bi-trash"></i>
+                                                                    </button>
+                                                                </span>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -1521,6 +2014,17 @@
                                                                 <label
                                                                     class="btn btn-sm ability-toggle align-self-start"
                                                                     for="spell-charm-person">Learn</label>
+
+                                                                <span class="btn-group btn-group-sm align-self-center mt-2" role="group" aria-label="Actions for Charm Person">
+                                                                    <button type="button" class="btn btn-outline-primary btn-icon"
+                                                                        data-bs-toggle="tooltip" data-bs-title="Edit Charm Person">
+                                                                        <i class="bi bi-pencil-square"></i>
+                                                                    </button>
+                                                                    <button type="button" class="btn btn-outline-danger btn-icon"
+                                                                        data-bs-toggle="tooltip" data-bs-title="Remove Charm Person">
+                                                                        <i class="bi bi-trash"></i>
+                                                                    </button>
+                                                                </span>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -1543,6 +2047,17 @@
                                                                 <label
                                                                     class="btn btn-sm ability-toggle align-self-start"
                                                                     for="spell-hold-person">Learn</label>
+
+                                                                <span class="btn-group btn-group-sm align-self-center mt-2" role="group" aria-label="Actions for Hold Person">
+                                                                    <button type="button" class="btn btn-outline-primary btn-icon"
+                                                                        data-bs-toggle="tooltip" data-bs-title="Edit Hold Person">
+                                                                        <i class="bi bi-pencil-square"></i>
+                                                                    </button>
+                                                                    <button type="button" class="btn btn-outline-danger btn-icon"
+                                                                        data-bs-toggle="tooltip" data-bs-title="Remove Hold Person">
+                                                                        <i class="bi bi-trash"></i>
+                                                                    </button>
+                                                                </span>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -1601,6 +2116,17 @@
                                                                 <label
                                                                     class="btn btn-sm ability-toggle align-self-start"
                                                                     for="spell-magic-missile">Learn</label>
+
+                                                                <span class="btn-group btn-group-sm align-self-center mt-2" role="group" aria-label="Actions for Magic Missile">
+                                                                    <button type="button" class="btn btn-outline-primary btn-icon"
+                                                                        data-bs-toggle="tooltip" data-bs-title="Edit Magic Missile">
+                                                                        <i class="bi bi-pencil-square"></i>
+                                                                    </button>
+                                                                    <button type="button" class="btn btn-outline-danger btn-icon"
+                                                                        data-bs-toggle="tooltip" data-bs-title="Remove Magic Missile">
+                                                                        <i class="bi bi-trash"></i>
+                                                                    </button>
+                                                                </span>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -1623,6 +2149,17 @@
                                                                 <label
                                                                     class="btn btn-sm ability-toggle align-self-start"
                                                                     for="spell-fireball">Learn</label>
+
+                                                                <span class="btn-group btn-group-sm align-self-center mt-2" role="group" aria-label="Actions for Fireball">
+                                                                    <button type="button" class="btn btn-outline-primary btn-icon"
+                                                                        data-bs-toggle="tooltip" data-bs-title="Edit Fireball">
+                                                                        <i class="bi bi-pencil-square"></i>
+                                                                    </button>
+                                                                    <button type="button" class="btn btn-outline-danger btn-icon"
+                                                                        data-bs-toggle="tooltip" data-bs-title="Remove Fireball">
+                                                                        <i class="bi bi-trash"></i>
+                                                                    </button>
+                                                                </span>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -1681,6 +2218,17 @@
                                                                 <label
                                                                     class="btn btn-sm ability-toggle align-self-start"
                                                                     for="spell-minor-illusion">Learn</label>
+
+                                                                <span class="btn-group btn-group-sm align-self-center mt-2" role="group" aria-label="Actions for Minor Illusion">
+                                                                    <button type="button" class="btn btn-outline-primary btn-icon"
+                                                                        data-bs-toggle="tooltip" data-bs-title="Edit Minor Illusion">
+                                                                        <i class="bi bi-pencil-square"></i>
+                                                                    </button>
+                                                                    <button type="button" class="btn btn-outline-danger btn-icon"
+                                                                        data-bs-toggle="tooltip" data-bs-title="Remove Minor Illusion">
+                                                                        <i class="bi bi-trash"></i>
+                                                                    </button>
+                                                                </span>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -1703,6 +2251,17 @@
                                                                 <label
                                                                     class="btn btn-sm ability-toggle align-self-start"
                                                                     for="spell-invisibility">Learn</label>
+
+                                                                <span class="btn-group btn-group-sm align-self-center mt-2" role="group" aria-label="Actions for Invisibility">
+                                                                    <button type="button" class="btn btn-outline-primary btn-icon"
+                                                                        data-bs-toggle="tooltip" data-bs-title="Edit Invisibility">
+                                                                        <i class="bi bi-pencil-square"></i>
+                                                                    </button>
+                                                                    <button type="button" class="btn btn-outline-danger btn-icon"
+                                                                        data-bs-toggle="tooltip" data-bs-title="Remove Invisibility">
+                                                                        <i class="bi bi-trash"></i>
+                                                                    </button>
+                                                                </span>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -1760,6 +2319,17 @@
                                                                 <label
                                                                     class="btn btn-sm ability-toggle align-self-start"
                                                                     for="spell-chill-touch">Learn</label>
+
+                                                                <span class="btn-group btn-group-sm align-self-center mt-2" role="group" aria-label="Actions for Chill Touch">
+                                                                    <button type="button" class="btn btn-outline-primary btn-icon"
+                                                                        data-bs-toggle="tooltip" data-bs-title="Edit Chill Touch">
+                                                                        <i class="bi bi-pencil-square"></i>
+                                                                    </button>
+                                                                    <button type="button" class="btn btn-outline-danger btn-icon"
+                                                                        data-bs-toggle="tooltip" data-bs-title="Remove Chill Touch">
+                                                                        <i class="bi bi-trash"></i>
+                                                                    </button>
+                                                                </span>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -1782,6 +2352,17 @@
                                                                 <label
                                                                     class="btn btn-sm ability-toggle align-self-start"
                                                                     for="spell-animate-dead">Learn</label>
+
+                                                                <span class="btn-group btn-group-sm align-self-center mt-2" role="group" aria-label="Actions for Animate Dead">
+                                                                    <button type="button" class="btn btn-outline-primary btn-icon"
+                                                                        data-bs-toggle="tooltip" data-bs-title="Edit Animate Dead">
+                                                                        <i class="bi bi-pencil-square"></i>
+                                                                    </button>
+                                                                    <button type="button" class="btn btn-outline-danger btn-icon"
+                                                                        data-bs-toggle="tooltip" data-bs-title="Remove Animate Dead">
+                                                                        <i class="bi bi-trash"></i>
+                                                                    </button>
+                                                                </span>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -1842,6 +2423,17 @@
                                                                 <label
                                                                     class="btn btn-sm ability-toggle align-self-start"
                                                                     for="spell-feather-fall">Learn</label>
+
+                                                                <span class="btn-group btn-group-sm align-self-center mt-2" role="group" aria-label="Actions for Feather Fall">
+                                                                    <button type="button" class="btn btn-outline-primary btn-icon"
+                                                                        data-bs-toggle="tooltip" data-bs-title="Edit Feather Fall">
+                                                                        <i class="bi bi-pencil-square"></i>
+                                                                    </button>
+                                                                    <button type="button" class="btn btn-outline-danger btn-icon"
+                                                                        data-bs-toggle="tooltip" data-bs-title="Remove Feather Fall">
+                                                                        <i class="bi bi-trash"></i>
+                                                                    </button>
+                                                                </span>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -1864,6 +2456,17 @@
                                                                 <label
                                                                     class="btn btn-sm ability-toggle align-self-start"
                                                                     for="spell-haste">Learn</label>
+
+                                                                <span class="btn-group btn-group-sm align-self-center mt-2" role="group" aria-label="Actions for Haste">
+                                                                    <button type="button" class="btn btn-outline-primary btn-icon"
+                                                                        data-bs-toggle="tooltip" data-bs-title="Edit Haste">
+                                                                        <i class="bi bi-pencil-square"></i>
+                                                                    </button>
+                                                                    <button type="button" class="btn btn-outline-danger btn-icon"
+                                                                        data-bs-toggle="tooltip" data-bs-title="Remove Haste">
+                                                                        <i class="bi bi-trash"></i>
+                                                                    </button>
+                                                                </span>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -2010,40 +2613,84 @@
                                                         draggable="true" data-item-slot="head" data-bs-toggle="tooltip"
                                                         data-bs-title="+5 defense. A sturdy helm of hammered iron.">
                                                         <h6 class="mb-0">Iron Helm</h6>
-                                                        <span>
+                                                        <span class="d-flex align-items-center gap-2">
                                                             <span class="badge bg-primary">Head</span>
-                                                            <span
-                                                                class="badge bg-secondary text-dark rounded-pill">×1</span>
+                                                            <label for="qtyIronHelm" class="visually-hidden">Iron Helm quantity</label>
+                                                            <input type="number" class="form-control form-control-sm item-qty-input"
+                                                                id="qtyIronHelm" name="qtyIronHelm" value="1" min="1" max="99" step="1">
+                                                            <span class="btn-group btn-group-sm" role="group" aria-label="Actions for Iron Helm">
+                                                                <button type="button" class="btn btn-outline-primary btn-icon"
+                                                                    data-bs-toggle="tooltip" data-bs-title="Edit Iron Helm">
+                                                                    <i class="bi bi-pencil-square"></i>
+                                                                </button>
+                                                                <button type="button" class="btn btn-outline-danger btn-icon"
+                                                                    data-bs-toggle="tooltip" data-bs-title="Remove Iron Helm">
+                                                                    <i class="bi bi-trash"></i>
+                                                                </button>
+                                                            </span>
                                                         </span>
                                                     </li>
                                                     <li class="list-group-item d-flex justify-content-between align-items-center"
                                                         draggable="true" data-item-slot="hand" data-bs-toggle="tooltip"
                                                         data-bs-title="+4 slashing damage. Light and quick to swing.">
                                                         <h6 class="mb-0">Short Sword</h6>
-                                                        <span>
+                                                        <span class="d-flex align-items-center gap-2">
                                                             <span class="badge bg-primary">Hand</span>
-                                                            <span
-                                                                class="badge bg-secondary text-dark rounded-pill">×1</span>
+                                                            <label for="qtyShortSword" class="visually-hidden">Short Sword quantity</label>
+                                                            <input type="number" class="form-control form-control-sm item-qty-input"
+                                                                id="qtyShortSword" name="qtyShortSword" value="1" min="1" max="99" step="1">
+                                                            <span class="btn-group btn-group-sm" role="group" aria-label="Actions for Short Sword">
+                                                                <button type="button" class="btn btn-outline-primary btn-icon"
+                                                                    data-bs-toggle="tooltip" data-bs-title="Edit Short Sword">
+                                                                    <i class="bi bi-pencil-square"></i>
+                                                                </button>
+                                                                <button type="button" class="btn btn-outline-danger btn-icon"
+                                                                    data-bs-toggle="tooltip" data-bs-title="Remove Short Sword">
+                                                                    <i class="bi bi-trash"></i>
+                                                                </button>
+                                                            </span>
                                                         </span>
                                                     </li>
                                                     <li class="list-group-item d-flex justify-content-between align-items-center"
                                                         draggable="true" data-item-slot="hand" data-bs-toggle="tooltip"
                                                         data-bs-title="+3 defense. 20% chance to block an attack.">
                                                         <h6 class="mb-0">Wooden Shield</h6>
-                                                        <span>
+                                                        <span class="d-flex align-items-center gap-2">
                                                             <span class="badge bg-primary">Hand</span>
-                                                            <span
-                                                                class="badge bg-secondary text-dark rounded-pill">×1</span>
+                                                            <label for="qtyWoodenShield" class="visually-hidden">Wooden Shield quantity</label>
+                                                            <input type="number" class="form-control form-control-sm item-qty-input"
+                                                                id="qtyWoodenShield" name="qtyWoodenShield" value="1" min="1" max="99" step="1">
+                                                            <span class="btn-group btn-group-sm" role="group" aria-label="Actions for Wooden Shield">
+                                                                <button type="button" class="btn btn-outline-primary btn-icon"
+                                                                    data-bs-toggle="tooltip" data-bs-title="Edit Wooden Shield">
+                                                                    <i class="bi bi-pencil-square"></i>
+                                                                </button>
+                                                                <button type="button" class="btn btn-outline-danger btn-icon"
+                                                                    data-bs-toggle="tooltip" data-bs-title="Remove Wooden Shield">
+                                                                    <i class="bi bi-trash"></i>
+                                                                </button>
+                                                            </span>
                                                         </span>
                                                     </li>
                                                     <li class="list-group-item d-flex justify-content-between align-items-center"
                                                         draggable="true" data-item-slot="legs" data-bs-toggle="tooltip"
                                                         data-bs-title="+4 defense. Extra protection against slashing attacks.">
                                                         <h6 class="mb-0">Chainmail Leggings</h6>
-                                                        <span>
+                                                        <span class="d-flex align-items-center gap-2">
                                                             <span class="badge bg-primary">Legs</span>
-                                                            <span
-                                                                class="badge bg-secondary text-dark rounded-pill">×1</span>
+                                                            <label for="qtyChainmailLeggings" class="visually-hidden">Chainmail Leggings quantity</label>
+                                                            <input type="number" class="form-control form-control-sm item-qty-input"
+                                                                id="qtyChainmailLeggings" name="qtyChainmailLeggings" value="1" min="1" max="99" step="1">
+                                                            <span class="btn-group btn-group-sm" role="group" aria-label="Actions for Chainmail Leggings">
+                                                                <button type="button" class="btn btn-outline-primary btn-icon"
+                                                                    data-bs-toggle="tooltip" data-bs-title="Edit Chainmail Leggings">
+                                                                    <i class="bi bi-pencil-square"></i>
+                                                                </button>
+                                                                <button type="button" class="btn btn-outline-danger btn-icon"
+                                                                    data-bs-toggle="tooltip" data-bs-title="Remove Chainmail Leggings">
+                                                                    <i class="bi bi-trash"></i>
+                                                                </button>
+                                                            </span>
                                                         </span>
                                                     </li>
                                                     <li class="list-group-item d-flex justify-content-between align-items-center"
@@ -2051,10 +2698,21 @@
                                                         data-bs-toggle="tooltip"
                                                         data-bs-title="+10 max health while worn.">
                                                         <h6 class="mb-0">Ring of Vigor</h6>
-                                                        <span>
+                                                        <span class="d-flex align-items-center gap-2">
                                                             <span class="badge bg-primary">Accessory</span>
-                                                            <span
-                                                                class="badge bg-secondary text-dark rounded-pill">×1</span>
+                                                            <label for="qtyRingofVigor" class="visually-hidden">Ring of Vigor quantity</label>
+                                                            <input type="number" class="form-control form-control-sm item-qty-input"
+                                                                id="qtyRingofVigor" name="qtyRingofVigor" value="1" min="1" max="99" step="1">
+                                                            <span class="btn-group btn-group-sm" role="group" aria-label="Actions for Ring of Vigor">
+                                                                <button type="button" class="btn btn-outline-primary btn-icon"
+                                                                    data-bs-toggle="tooltip" data-bs-title="Edit Ring of Vigor">
+                                                                    <i class="bi bi-pencil-square"></i>
+                                                                </button>
+                                                                <button type="button" class="btn btn-outline-danger btn-icon"
+                                                                    data-bs-toggle="tooltip" data-bs-title="Remove Ring of Vigor">
+                                                                    <i class="bi bi-trash"></i>
+                                                                </button>
+                                                            </span>
                                                         </span>
                                                     </li>
                                                     <li class="list-group-item d-flex justify-content-between align-items-center"
@@ -2062,10 +2720,21 @@
                                                         data-bs-toggle="tooltip"
                                                         data-bs-title="Reduces magic damage taken by 10%.">
                                                         <h6 class="mb-0">Amulet of Warding</h6>
-                                                        <span>
+                                                        <span class="d-flex align-items-center gap-2">
                                                             <span class="badge bg-primary">Accessory</span>
-                                                            <span
-                                                                class="badge bg-secondary text-dark rounded-pill">×1</span>
+                                                            <label for="qtyAmuletofWarding" class="visually-hidden">Amulet of Warding quantity</label>
+                                                            <input type="number" class="form-control form-control-sm item-qty-input"
+                                                                id="qtyAmuletofWarding" name="qtyAmuletofWarding" value="1" min="1" max="99" step="1">
+                                                            <span class="btn-group btn-group-sm" role="group" aria-label="Actions for Amulet of Warding">
+                                                                <button type="button" class="btn btn-outline-primary btn-icon"
+                                                                    data-bs-toggle="tooltip" data-bs-title="Edit Amulet of Warding">
+                                                                    <i class="bi bi-pencil-square"></i>
+                                                                </button>
+                                                                <button type="button" class="btn btn-outline-danger btn-icon"
+                                                                    data-bs-toggle="tooltip" data-bs-title="Remove Amulet of Warding">
+                                                                    <i class="bi bi-trash"></i>
+                                                                </button>
+                                                            </span>
                                                         </span>
                                                     </li>
                                                     <li class="list-group-item d-flex justify-content-between align-items-center"
@@ -2073,10 +2742,21 @@
                                                         data-bs-toggle="tooltip"
                                                         data-bs-title="Restores 50 health when used.">
                                                         <h6 class="mb-0">Health Potion</h6>
-                                                        <span>
+                                                        <span class="d-flex align-items-center gap-2">
                                                             <span class="badge bg-primary">Consumable</span>
-                                                            <span
-                                                                class="badge bg-secondary text-dark rounded-pill">×3</span>
+                                                            <label for="qtyHealthPotion" class="visually-hidden">Health Potion quantity</label>
+                                                            <input type="number" class="form-control form-control-sm item-qty-input"
+                                                                id="qtyHealthPotion" name="qtyHealthPotion" value="3" min="1" max="99" step="1">
+                                                            <span class="btn-group btn-group-sm" role="group" aria-label="Actions for Health Potion">
+                                                                <button type="button" class="btn btn-outline-primary btn-icon"
+                                                                    data-bs-toggle="tooltip" data-bs-title="Edit Health Potion">
+                                                                    <i class="bi bi-pencil-square"></i>
+                                                                </button>
+                                                                <button type="button" class="btn btn-outline-danger btn-icon"
+                                                                    data-bs-toggle="tooltip" data-bs-title="Remove Health Potion">
+                                                                    <i class="bi bi-trash"></i>
+                                                                </button>
+                                                            </span>
                                                         </span>
                                                     </li>
                                                     <li class="list-group-item d-flex justify-content-between align-items-center"
@@ -2084,10 +2764,21 @@
                                                         data-bs-toggle="tooltip"
                                                         data-bs-title="Restores 40 mana when used.">
                                                         <h6 class="mb-0">Mana Potion</h6>
-                                                        <span>
+                                                        <span class="d-flex align-items-center gap-2">
                                                             <span class="badge bg-primary">Consumable</span>
-                                                            <span
-                                                                class="badge bg-secondary text-dark rounded-pill">×2</span>
+                                                            <label for="qtyManaPotion" class="visually-hidden">Mana Potion quantity</label>
+                                                            <input type="number" class="form-control form-control-sm item-qty-input"
+                                                                id="qtyManaPotion" name="qtyManaPotion" value="2" min="1" max="99" step="1">
+                                                            <span class="btn-group btn-group-sm" role="group" aria-label="Actions for Mana Potion">
+                                                                <button type="button" class="btn btn-outline-primary btn-icon"
+                                                                    data-bs-toggle="tooltip" data-bs-title="Edit Mana Potion">
+                                                                    <i class="bi bi-pencil-square"></i>
+                                                                </button>
+                                                                <button type="button" class="btn btn-outline-danger btn-icon"
+                                                                    data-bs-toggle="tooltip" data-bs-title="Remove Mana Potion">
+                                                                    <i class="bi bi-trash"></i>
+                                                                </button>
+                                                            </span>
                                                         </span>
                                                     </li>
                                                 </ul>

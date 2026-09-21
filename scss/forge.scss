@@ -1,4 +1,14 @@
+// The Forge - project stylesheet.
+//
+// On AI assistance: a pattern is designed once by hand here, then AI is used to
+// copy it across the other pages and repeated blocks - the navbar, the card
+// recipes, the per-item controls. That is why some files gain a lot of lines at
+// once. The @mixin / @include approach below, and the note explaining it, also
+// came out of one of those sessions. The colours, sizes, structure and the
+// decisions about what the app should do are the project's own.
+
 @use "sass:color";
+@use "sass:map";
 
 // Bootstrap customization follows the documented import order:
 // https://getbootstrap.com/docs/5.3/customize/sass/
@@ -13,7 +23,9 @@ $disabled: #756a86;
 $success: #198754;
 $body-bg: #f0e7ff;
 $form-range-track-height: 1.5rem;
-$form-range-thumb-bg: $success;
+// Slider handle. Neutral on purpose: a handle tinted like its own track
+// disappears into it, and the stat and skill tracks are already $success.
+$form-range-thumb-bg: #343a40;
 
 // Form text sizing
 $form-label-font-size: 1rem;
@@ -74,11 +86,11 @@ $forge-colors: (
     "debuff": #8a2be2
 );
 
-$theme-colors: map-merge($theme-colors, $forge-colors);
+$theme-colors: map.merge($theme-colors, $forge-colors);
 
 // Bootstrap ships .start-0, .start-50 and .start-100 only. The six-step
 // tracker needs fifths, so add them to the map it builds those from.
-$position-values: map-merge($position-values, (
+$position-values: map.merge($position-values, (
     20: 20%,
     40: 40%,
     60: 60%,
@@ -118,6 +130,31 @@ $position-values: map-merge($position-values, (
 //     deprecated in 5.3; text-body-secondary replaces it.
 //   - text-body-secondary sets color only. Its size comes from
 //     $font-size-base, so do not reach for .small to make copy bigger.
+// ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// @mixin and @include, since they are used below.
+//
+// A mixin is a named, reusable block of declarations that can take arguments.
+// @mixin defines it; @include stamps a copy of it in with the arguments filled
+// in. It is not inheritance and not a reference: five @includes compile to five
+// independent copies in forge.css. The value is having one place to change a
+// technique that several rules share.
+//
+//   @mixin range-fill($color) { ...declarations using $color... }
+//   .range-health { @include range-fill(#b3313c); }
+//   .range-mana   { @include range-fill(#2f6fd0); }
+//
+// range-fill() near the bottom of this file is the only mixin written here. It
+// earns its place because a slider track can only be reached through a
+// browser-specific selector, and those cannot share a selector list, so the
+// same gradient has to be written twice per colour. Five colours would be ten
+// hand-maintained rules; the mixin makes it one.
+//
+// @include is also how Bootstrap's own mixins are called in this file:
+// media-breakpoint-down(sm) writes a media query, border-radius() respects
+// Bootstrap's $enable-rounded switch. Same mechanism, someone else's
+// definitions.
 // ---------------------------------------------------------------------------
 
 
@@ -196,43 +233,58 @@ $character-step-scroll-offset: 7rem;
     background-color: $secondary;
     scroll-margin-top: $character-step-scroll-offset;
 }
-.card-img-top {
-    height: 50px;
-    object-fit: cover;
 
-}
-
-// Roster table portraits. Needs to beat the .card img rule above.
-// One knob for the size:
+// Roster portraits. Needs to beat the .card img rule above, which stretches
+// an image to the full card width. One knob for the size:
 $roster-portrait-size: 4rem;
 
 .card img.roster-portrait,
 img.roster-portrait {
+    // flex-shrink guard: these sit in a flex row beside the name and badges
+    flex: 0 0 auto;
     width: $roster-portrait-size;
     height: $roster-portrait-size;
     object-fit: cover;
-    // .card img sets display:block, so the table's text-align cannot centre
-    // these. Auto side margins do it instead.
-    margin-inline: auto;
-}
-// Spaces the card title and its close button apart
-.card-header-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
 }
 
-// Roster expand toggles. Trims the full-width accordion header styling
-// down to fit inside a table cell.
-.accordion-button.btn-expand {
-    width: auto;
-    padding: .25rem .5rem;
-    background-color: transparent;
-    box-shadow: none;
+// Roster row expander. The Collapse plugin keeps aria-expanded current on the
+// trigger, so the chevron turns off that attribute with no script of ours.
+$roster-expand-rotation: 180deg;
+$roster-expand-transition: transform .2s ease-in-out;
 
-    &::after {
-        margin-right: 0;
-    }
+.btn-expand .bi {
+    transition: $roster-expand-transition;
+}
+
+.btn-expand[aria-expanded="true"] .bi {
+    transform: rotate($roster-expand-rotation);
+}
+
+// A sheet is read, not filled in, so it is set as a dense list rather than
+// inheriting the form's much larger scale.
+$sheet-label-font-size: 1rem;
+$sheet-score-font-size: 1.75rem;
+$sheet-bar-height: .5rem;
+$sheet-bar-width: 5rem;
+
+.stat-label {
+    font-size: $sheet-label-font-size;
+}
+
+.stat-score {
+    font-size: $sheet-score-font-size;
+    line-height: 1.1;
+}
+
+// Progress ships a CSS variable for its height, so set that rather than the
+// property it is built from.
+.sheet-bar {
+    --bs-progress-height: #{$sheet-bar-height};
+}
+
+// In a skill row the bar is a fixed rail between the name and its number
+.list-group-item > .sheet-bar {
+    flex: 0 0 $sheet-bar-width;
 }
 
 // Accordion header text. Bootstrap has no $accordion-button-font-size,
@@ -284,7 +336,7 @@ img.roster-portrait {
 
 // Keeps the HP/MP/SP bars lined up with each other.
 .vitals-label {
-    min-width: 1rem;
+    min-width: 1.75rem;
 }
 
 // Left padding for the HP/MP/SP value badges only. Bootstrap builds badge
@@ -296,12 +348,71 @@ $vitals-value-padding-start: 0;
     padding-inline-start: $vitals-value-padding-start;
 }
 
-// Stops the feat stepper stretching across the row.
-.feat-count-input {
-    max-width: 7rem;
+// Sliders fill as they move, the way the progress bars used to. The track
+// paints a two-stop gradient that switches colour at --range-fill, which
+// character-form.js keeps in step with the value.
+//
+// This is ours, not Bootstrap's. The Range docs say a filled track is "not
+// currently supported", because only Firefox does it natively, and .form-range
+// ships no CSS variables to theme - unlike .progress, which has seven. So a
+// coloured slider has to be built by hand.
+//
+// A track is only reachable through a browser-specific selector, and the two
+// cannot share a selector list: a browser discards a whole rule if it does not
+// recognise one selector in it. Hence the same gradient written twice.
+// Bootstrap splits its own range rules for that reason - see the note at the
+// top of scss/forms/_form-range.scss - but it never fills the track.
+//
+// To drop this later: delete the mixin and the five classes below, remove the
+// range-* classes from the sliders in creation-character.html, and the
+// sliders fall back to stock Bootstrap with no other change.
+@mixin range-fill($color) {
+    $fill: linear-gradient(to right,
+        $color 0 var(--range-fill, 0%),
+        $form-range-track-bg var(--range-fill, 0%) 100%);
+
+    &::-webkit-slider-runnable-track {
+        background-image: $fill;
+    }
+
+    &::-moz-range-track {
+        background-image: $fill;
+    }
+}
+
+// Vitals keep the colours their bars carried
+.range-health {
+    @include range-fill(map.get($forge-colors, "health"));
+}
+
+.range-mana {
+    @include range-fill(map.get($forge-colors, "mana"));
+}
+
+.range-stamina {
+    @include range-fill(map.get($forge-colors, "stamina"));
+}
+
+// Stats and skills share one green; Level takes gold
+.range-stat {
+    @include range-fill($success);
+}
+
+.range-level {
+    @include range-fill($warning);
+}
+
+// Inventory quantity steppers. Wide enough for 99 and no wider, so the
+// item name keeps the rest of the row.
+$item-qty-width: 4.75rem;
+
+.item-qty-input {
+    width: $item-qty-width;
 }
 
 // Every compact icon button: the add toggles and the roster controls
+$btn-icon-margin: .5rem;
+
 .btn-icon {
     // Matches .btn-group-sm > .btn, which outranks this rule on the roster's
     // grouped buttons, so both render the same either way.
@@ -320,13 +431,12 @@ $vitals-value-padding-start: 0;
     justify-content: center;
     min-width: $badge-font-size * 1.7;
     min-height: $badge-font-size * 1.7;
+    margin: $btn-icon-margin;
 
     // Icon fonts have no bold weight, so stroke the glyph to thicken it
     .bi {
         -webkit-text-stroke: $icon-stroke currentColor;
     }
-    margin: 0.5rem;
-
 }
 
 // Ability toggles: grey by default, green when selected.
@@ -375,63 +485,11 @@ $vitals-value-padding-start: 0;
     }
 }
 
-// Containers, switches and badges
+// The lavender banner each page opens with
+$page-heading-radius: .4rem;
 
-.row-cols-md-1 {
-    border-radius: .4rem;
-}
-
-// Player / NPC switch
-.character-type-switch {
-    display: flex;
-    align-items: start;
-    justify-content: start;
-    gap: 1rem;
-
-    .form-check {
-        margin: 0;
-        padding-left: 2.5em;
-    }
-
-    label {
-        cursor: pointer;
-    }
-}
-// Label colours for the switch
-.character-type-switch {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-
-    .player-label,
-    .npc-label {
-        color: #6c757d;
-        font-weight: bold;
-    }
-    // The switch keeps the primary colour either way
-    .character-type-input {
-        &:not(:checked) {
-            background-color: $primary;
-            border-color: $primary;
-        }
-        &:checked {
-            background-color: $primary;
-            border-color: $primary;
-        }
-    }
-    // Player selected: highlight the player label
-    &:not(:has(.character-type-input:checked)) {
-        .player-label {
-            color: $primary;
-        }
-    }
-    // NPC selected: highlight the NPC label
-    &:has(.character-type-input:checked) {
-        .npc-label {
-            color: $primary;
-        }
-    }
-
+.page-heading {
+    border-radius: $page-heading-radius;
 }
 
 // Text sizing and the fixed navbar
@@ -443,14 +501,6 @@ $vitals-value-padding-start: 0;
 }
 
 $navbar-fixed-height: 100px;
-
-// How tall the scrolling menu may grow before it scrolls. Bootstrap reads
-// this from --bs-scroll-height; its own default is 75vh.
-$navbar-scroll-height: 60vh;
-
-.navbar-nav-scroll {
-    --bs-scroll-height: #{$navbar-scroll-height};
-}
 
 .fixed-top {
     // No Bootstrap variable for the close button size
@@ -531,9 +581,16 @@ $mobile-nav-clearance: 1.5rem;
 
 // Range sliders. Height is left to Bootstrap so the focus ring is not
 // clipped; this is spacing below the track only.
+$form-range-spacing: 1rem;
+
 .form-range {
-    padding-bottom: 1rem;
+    padding-bottom: $form-range-spacing;
 }
+
+// Badges sit inline beside headings, labels and buttons throughout the app,
+// so they carry their own breathing room instead of every caller adding it.
+$badge-margin: .25rem;
+
 .badge {
-    margin: 0.25rem;
+    margin: $badge-margin;
 }
