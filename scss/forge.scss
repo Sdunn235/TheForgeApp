@@ -222,15 +222,16 @@ $card-nav-btn-font-size-sm: 1.1rem;
     font-weight: $form-label-font-weight;
 }
 
-// Stops the fixed navbar covering a step heading when the form scrolls
-// to the next step. Needs to clear .fixed-top's height.
-$character-step-scroll-offset: 7rem;
+// Stops the fixed navbar covering whatever the form scrolls to when it moves
+// between steps. Needs to clear .fixed-top's height. Used by .character-step
+// and by .step-tracker, which is what app.js actually scrolls to.
+$fixed-navbar-scroll-offset: 7rem;
 
 .character-step {
     display: flex;
     flex-direction: column;
     background-color: $secondary;
-    scroll-margin-top: $character-step-scroll-offset;
+    scroll-margin-top: $fixed-navbar-scroll-offset;
 }
 
 // Roster portraits. Needs to beat the .card img rule above, which stretches
@@ -327,6 +328,25 @@ $sheet-bar-width: 5rem;
     min-width: 16rem;
 }
 
+// Dropdown menus. The global type scale pushes --bs-dropdown-font-size to
+// 1.5rem, which is larger than a menu needs and wider than several items
+// ("Toughness -- +10 max HP") can fit. Bootstrap sets .dropdown-item to
+// nowrap, so a long item overflows its own menu instead of wrapping.
+$dropdown-font-size: 1rem;
+$dropdown-min-width: 12rem;
+$dropdown-max-width: 20rem;
+
+.dropdown-menu {
+    --bs-dropdown-font-size: #{$dropdown-font-size};
+    --bs-dropdown-min-width: #{$dropdown-min-width};
+
+    max-width: $dropdown-max-width;
+}
+
+.dropdown-item {
+    white-space: normal;
+}
+
 // Scrolls a long feat list instead of stretching the step.
 .feat-list {
     max-height: 16rem;
@@ -334,14 +354,34 @@ $sheet-bar-width: 5rem;
 }
 
 // Keeps the HP/MP/SP bars lined up with each other.
+$vitals-label-min-width: 1.75rem;
+
 .vitals-label {
-    min-width: 1.75rem;
+    min-width: $vitals-label-min-width;
+}
+
+// The Level row is the same three-part row as HP/MP/SP, one size up, because
+// it drives all three of them. Its label needs more room than "HP".
+$level-row-font-size: 1.25rem;
+$level-row-margin-bottom: 1.5rem;
+$level-label-min-width: 3.5rem;
+
+.level-row {
+    font-size: $level-row-font-size;
+    margin-bottom: $level-row-margin-bottom;
+
+    // .badge sizes itself in em, so it scales with the row on its own
+    .vitals-label {
+        min-width: $level-label-min-width;
+    }
 }
 
 // Left padding for the HP/MP/SP value badges only. Bootstrap builds badge
 // padding from a two-value shorthand, so --bs-badge-padding-x moves both
 // edges at once. The start edge needs its own declaration to move alone.
-$vitals-value-padding-start: 0;
+// In em so it tracks the badge's own font size rather than the root's - the
+// Level badge sits in a larger row than HP/MP/SP and needs the same gap.
+$vitals-value-padding-start: .5em;
 
 .badge.vitals-value {
     padding-inline-start: $vitals-value-padding-start;
@@ -438,6 +478,47 @@ $btn-icon-margin: .5rem;
     }
 }
 
+// Kebab menus. Unlike .btn-icon these are often the ONLY control on a card,
+// so they need a target a thumb can hit. 2.75rem is 44px at the default root
+// size, which is the usual floor for a touch target.
+$kebab-size: 2.75rem;
+$kebab-font-size: 1.25rem;
+// .btn-icon carried a margin and every inline kebab and + button relied on it
+// for spacing. Without one they sit flush against whatever is beside them -
+// an accordion header's right edge, or a card's padding.
+$kebab-margin: .5rem;
+
+.btn-kebab {
+    --bs-btn-padding-y: 0;
+    --bs-btn-padding-x: 0;
+    --bs-btn-font-size: #{$kebab-font-size};
+    --bs-btn-line-height: 1;
+    --bs-btn-border-width: 2px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: $kebab-size;
+    min-height: $kebab-size;
+    margin: $kebab-margin;
+
+    // Icon fonts have no bold weight, so stroke the glyph to thicken it
+    .bi {
+        -webkit-text-stroke: $icon-stroke currentColor;
+    }
+}
+
+// A kebab pinned to a card's corner. The button's own margin stacks on top of
+// this offset, so the gap from the card's border is $card-kebab-offset plus
+// $kebab-margin - 1rem here, which lines the button up with the card's text.
+$card-kebab-offset: .5rem;
+
+.card-kebab {
+    position: absolute;
+    top: $card-kebab-offset;
+    inset-inline-end: $card-kebab-offset;
+}
+
 // Ability toggles: grey by default, green when selected.
 // Sizing lives here so the Learn buttons scale on their own.
 .ability-toggle {
@@ -455,6 +536,27 @@ $btn-icon-margin: .5rem;
     --bs-btn-active-color: #fff;
     --bs-btn-active-bg: #{$success};
     --bs-btn-active-border-color: #{$success};
+}
+
+// Three states, three colours. Blocked and available were both the grey
+// above, separated only by Bootstrap's 0.65 opacity on a disabled toggle,
+// which reads as dimness rather than as a different state. So: grey means
+// you cannot take it, purple means you can, green means you have.
+.btn-check:not(:checked):not(:disabled) + .ability-toggle {
+    --bs-btn-bg: #{$primary};
+    --bs-btn-border-color: #{$primary};
+    --bs-btn-hover-bg: #{color.adjust($primary, $lightness: -8%)};
+    --bs-btn-hover-border-color: #{color.adjust($primary, $lightness: -8%)};
+}
+
+// Bootstrap puts pointer-events: none on a disabled toggle, which also kills
+// its tooltip - and a blocked ability is exactly the one that needs to explain
+// itself. The checkbox behind the label is disabled, so a click does nothing
+// either way; restoring pointer events only lets the tooltip fire. The cursor
+// still says the control is unavailable.
+.btn-check:disabled + .ability-toggle {
+    pointer-events: auto;
+    cursor: not-allowed;
 }
 
 // Page layout
@@ -523,10 +625,23 @@ $step-tracker-dot-border-width: 3px;
 $step-tracker-dot-border-color: $primary;
 
 .step-tracker {
+    // app.js scrolls to this element on every step change, so it carries the
+    // same navbar clearance .character-step does - without it the tracker
+    // lands underneath .fixed-top and you cannot see the progress you made.
+    scroll-margin-top: $fixed-navbar-scroll-offset;
+
     // Progress ships a CSS variable for this, so set that rather than
     // overriding the height property it builds from
     .progress {
         --bs-progress-height: #{$step-tracker-bar-height};
+    }
+
+    // A disabled button gets pointer-events: none from Bootstrap, which also
+    // kills its tooltip - and a locked step is exactly the one that needs to
+    // say what it is. The button is still disabled, so nothing can be clicked.
+    .step-dot:disabled {
+        pointer-events: auto;
+        cursor: not-allowed;
     }
 
     // Square so rounded-pill gives a circle, and sized past .btn's padding
@@ -584,6 +699,17 @@ $form-range-spacing: 1rem;
 
 .form-range {
     padding-bottom: $form-range-spacing;
+}
+
+// A slider laid out in a row needs no space underneath it. That padding is
+// for the card layouts, where the value badge sits below the track. Left in,
+// it makes the input taller than what it draws, so centring the row centres
+// the padding rather than the track and the label and badge sit low.
+.vitals-row,
+.level-row {
+    .form-range {
+        padding-bottom: 0;
+    }
 }
 
 // Badges sit inline beside headings, labels and buttons throughout the app,

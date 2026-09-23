@@ -12709,6 +12709,16 @@ img.roster-portrait {
   min-width: 16rem;
 }
 
+.dropdown-menu {
+  --bs-dropdown-font-size: 1rem;
+  --bs-dropdown-min-width: 12rem;
+  max-width: 20rem;
+}
+
+.dropdown-item {
+  white-space: normal;
+}
+
 .feat-list {
   max-height: 16rem;
   overflow-y: auto;
@@ -12718,8 +12728,16 @@ img.roster-portrait {
   min-width: 1.75rem;
 }
 
+.level-row {
+  font-size: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+.level-row .vitals-label {
+  min-width: 3.5rem;
+}
+
 .badge.vitals-value {
-  padding-inline-start: 0;
+  padding-inline-start: 0.5em;
 }
 
 .range-health::-webkit-slider-runnable-track {
@@ -12780,6 +12798,29 @@ img.roster-portrait {
   -webkit-text-stroke: 1px currentColor;
 }
 
+.btn-kebab {
+  --bs-btn-padding-y: 0;
+  --bs-btn-padding-x: 0;
+  --bs-btn-font-size: 1.25rem;
+  --bs-btn-line-height: 1;
+  --bs-btn-border-width: 2px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  margin: 0.5rem;
+}
+.btn-kebab .bi {
+  -webkit-text-stroke: 1px currentColor;
+}
+
+.card-kebab {
+  position: absolute;
+  top: 0.5rem;
+  inset-inline-end: 0.5rem;
+}
+
 .ability-toggle {
   --bs-btn-padding-y: 1rem;
   --bs-btn-padding-x: 1.5rem;
@@ -12794,6 +12835,18 @@ img.roster-portrait {
   --bs-btn-active-color: #fff;
   --bs-btn-active-bg: #198754;
   --bs-btn-active-border-color: #198754;
+}
+
+.btn-check:not(:checked):not(:disabled) + .ability-toggle {
+  --bs-btn-bg: #8034fc;
+  --bs-btn-border-color: #8034fc;
+  --bs-btn-hover-bg: rgb(40.3320007615%, 4.6251665715%, 98.590519703%);
+  --bs-btn-hover-border-color: rgb(40.3320007615%, 4.6251665715%, 98.590519703%);
+}
+
+.btn-check:disabled + .ability-toggle {
+  pointer-events: auto;
+  cursor: not-allowed;
 }
 
 .video-hero {
@@ -12834,8 +12887,15 @@ img.roster-portrait {
   min-height: 100px;
 }
 
+.step-tracker {
+  scroll-margin-top: 7rem;
+}
 .step-tracker .progress {
   --bs-progress-height: 4px;
+}
+.step-tracker .step-dot:disabled {
+  pointer-events: auto;
+  cursor: not-allowed;
 }
 .step-tracker .step-dot {
   width: 2.75rem;
@@ -12869,6 +12929,11 @@ img.roster-portrait {
 }
 .form-range {
   padding-bottom: 1rem;
+}
+
+.vitals-row .form-range,
+.level-row .form-range {
+  padding-bottom: 0;
 }
 
 .badge {

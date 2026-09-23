@@ -62,1855 +62,386 @@
         </div>
     </nav>
 
-    <div class="video-hero">
-        <iframe
-            src="https://www.youtube.com/embed/ez68sFkO6Qo?autoplay=1&mute=1&loop=1&playlist=ez68sFkO6Qo&controls=0&playsinline=1"
-            title="Background video" allow="autoplay; encrypted-media" allowfullscreen>
-        </iframe>
-    </div>
+    <!-- The hero video lives on the home page only. This is a working page and
+         the 800px of auto-playing iframe just pushed the roster off the screen. -->
 
     <!-- Main content -->
-    <!-- Page heading -->
-    <div class="container text-start mt-5 pt-5">
-        <div class="row bg-secondary mb-4 px-2 row-cols-1 g-0 page-heading">
-            <div class="container col">
-                <h1 class="display-1 pb-2 border-bottom border-primary">The Character Roster</h1>
-                <p class="lead">Every player character and non-player character forged into the world lives here.
-                    Search the roster by name or by ID, expand a character to read the full sheet, lock a
-                    character to keep it on screen while you look up another, and edit or delete from the
-                    same row.</p>
+    <!-- Vue owns the page from here down through the modal -->
+    <div id="app">
+        <div class="container text-start mt-5 pt-5">
+            <!-- Page heading -->
+            <div class="row bg-secondary mb-4 px-2 row-cols-1 g-0 page-heading">
+                <div class="container col">
+                    <h1 class="display-1 pb-2 border-bottom border-primary">The Character Roster</h1>
+                    <p class="lead">Every player character and non-player character forged into the world lives
+                        here. Search the roster by name or by ID, expand a character to read the full sheet, lock
+                        a character to keep it on screen while you look up another, and edit or delete from the
+                        same row.</p>
+                </div>
             </div>
-        </div>
 
-        <!-- Roster toolbar: search, filter, add -->
-        <div class="card mb-4">
-            <div class="card-body">
-                <h3 class="card-title">Search the Roster</h3>
-                <p class="mb-4 text-body-secondary">Pick a field, type what you are looking for, and narrow the list by
-                    character type.</p>
+            <!-- Roster toolbar: search, filter, add -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h3 class="card-title">Search the Roster</h3>
+                    <p class="mb-4 text-body-secondary">Pick a field, type what you are looking for, and narrow
+                        the list by character type.</p>
 
-                <!-- Search form. Static markup, no filtering yet. -->
-                <form role="search">
-                    <div class="row g-3 align-items-end">
-                        <div class="col-12 col-lg-6">
-                            <label for="rosterSearch" class="form-label">Find a Character</label>
-                            <div class="input-group">
-                                <label class="visually-hidden" for="rosterSearchField">Search field</label>
-                                <select class="form-select flex-grow-0 w-auto" id="rosterSearchField"
-                                    name="searchField">
-                                    <option value="name" selected>Name</option>
-                                    <option value="userId">User ID</option>
-                                    <option value="npcId">NPC ID</option>
-                                </select>
-                                <input type="search" class="form-control" id="rosterSearch" name="searchTerm"
-                                    placeholder="Search the roster..." aria-label="Search the roster">
-                                <button class="btn btn-primary" type="submit" data-bs-toggle="tooltip"
-                                    data-bs-title="Search the roster">
-                                    <i class="bi bi-search"></i>
+                    <!-- No submit handler: the list is a computed property, so it
+                         narrows as you type and there is nothing to submit. -->
+                    <form role="search" @submit.prevent>
+                        <div class="row g-3 align-items-end">
+                            <div class="col-12 col-lg-3">
+                                <label for="rosterSearch" class="form-label">Find a Character</label>
+                                <div class="input-group">
+                                    <label class="visually-hidden" for="rosterSearchField">Search field</label>
+                                    <select class="form-select flex-grow-0 w-auto" id="rosterSearchField"
+                                        name="searchField" v-model="rosterSearchField">
+                                        <option v-for="field in rosterSearchFields" :key="field.id"
+                                            :value="field.id">{{ field.label }}</option>
+                                    </select>
+                                    <input type="search" class="form-control" id="rosterSearch" name="searchTerm"
+                                        placeholder="Search the roster..." aria-label="Search the roster"
+                                        v-model="rosterSearchTerm" />
+                                </div>
+                            </div>
+
+                            <div class="col-12 col-md-6 col-lg-3">
+                                <span class="form-label d-block">Character Type</span>
+                                <div class="btn-group w-100" role="group" aria-label="Filter by character type">
+                                    <template v-for="filter in rosterTypeFilters" :key="filter.id">
+                                        <input type="radio" class="btn-check" name="typeFilter"
+                                            :id="'filter-' + filter.id" :value="filter.id"
+                                            v-model="rosterTypeFilter" />
+                                        <label class="btn btn-outline-primary"
+                                            :for="'filter-' + filter.id">{{ filter.label }}</label>
+                                    </template>
+                                </div>
+                            </div>
+
+                            <div class="col-12 col-md-6 col-lg-3">
+                                <span class="form-label d-block">Sort By</span>
+                                <div class="btn-group w-100" role="group" aria-label="Sort the roster">
+                                    <template v-for="order in rosterSorts" :key="order.id">
+                                        <input type="radio" class="btn-check" name="rosterSort"
+                                            :id="'sort-' + order.id" :value="order.id" v-model="rosterSort" />
+                                        <label class="btn btn-outline-primary"
+                                            :for="'sort-' + order.id">{{ order.label }}</label>
+                                    </template>
+                                </div>
+                            </div>
+
+                            <div class="col-12 col-md-6 col-lg-3">
+                                <a href="creation-character.html" class="btn btn-primary w-100"
+                                    data-bs-toggle="tooltip"
+                                    data-bs-title="Open the forge and build a new character">
+                                    <i class="bi bi-plus-lg"></i> Forge New Character
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+
+                    <!-- Active filter chips. Clearing one writes the data back to
+                         its starting value; the list follows on its own. -->
+                    <div class="d-flex gap-2 flex-wrap mt-3">
+                        <div class="alert alert-secondary py-1 px-3 mb-0" role="alert"
+                            v-if="rosterSearchChip !== ''">
+                            {{ rosterSearchChip }}
+                            <button type="button" class="btn-close position-static ms-2 p-2"
+                                aria-label="Clear the search" @click="rosterSearchTerm = ''"></button>
+                        </div>
+
+                        <div class="alert alert-secondary py-1 px-3 mb-0" role="alert"
+                            v-if="rosterTypeFilter !== 'all'">
+                            {{ rosterTypeChip }}
+                            <button type="button" class="btn-close position-static ms-2 p-2"
+                                aria-label="Clear the type filter" @click="rosterTypeFilter = 'all'"></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- The roster itself -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <h3 class="card-title mb-0">Characters</h3>
+                        <span class="badge bg-primary rounded-pill">{{ roster.length }}</span>
+                    </div>
+
+                    <div class="alert alert-secondary mb-0" role="alert" v-if="roster.length === 0">
+                        Nothing forged yet. Build a character and save it, and it will appear here.
+                    </div>
+
+                    <div class="alert alert-secondary mb-0" role="alert"
+                        v-else-if="filteredRoster.length === 0 && lockedCharacters.length === 0">
+                        No character matches that search.
+                    </div>
+
+                    <ul class="list-unstyled mb-0">
+                        <li class="card mb-3" :class="rosterCardClass(character)"
+                            v-for="character in visibleRoster" :key="character.id">
+                            <div class="card-body position-relative">
+                                <!-- One menu per character, in the corner -->
+                                <div class="dropdown card-kebab">
+                                    <button class="btn btn-outline-primary btn-kebab" type="button"
+                                        data-bs-toggle="dropdown" aria-expanded="false"
+                                        :aria-label="actionsLabel(character.name)">
+                                        <i class="bi bi-three-dots-vertical"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end">
+                                        <li>
+                                            <a class="dropdown-item" :href="editHref(character)">
+                                                <i class="bi bi-pencil-square me-2"></i>Edit in the forge
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <button class="dropdown-item" type="button"
+                                                @click="toggleLock(character)">
+                                                <i :class="lockMenuIcon(character)"></i>{{ lockMenuLabel(character) }}
+                                            </button>
+                                        </li>
+                                        <li>
+                                            <button class="dropdown-item" type="button"
+                                                @click="downloadCharacter(character)">
+                                                <i class="bi bi-download me-2"></i>Download JSON
+                                            </button>
+                                        </li>
+                                        <li>
+                                            <hr class="dropdown-divider" />
+                                        </li>
+                                        <li>
+                                            <button class="dropdown-item text-danger" type="button"
+                                                data-bs-toggle="modal" data-bs-target="#deleteCharacterModal"
+                                                @click="askDelete(character)">
+                                                <i class="bi bi-trash me-2"></i>Delete
+                                            </button>
+                                        </li>
+                                    </ul>
+                                </div>
+
+                                <div class="d-flex flex-wrap align-items-center gap-3 pe-5">
+                                    <img src="Assets/Images/anvil.png" :alt="'Portrait of ' + character.name"
+                                        class="rounded-circle roster-portrait" />
+
+                                    <div>
+                                        <h5 class="mb-1">
+                                            {{ character.name }}
+                                            <!-- The padlock reads on its own; the border on the card
+                                                 already says the row is pinned. Fixed title, so the
+                                                 tooltip Bootstrap caches never goes stale. -->
+                                            <i class="bi bi-lock-fill text-primary" v-if="isLocked(character)"
+                                                data-bs-toggle="tooltip"
+                                                title="Locked for comparison"></i>
+                                        </h5>
+                                        <span class="badge"
+                                            :class="characterTypeClass(character)">{{ characterTypeLabel(character) }}</span>
+                                        <span class="badge bg-secondary text-dark">{{ characterIdLabel(character) }}</span>
+                                        <span
+                                            class="badge bg-success rounded-pill">Level {{ characterLevel(character) }}</span>
+                                        <span class="badge" :class="vital.badgeClass"
+                                            v-for="vital in characterVitals(character)"
+                                            :key="vital.id">{{ vital.label }} {{ vital.value }} / {{ vital.max }}</span>
+                                    </div>
+                                </div>
+
+                                <button class="btn btn-outline-primary mt-3" type="button"
+                                    data-bs-toggle="collapse" :data-bs-target="sheetPanelTarget(character)"
+                                    aria-expanded="false" :aria-controls="sheetPanelId(character)">
+                                    <i class="bi bi-chevron-down me-1"></i> Character sheet
                                 </button>
-                            </div>
-                        </div>
 
-                        <div class="col-12 col-md-6 col-lg-3">
-                            <span class="form-label d-block">Character Type</span>
-                            <div class="btn-group w-100" role="group" aria-label="Filter by character type">
-                                <input type="radio" class="btn-check" name="typeFilter" id="filterAll" value="all"
-                                    checked>
-                                <label class="btn btn-outline-primary" for="filterAll">All</label>
-
-                                <input type="radio" class="btn-check" name="typeFilter" id="filterPlayers"
-                                    value="player">
-                                <label class="btn btn-outline-primary" for="filterPlayers">Players</label>
-
-                                <input type="radio" class="btn-check" name="typeFilter" id="filterNpcs" value="npc">
-                                <label class="btn btn-outline-primary" for="filterNpcs">NPCs</label>
-                            </div>
-                        </div>
-
-                        <div class="col-12 col-md-6 col-lg-3">
-                            <a href="creation-character.html" class="btn btn-primary w-100" data-bs-toggle="tooltip"
-                                data-bs-title="Open the forge and build a new character">
-                                <i class="bi bi-plus-lg"></i> Forge New Character
-                            </a>
-                        </div>
-                    </div>
-                </form>
-
-                <!-- Active filter chips -->
-                <div class="d-flex gap-2 flex-wrap mt-3">
-                    <div class="alert alert-secondary alert-dismissible fade show py-1 px-3 mb-0" role="alert">
-                        Name contains "iron"
-                        <button type="button" class="btn-close position-static ms-2 p-2" data-bs-dismiss="alert"
-                            aria-label="Clear name filter"></button>
-                    </div>
-                    <div class="alert alert-secondary alert-dismissible fade show py-1 px-3 mb-0" role="alert">
-                        Type: All
-                        <button type="button" class="btn-close position-static ms-2 p-2" data-bs-dismiss="alert"
-                            aria-label="Clear type filter"></button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Locked for comparison -->
-        <!-- Locked rows stay on screen while you search, so two sheets can be compared -->
-        <div class="card border-primary mb-4">
-            <div class="card-body">
-                <div class="d-flex align-items-center gap-2 mb-3">
-                    <h3 class="card-title mb-0">
-                        <i class="bi bi-lock-fill text-primary"></i> Locked for Comparison
-                    </h3>
-                    <span class="badge bg-primary rounded-pill">2</span>
-                </div>
-                <p class="mb-4 text-body-secondary">These characters stay on screen while you search. Release a lock to
-                    send a character back to the roster.</p>
-
-                <!--
-                        Empty state, used when nothing is locked:
-                        <div class="alert alert-secondary mb-0" role="alert">
-                            Nothing is locked yet. Use the lock button on any roster row to pin a
-                            character here for comparison.
-                        </div>
-                    -->
-
-                <ul class="list-unstyled mb-0" aria-label="Characters held for comparison">
-                    <li class="card mb-3">
-                        <div class="card-body">
-                            <div class="d-flex flex-wrap align-items-center gap-3">
-                                <img src="Assets/Images/anvil.png" alt="Portrait of Thorin Ironfist" class="rounded-circle roster-portrait">
-                                <div class="flex-grow-1">
-                                    <h5 class="mb-1">Thorin Ironfist</h5>
-                                    <div class="text-body-secondary">Dwarven Vanguard</div>
-                                    <span class="badge bg-primary">Player</span>
-                                    <span class="badge bg-secondary text-dark">U-88</span>
-                                    <span class="badge bg-success rounded-pill">Level 12</span>
-                                </div>
-                                <div class="d-flex flex-wrap align-items-center gap-2">
-                                    <button class="btn btn-outline-primary btn-expand" type="button"
-                                        data-bs-toggle="collapse" data-bs-target="#detail-pc1024"
-                                        aria-expanded="false" aria-controls="detail-pc1024"
-                                        aria-label="Sheet for Thorin Ironfist">
-                                        <i class="bi bi-chevron-down"></i> Sheet
-                                    </button>
-                                    <div class="btn-group btn-group-sm" role="group"
-                                        aria-label="Actions for Thorin Ironfist">
-                                        <input type="checkbox" class="btn-check" id="lockPc1024Compare" checked
-                                            autocomplete="off">
-                                        <label class="btn btn-outline-primary btn-icon" for="lockPc1024Compare"
-                                            data-bs-toggle="tooltip" data-bs-title="Unlock - remove from comparison">
-                                            <i class="bi bi-lock-fill"></i>
-                                        </label>
-                                        <a href="creation-character.html" class="btn btn-outline-primary btn-icon"
-                                            data-bs-toggle="tooltip"
-                                            data-bs-title="Edit in the forge with this sheet loaded">
-                                            <i class="bi bi-pencil-square"></i>
-                                        </a>
-                                        <button type="button" class="btn btn-outline-danger btn-icon" data-bs-toggle="modal"
-                                            data-bs-target="#deleteCharacterModal" aria-label="Delete Thorin Ironfist">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="collapse" id="detail-pc1024">
-                                <hr>
-                                <!-- Character sheet: Thorin Ironfist -->
-
-                                <div class="accordion" id="sheet-pc1024">
-                                    <div class="accordion-item">
-                                        <h2 class="accordion-header">
-                                            <button class="accordion-button" type="button"
-                                                data-bs-toggle="collapse" data-bs-target="#sheet-pc1024-vitals"
-                                                aria-expanded="true" aria-controls="sheet-pc1024-vitals">
-                                                Vitals
-                                            </button>
-                                        </h2>
-                                        <div id="sheet-pc1024-vitals" class="accordion-collapse collapse show">
-                                            <div class="accordion-body">
-                                                <div class="row row-cols-1 row-cols-lg-3 g-3 mb-4">
-                                                    <div class="col">
-                                                        <div class="d-flex align-items-center gap-2">
-                                                            <span class="form-label mb-0 vitals-label">HP</span>
-                                                            <div class="progress flex-grow-1" role="progressbar" aria-label="HP"
-                                                                aria-valuenow="42" aria-valuemin="0" aria-valuemax="50">
-                                                                <div class="progress-bar bg-health" style="width: 84%"></div>
-                                                            </div>
-                                                            <span class="badge vitals-value bg-secondary text-dark">42 / 50</span>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col">
-                                                        <div class="d-flex align-items-center gap-2">
-                                                            <span class="form-label mb-0 vitals-label">MP</span>
-                                                            <div class="progress flex-grow-1" role="progressbar" aria-label="MP"
-                                                                aria-valuenow="12" aria-valuemin="0" aria-valuemax="40">
-                                                                <div class="progress-bar bg-mana" style="width: 30%"></div>
-                                                            </div>
-                                                            <span class="badge vitals-value bg-secondary text-dark">12 / 40</span>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col">
-                                                        <div class="d-flex align-items-center gap-2">
-                                                            <span class="form-label mb-0 vitals-label">SP</span>
-                                                            <div class="progress flex-grow-1" role="progressbar" aria-label="SP"
-                                                                aria-valuenow="28" aria-valuemin="0" aria-valuemax="45">
-                                                                <div class="progress-bar bg-stamina" style="width: 62%"></div>
-                                                            </div>
-                                                            <span class="badge vitals-value bg-secondary text-dark">28 / 45</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
+                                <div class="collapse mt-3" :id="sheetPanelId(character)">
+                                    <div class="row row-cols-1 row-cols-lg-2 g-3">
+                                        <!-- Attributes -->
+                                        <div class="col">
+                                            <h6 class="fw-bold">Attributes</h6>
+                                            <ul class="list-group list-group-flush">
+                                                <li class="list-group-item d-flex justify-content-between align-items-center"
+                                                    v-for="stat in characterStats(character)" :key="stat.id">
+                                                    {{ stat.label }}
+                                                    <span class="badge bg-secondary text-dark">{{ stat.value }}</span>
+                                                </li>
+                                            </ul>
                                         </div>
-                                    </div>
-                                    <div class="accordion-item">
-                                        <h2 class="accordion-header">
-                                            <button class="accordion-button collapsed" type="button"
-                                                data-bs-toggle="collapse" data-bs-target="#sheet-pc1024-stats"
-                                                aria-expanded="false" aria-controls="sheet-pc1024-stats">
-                                                Stats
-                                            </button>
-                                        </h2>
-                                        <div id="sheet-pc1024-stats" class="accordion-collapse collapse">
-                                            <div class="accordion-body">
-                                                <p class="mb-3 text-body-secondary">
-                                                    Stat Points
-                                                    <span class="badge bg-secondary text-dark">128 /
-                                                        128</span>
-                                                </p>
-                                                <div class="row row-cols-3 row-cols-md-6 g-2 text-center">
-                                                    <div class="col">
-                                                        <div class="stat-box border border-primary-subtle rounded bg-light p-2 h-100"
-                                                            data-bs-toggle="tooltip" data-bs-title="Physical power, lifting, and close-combat force.">
-                                                            <div class="stat-label text-body-secondary text-uppercase">Str</div>
-                                                            <div class="stat-score fw-bold">18</div>
-                                                            <div class="progress sheet-bar" role="progressbar" aria-label="Strength"
-                                                                aria-valuenow="18" aria-valuemin="1" aria-valuemax="20">
-                                                                <div class="progress-bar bg-success" style="width: 90%"></div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col">
-                                                        <div class="stat-box border border-primary-subtle rounded bg-light p-2 h-100"
-                                                            data-bs-toggle="tooltip" data-bs-title="Speed, coordination, balance, and precision.">
-                                                            <div class="stat-label text-body-secondary text-uppercase">Dex</div>
-                                                            <div class="stat-score fw-bold">9</div>
-                                                            <div class="progress sheet-bar" role="progressbar" aria-label="Dexterity"
-                                                                aria-valuenow="9" aria-valuemin="1" aria-valuemax="20">
-                                                                <div class="progress-bar bg-success" style="width: 45%"></div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col">
-                                                        <div class="stat-box border border-primary-subtle rounded bg-light p-2 h-100"
-                                                            data-bs-toggle="tooltip" data-bs-title="Endurance, toughness, and resistance to harm.">
-                                                            <div class="stat-label text-body-secondary text-uppercase">Con</div>
-                                                            <div class="stat-score fw-bold">17</div>
-                                                            <div class="progress sheet-bar" role="progressbar" aria-label="Constitution"
-                                                                aria-valuenow="17" aria-valuemin="1" aria-valuemax="20">
-                                                                <div class="progress-bar bg-success" style="width: 85%"></div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col">
-                                                        <div class="stat-box border border-primary-subtle rounded bg-light p-2 h-100"
-                                                            data-bs-toggle="tooltip" data-bs-title="Reasoning, memory, learning, and problem-solving.">
-                                                            <div class="stat-label text-body-secondary text-uppercase">Int</div>
-                                                            <div class="stat-score fw-bold">8</div>
-                                                            <div class="progress sheet-bar" role="progressbar" aria-label="Intelligence"
-                                                                aria-valuenow="8" aria-valuemin="1" aria-valuemax="20">
-                                                                <div class="progress-bar bg-success" style="width: 40%"></div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col">
-                                                        <div class="stat-box border border-primary-subtle rounded bg-light p-2 h-100"
-                                                            data-bs-toggle="tooltip" data-bs-title="Awareness, perception, judgment, and intuition.">
-                                                            <div class="stat-label text-body-secondary text-uppercase">Wis</div>
-                                                            <div class="stat-score fw-bold">11</div>
-                                                            <div class="progress sheet-bar" role="progressbar" aria-label="Wisdom"
-                                                                aria-valuenow="11" aria-valuemin="1" aria-valuemax="20">
-                                                                <div class="progress-bar bg-success" style="width: 55%"></div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col">
-                                                        <div class="stat-box border border-primary-subtle rounded bg-light p-2 h-100"
-                                                            data-bs-toggle="tooltip" data-bs-title="Confidence, presence, influence, and leadership.">
-                                                            <div class="stat-label text-body-secondary text-uppercase">Cha</div>
-                                                            <div class="stat-score fw-bold">7</div>
-                                                            <div class="progress sheet-bar" role="progressbar" aria-label="Charisma"
-                                                                aria-valuenow="7" aria-valuemin="1" aria-valuemax="20">
-                                                                <div class="progress-bar bg-success" style="width: 35%"></div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
+
+                                        <!-- Gear -->
+                                        <div class="col">
+                                            <h6 class="fw-bold">Gear</h6>
+                                            <ul class="list-group list-group-flush">
+                                                <li class="list-group-item d-flex justify-content-between align-items-center"
+                                                    v-for="slot in characterGear(character)" :key="slot.id">
+                                                    {{ slot.label }}
+                                                    <span class="badge"
+                                                        :class="slot.filled ? 'bg-primary' : 'bg-secondary text-dark'">{{ slot.itemName }}</span>
+                                                </li>
+                                            </ul>
                                         </div>
-                                    </div>
-                                    <div class="accordion-item">
-                                        <h2 class="accordion-header">
-                                            <button class="accordion-button collapsed" type="button"
-                                                data-bs-toggle="collapse" data-bs-target="#sheet-pc1024-skills"
-                                                aria-expanded="false" aria-controls="sheet-pc1024-skills">
-                                                Skills
-                                            </button>
-                                        </h2>
-                                        <div id="sheet-pc1024-skills" class="accordion-collapse collapse">
-                                            <div class="accordion-body">
-                                                <div class="row row-cols-1 row-cols-md-2 g-3">
-                                                    <div class="col">
-                                                        <h6 class="fw-bold">Gathering Skills</h6>
-                                                        <ul class="list-group list-group-flush">
-                                                            <li class="list-group-item d-flex align-items-center gap-2"
-                                                                data-bs-toggle="tooltip" data-bs-title="The skill of extracting minerals from the earth.">
-                                                                <span class="flex-grow-1">Mining</span>
-                                                                <div class="progress sheet-bar" role="progressbar" aria-label="Mining"
-                                                                    aria-valuenow="82" aria-valuemin="1" aria-valuemax="100">
-                                                                    <div class="progress-bar bg-success" style="width: 82%"></div>
-                                                                </div>
-                                                                <span class="badge bg-secondary text-dark">82</span>
-                                                            </li>
-                                                            <li class="list-group-item d-flex align-items-center gap-2"
-                                                                data-bs-toggle="tooltip" data-bs-title="The skill of gathering food from the natural environment.">
-                                                                <span class="flex-grow-1">Foraging</span>
-                                                                <div class="progress sheet-bar" role="progressbar" aria-label="Foraging"
-                                                                    aria-valuenow="31" aria-valuemin="1" aria-valuemax="100">
-                                                                    <div class="progress-bar bg-success" style="width: 31%"></div>
-                                                                </div>
-                                                                <span class="badge bg-secondary text-dark">31</span>
-                                                            </li>
-                                                            <li class="list-group-item d-flex align-items-center gap-2"
-                                                                data-bs-toggle="tooltip" data-bs-title="The skill of cutting down trees and processing the wood.">
-                                                                <span class="flex-grow-1">Lumberjacking</span>
-                                                                <div class="progress sheet-bar" role="progressbar" aria-label="Lumberjacking"
-                                                                    aria-valuenow="64" aria-valuemin="1" aria-valuemax="100">
-                                                                    <div class="progress-bar bg-success" style="width: 64%"></div>
-                                                                </div>
-                                                                <span class="badge bg-secondary text-dark">64</span>
-                                                            </li>
-                                                        </ul>
-                                                    </div>
-                                                    <div class="col">
-                                                        <h6 class="fw-bold">One-Handed Weapons</h6>
-                                                        <ul class="list-group list-group-flush">
-                                                            <li class="list-group-item d-flex align-items-center gap-2"
-                                                                data-bs-toggle="tooltip" data-bs-title="Training with single-handed axes and hatchets.">
-                                                                <span class="flex-grow-1">Axes</span>
-                                                                <div class="progress sheet-bar" role="progressbar" aria-label="Axes"
-                                                                    aria-valuenow="91" aria-valuemin="1" aria-valuemax="100">
-                                                                    <div class="progress-bar bg-success" style="width: 91%"></div>
-                                                                </div>
-                                                                <span class="badge bg-secondary text-dark">91</span>
-                                                            </li>
-                                                            <li class="list-group-item d-flex align-items-center gap-2"
-                                                                data-bs-toggle="tooltip" data-bs-title="Training with blunt crushing weapons.">
-                                                                <span class="flex-grow-1">Maces</span>
-                                                                <div class="progress sheet-bar" role="progressbar" aria-label="Maces"
-                                                                    aria-valuenow="47" aria-valuemin="1" aria-valuemax="100">
-                                                                    <div class="progress-bar bg-success" style="width: 47%"></div>
-                                                                </div>
-                                                                <span class="badge bg-secondary text-dark">47</span>
-                                                            </li>
-                                                        </ul>
-                                                    </div>
-                                                    <div class="col">
-                                                        <h6 class="fw-bold">Medium Armor</h6>
-                                                        <ul class="list-group list-group-flush">
-                                                            <li class="list-group-item d-flex align-items-center gap-2"
-                                                                data-bs-toggle="tooltip" data-bs-title="Wearing interlocking ring armor without losing mobility.">
-                                                                <span class="flex-grow-1">Chainmail</span>
-                                                                <div class="progress sheet-bar" role="progressbar" aria-label="Chainmail"
-                                                                    aria-valuenow="73" aria-valuemin="1" aria-valuemax="100">
-                                                                    <div class="progress-bar bg-success" style="width: 73%"></div>
-                                                                </div>
-                                                                <span class="badge bg-secondary text-dark">73</span>
-                                                            </li>
-                                                        </ul>
-                                                    </div>
-                                                </div>
 
-
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="accordion-item">
-                                        <h2 class="accordion-header">
-                                            <button class="accordion-button collapsed" type="button"
-                                                data-bs-toggle="collapse" data-bs-target="#sheet-pc1024-abilities"
-                                                aria-expanded="false" aria-controls="sheet-pc1024-abilities">
-                                                Abilities
-                                            </button>
-                                        </h2>
-                                        <div id="sheet-pc1024-abilities" class="accordion-collapse collapse">
-                                            <div class="accordion-body">
-                                                <p class="mb-3 text-body-secondary">
-                                                    <span class="badge bg-secondary text-dark">Ability
-                                                        Points 3 / 12</span>
-                                                </p>
-                                                <div class="row row-cols-1 row-cols-md-2 g-3">
-                                                    <div class="col">
-                                                        <h6 class="fw-bold">Gathering Skills</h6>
-                                                        <ul class="list-group list-group-flush">
-                                                            <li class="list-group-item d-flex justify-content-between align-items-center"
-                                                                data-bs-toggle="tooltip"
-                                                                data-bs-title="Mine ore twice as fast for 30 seconds.">
-                                                                <h6 class="mb-0">Vein Sense</h6>
-                                                                <span>
-                                                                    <span class="badge bg-success"><i class="bi bi-check-lg"></i> Learned</span>
-                                                                </span>
-                                                            </li>
-                                                            <li class="list-group-item d-flex justify-content-between align-items-center"
-                                                                data-bs-toggle="tooltip"
-                                                                data-bs-title="Harvest a second time from any node.">
-                                                                <h6 class="mb-0">Second Harvest</h6>
-                                                                <span>
-                                                                    <span class="badge bg-secondary text-dark">Not Learned</span>
-                                                                </span>
-                                                            </li>
-                                                        </ul>
-                                                    </div>
-                                                    <div class="col">
-                                                        <h6 class="fw-bold">One-Handed Weapons</h6>
-                                                        <ul class="list-group list-group-flush">
-                                                            <li class="list-group-item d-flex justify-content-between align-items-center"
-                                                                data-bs-toggle="tooltip"
-                                                                data-bs-title="A heavy overhead chop that ignores 10% of armor.">
-                                                                <h6 class="mb-0">Cleaving Blow</h6>
-                                                                <span>
-                                                                    <span class="badge bg-success"><i class="bi bi-check-lg"></i> Learned</span>
-                                                                </span>
-                                                            </li>
-                                                            <li class="list-group-item d-flex justify-content-between align-items-center"
-                                                                data-bs-toggle="tooltip"
-                                                                data-bs-title="Raise your shield to halve incoming damage for 5 seconds.">
-                                                                <h6 class="mb-0">Bulwark</h6>
-                                                                <span>
-                                                                    <span class="badge bg-success"><i class="bi bi-check-lg"></i> Learned</span>
-                                                                </span>
-                                                            </li>
-                                                        </ul>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="accordion-item">
-                                        <h2 class="accordion-header">
-                                            <button class="accordion-button collapsed" type="button"
-                                                data-bs-toggle="collapse" data-bs-target="#sheet-pc1024-spells"
-                                                aria-expanded="false" aria-controls="sheet-pc1024-spells">
-                                                Spells
-                                            </button>
-                                        </h2>
-                                        <div id="sheet-pc1024-spells" class="accordion-collapse collapse">
-                                            <div class="accordion-body">
-                                                <div class="row row-cols-1 row-cols-md-2 g-3">
-                                                    <div class="col">
-                                                        <h6 class="fw-bold">Abjuration</h6>
-                                                        <ul class="list-group">
-                                                            <li class="list-group-item d-flex justify-content-between align-items-center"
-                                                                data-bs-toggle="tooltip"
-                                                                data-bs-title="Absorbs the next 20 points of damage.">
-                                                                <h6 class="mb-0">Arcane Ward</h6>
-                                                                <span>
-                                                                    <span class="badge bg-primary">Level 2</span>
-                                                                </span>
-                                                            </li>
-                                                        </ul>
-                                                    </div>
-                                                    <div class="col">
-                                                        <h6 class="fw-bold">Evocation</h6>
-                                                        <ul class="list-group">
-                                                            <li class="list-group-item d-flex justify-content-between align-items-center"
-                                                                data-bs-toggle="tooltip"
-                                                                data-bs-title="Three darts of force, each dealing 4 damage.">
-                                                                <h6 class="mb-0">Magic Missile</h6>
-                                                                <span>
-                                                                    <span class="badge bg-primary">Level 1</span>
-                                                                </span>
-                                                            </li>
-                                                        </ul>
-                                                    </div>
-                                                </div>
-
-
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="accordion-item">
-                                        <h2 class="accordion-header">
-                                            <button class="accordion-button collapsed" type="button"
-                                                data-bs-toggle="collapse" data-bs-target="#sheet-pc1024-items"
-                                                aria-expanded="false" aria-controls="sheet-pc1024-items">
-                                                Items
-                                            </button>
-                                        </h2>
-                                        <div id="sheet-pc1024-items" class="accordion-collapse collapse">
-                                            <div class="accordion-body">
-                                                <div class="row row-cols-1 row-cols-md-2 g-3">
-                                                    <div class="col">
-                                                        <h6 class="fw-bold">Gear</h6>
-                                                        <ul class="list-group">
-                                                            <li
-                                                                class="list-group-item d-flex justify-content-between align-items-center">
-                                                                Iron Helm
-                                                                <span
-                                                                    class="badge bg-primary">Head</span>
-                                                            </li>
-                                                            <li
-                                                                class="list-group-item d-flex justify-content-between align-items-center">
-                                                                Hand Axe
-                                                                <span
-                                                                    class="badge bg-primary">Hand</span>
-                                                            </li>
-                                                            <li
-                                                                class="list-group-item d-flex justify-content-between align-items-center">
-                                                                Wooden Shield
-                                                                <span
-                                                                    class="badge bg-primary">Hand</span>
-                                                            </li>
-                                                            <li
-                                                                class="list-group-item d-flex justify-content-between align-items-center">
-                                                                Chainmail Leggings
-                                                                <span
-                                                                    class="badge bg-primary">Legs</span>
-                                                            </li>
-                                                            <li
-                                                                class="list-group-item d-flex justify-content-between align-items-center">
-                                                                Ring of Vigor
-                                                                <span
-                                                                    class="badge bg-primary">Accessory</span>
-                                                            </li>
-                                                        </ul>
-                                                    </div>
-                                                    <div class="col">
-                                                        <h6 class="fw-bold">Inventory</h6>
-                                                        <ul class="list-group">
-                                                            <li class="list-group-item d-flex justify-content-between align-items-center"
-                                                                data-bs-toggle="tooltip"
-                                                                data-bs-title="Restores 50 health when used.">
-                                                                <h6 class="mb-0">Health Potion</h6>
-                                                                <span>
-                                                                    <span> <span class="badge bg-primary">Consumable</span> <span class="badge bg-secondary text-dark rounded-pill">&times;3</span> </span>
-                                                                </span>
-                                                            </li>
-                                                            <li class="list-group-item d-flex justify-content-between align-items-center"
-                                                                data-bs-toggle="tooltip"
-                                                                data-bs-title="Lights a small area for one hour.">
-                                                                <h6 class="mb-0">Torch</h6>
-                                                                <span>
-                                                                    <span> <span class="badge bg-primary">Consumable</span> <span class="badge bg-secondary text-dark rounded-pill">&times;6</span> </span>
-                                                                </span>
-                                                            </li>
-                                                            <li class="list-group-item d-flex justify-content-between align-items-center"
-                                                                data-bs-toggle="tooltip"
-                                                                data-bs-title="Fifty feet of sturdy hemp rope.">
-                                                                <h6 class="mb-0">Rope</h6>
-                                                                <span>
-                                                                    <span> <span class="badge bg-primary">Gear</span> <span class="badge bg-secondary text-dark rounded-pill">&times;1</span> </span>
-                                                                </span>
-                                                            </li>
-                                                        </ul>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                            </div>
-                        </div>
-                    </li>
-                    <li class="card mb-3">
-                        <div class="card-body">
-                            <div class="d-flex flex-wrap align-items-center gap-3">
-                                <img src="Assets/Images/anvil.png" alt="Portrait of Grenda the Grey" class="rounded-circle roster-portrait">
-                                <div class="flex-grow-1">
-                                    <h5 class="mb-1">Grenda the Grey</h5>
-                                    <div class="text-body-secondary">Wandering Hedge Witch</div>
-                                    <span class="badge bg-secondary text-dark">NPC</span>
-                                    <span class="badge bg-secondary text-dark">NPC-07</span>
-                                    <span class="badge bg-success rounded-pill">Level 9</span>
-                                </div>
-                                <div class="d-flex flex-wrap align-items-center gap-2">
-                                    <button class="btn btn-outline-primary btn-expand" type="button"
-                                        data-bs-toggle="collapse" data-bs-target="#detail-npc07"
-                                        aria-expanded="false" aria-controls="detail-npc07"
-                                        aria-label="Sheet for Grenda the Grey">
-                                        <i class="bi bi-chevron-down"></i> Sheet
-                                    </button>
-                                    <div class="btn-group btn-group-sm" role="group"
-                                        aria-label="Actions for Grenda the Grey">
-                                        <input type="checkbox" class="btn-check" id="lockNpc07Compare" checked
-                                            autocomplete="off">
-                                        <label class="btn btn-outline-primary btn-icon" for="lockNpc07Compare"
-                                            data-bs-toggle="tooltip" data-bs-title="Unlock - remove from comparison">
-                                            <i class="bi bi-lock-fill"></i>
-                                        </label>
-                                        <a href="creation-character.html" class="btn btn-outline-primary btn-icon"
-                                            data-bs-toggle="tooltip"
-                                            data-bs-title="Edit in the forge with this sheet loaded">
-                                            <i class="bi bi-pencil-square"></i>
-                                        </a>
-                                        <button type="button" class="btn btn-outline-danger btn-icon" data-bs-toggle="modal"
-                                            data-bs-target="#deleteCharacterModal" aria-label="Delete Grenda the Grey">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="collapse" id="detail-npc07">
-                                <hr>
-                                <!-- Character sheet: Grenda the Grey -->
-
-                                <div class="accordion" id="sheet-npc07">
-                                    <div class="accordion-item">
-                                        <h2 class="accordion-header">
-                                            <button class="accordion-button" type="button"
-                                                data-bs-toggle="collapse" data-bs-target="#sheet-npc07-vitals"
-                                                aria-expanded="true" aria-controls="sheet-npc07-vitals">
-                                                Vitals
-                                            </button>
-                                        </h2>
-                                        <div id="sheet-npc07-vitals" class="accordion-collapse collapse show">
-                                            <div class="accordion-body">
-                                                <div class="row row-cols-1 row-cols-lg-3 g-3 mb-4">
-                                                    <div class="col">
-                                                        <div class="d-flex align-items-center gap-2">
-                                                            <span class="form-label mb-0 vitals-label">HP</span>
-                                                            <div class="progress flex-grow-1" role="progressbar" aria-label="HP"
-                                                                aria-valuenow="24" aria-valuemin="0" aria-valuemax="34">
-                                                                <div class="progress-bar bg-health" style="width: 71%"></div>
-                                                            </div>
-                                                            <span class="badge vitals-value bg-secondary text-dark">24 / 34</span>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col">
-                                                        <div class="d-flex align-items-center gap-2">
-                                                            <span class="form-label mb-0 vitals-label">MP</span>
-                                                            <div class="progress flex-grow-1" role="progressbar" aria-label="MP"
-                                                                aria-valuenow="31" aria-valuemin="0" aria-valuemax="48">
-                                                                <div class="progress-bar bg-mana" style="width: 65%"></div>
-                                                            </div>
-                                                            <span class="badge vitals-value bg-secondary text-dark">31 / 48</span>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col">
-                                                        <div class="d-flex align-items-center gap-2">
-                                                            <span class="form-label mb-0 vitals-label">SP</span>
-                                                            <div class="progress flex-grow-1" role="progressbar" aria-label="SP"
-                                                                aria-valuenow="15" aria-valuemin="0" aria-valuemax="26">
-                                                                <div class="progress-bar bg-stamina" style="width: 58%"></div>
-                                                            </div>
-                                                            <span class="badge vitals-value bg-secondary text-dark">15 / 26</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="accordion-item">
-                                        <h2 class="accordion-header">
-                                            <button class="accordion-button collapsed" type="button"
-                                                data-bs-toggle="collapse" data-bs-target="#sheet-npc07-stats"
-                                                aria-expanded="false" aria-controls="sheet-npc07-stats">
-                                                Stats
-                                            </button>
-                                        </h2>
-                                        <div id="sheet-npc07-stats" class="accordion-collapse collapse">
-                                            <div class="accordion-body">
-                                                <p class="mb-3 text-body-secondary">
-                                                    Stat Points
-                                                    <span class="badge bg-secondary text-dark">96 /
-                                                        128</span>
-                                                </p>
-                                                <div class="row row-cols-3 row-cols-md-6 g-2 text-center">
-                                                    <div class="col">
-                                                        <div class="stat-box border border-primary-subtle rounded bg-light p-2 h-100"
-                                                            data-bs-toggle="tooltip" data-bs-title="Physical power, lifting, and close-combat force.">
-                                                            <div class="stat-label text-body-secondary text-uppercase">Str</div>
-                                                            <div class="stat-score fw-bold">6</div>
-                                                            <div class="progress sheet-bar" role="progressbar" aria-label="Strength"
-                                                                aria-valuenow="6" aria-valuemin="1" aria-valuemax="20">
-                                                                <div class="progress-bar bg-success" style="width: 30%"></div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col">
-                                                        <div class="stat-box border border-primary-subtle rounded bg-light p-2 h-100"
-                                                            data-bs-toggle="tooltip" data-bs-title="Speed, coordination, balance, and precision.">
-                                                            <div class="stat-label text-body-secondary text-uppercase">Dex</div>
-                                                            <div class="stat-score fw-bold">12</div>
-                                                            <div class="progress sheet-bar" role="progressbar" aria-label="Dexterity"
-                                                                aria-valuenow="12" aria-valuemin="1" aria-valuemax="20">
-                                                                <div class="progress-bar bg-success" style="width: 60%"></div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col">
-                                                        <div class="stat-box border border-primary-subtle rounded bg-light p-2 h-100"
-                                                            data-bs-toggle="tooltip" data-bs-title="Endurance, toughness, and resistance to harm.">
-                                                            <div class="stat-label text-body-secondary text-uppercase">Con</div>
-                                                            <div class="stat-score fw-bold">10</div>
-                                                            <div class="progress sheet-bar" role="progressbar" aria-label="Constitution"
-                                                                aria-valuenow="10" aria-valuemin="1" aria-valuemax="20">
-                                                                <div class="progress-bar bg-success" style="width: 50%"></div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col">
-                                                        <div class="stat-box border border-primary-subtle rounded bg-light p-2 h-100"
-                                                            data-bs-toggle="tooltip" data-bs-title="Reasoning, memory, learning, and problem-solving.">
-                                                            <div class="stat-label text-body-secondary text-uppercase">Int</div>
-                                                            <div class="stat-score fw-bold">19</div>
-                                                            <div class="progress sheet-bar" role="progressbar" aria-label="Intelligence"
-                                                                aria-valuenow="19" aria-valuemin="1" aria-valuemax="20">
-                                                                <div class="progress-bar bg-success" style="width: 95%"></div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col">
-                                                        <div class="stat-box border border-primary-subtle rounded bg-light p-2 h-100"
-                                                            data-bs-toggle="tooltip" data-bs-title="Awareness, perception, judgment, and intuition.">
-                                                            <div class="stat-label text-body-secondary text-uppercase">Wis</div>
-                                                            <div class="stat-score fw-bold">18</div>
-                                                            <div class="progress sheet-bar" role="progressbar" aria-label="Wisdom"
-                                                                aria-valuenow="18" aria-valuemin="1" aria-valuemax="20">
-                                                                <div class="progress-bar bg-success" style="width: 90%"></div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col">
-                                                        <div class="stat-box border border-primary-subtle rounded bg-light p-2 h-100"
-                                                            data-bs-toggle="tooltip" data-bs-title="Confidence, presence, influence, and leadership.">
-                                                            <div class="stat-label text-body-secondary text-uppercase">Cha</div>
-                                                            <div class="stat-score fw-bold">14</div>
-                                                            <div class="progress sheet-bar" role="progressbar" aria-label="Charisma"
-                                                                aria-valuenow="14" aria-valuemin="1" aria-valuemax="20">
-                                                                <div class="progress-bar bg-success" style="width: 70%"></div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="accordion-item">
-                                        <h2 class="accordion-header">
-                                            <button class="accordion-button collapsed" type="button"
-                                                data-bs-toggle="collapse" data-bs-target="#sheet-npc07-skills"
-                                                aria-expanded="false" aria-controls="sheet-npc07-skills">
-                                                Skills
-                                            </button>
-                                        </h2>
-                                        <div id="sheet-npc07-skills" class="accordion-collapse collapse">
-                                            <div class="accordion-body">
-                                                <div class="row row-cols-1 row-cols-md-2 g-3">
-                                                    <div class="col">
-                                                        <h6 class="fw-bold">Gathering Skills</h6>
-                                                        <ul class="list-group list-group-flush">
-                                                            <li class="list-group-item d-flex align-items-center gap-2"
-                                                                data-bs-toggle="tooltip" data-bs-title="The skill of identifying and harvesting useful plants.">
-                                                                <span class="flex-grow-1">Herbalism</span>
-                                                                <div class="progress sheet-bar" role="progressbar" aria-label="Herbalism"
-                                                                    aria-valuenow="97" aria-valuemin="1" aria-valuemax="100">
-                                                                    <div class="progress-bar bg-success" style="width: 97%"></div>
-                                                                </div>
-                                                                <span class="badge bg-secondary text-dark">97</span>
-                                                            </li>
-                                                            <li class="list-group-item d-flex align-items-center gap-2"
-                                                                data-bs-toggle="tooltip" data-bs-title="The skill of gathering food from the natural environment.">
-                                                                <span class="flex-grow-1">Foraging</span>
-                                                                <div class="progress sheet-bar" role="progressbar" aria-label="Foraging"
-                                                                    aria-valuenow="88" aria-valuemin="1" aria-valuemax="100">
-                                                                    <div class="progress-bar bg-success" style="width: 88%"></div>
-                                                                </div>
-                                                                <span class="badge bg-secondary text-dark">88</span>
-                                                            </li>
-                                                        </ul>
-                                                    </div>
-                                                </div>
-
-
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="accordion-item">
-                                        <h2 class="accordion-header">
-                                            <button class="accordion-button collapsed" type="button"
-                                                data-bs-toggle="collapse" data-bs-target="#sheet-npc07-abilities"
-                                                aria-expanded="false" aria-controls="sheet-npc07-abilities">
-                                                Abilities
-                                            </button>
-                                        </h2>
-                                        <div id="sheet-npc07-abilities" class="accordion-collapse collapse">
-                                            <div class="accordion-body">
-                                                <p class="mb-3 text-body-secondary">
-                                                    <span class="badge bg-secondary text-dark">Ability
-                                                        Points 2 / 9</span>
-                                                </p>
-                                                <div class="row row-cols-1 row-cols-md-2 g-3">
-                                                    <div class="col">
-                                                        <h6 class="fw-bold">Gathering Skills</h6>
-                                                        <ul class="list-group list-group-flush">
-                                                            <li class="list-group-item d-flex justify-content-between align-items-center"
-                                                                data-bs-toggle="tooltip"
-                                                                data-bs-title="Rare herbs glow faintly within 30 feet.">
-                                                                <h6 class="mb-0">Green Sight</h6>
-                                                                <span>
-                                                                    <span class="badge bg-success"><i class="bi bi-check-lg"></i> Learned</span>
-                                                                </span>
-                                                            </li>
-                                                            <li class="list-group-item d-flex justify-content-between align-items-center"
-                                                                data-bs-toggle="tooltip"
-                                                                data-bs-title="Brew a potion without a cauldron once per day.">
-                                                                <h6 class="mb-0">Field Brewing</h6>
-                                                                <span>
-                                                                    <span class="badge bg-success"><i class="bi bi-check-lg"></i> Learned</span>
-                                                                </span>
-                                                            </li>
-                                                        </ul>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="accordion-item">
-                                        <h2 class="accordion-header">
-                                            <button class="accordion-button collapsed" type="button"
-                                                data-bs-toggle="collapse" data-bs-target="#sheet-npc07-spells"
-                                                aria-expanded="false" aria-controls="sheet-npc07-spells">
-                                                Spells
-                                            </button>
-                                        </h2>
-                                        <div id="sheet-npc07-spells" class="accordion-collapse collapse">
-                                            <div class="accordion-body">
-                                                <div class="row row-cols-1 row-cols-md-2 g-3">
-                                                    <div class="col">
-                                                        <h6 class="fw-bold">Divination</h6>
-                                                        <ul class="list-group">
-                                                            <li class="list-group-item d-flex justify-content-between align-items-center"
-                                                                data-bs-toggle="tooltip"
-                                                                data-bs-title="Reveals magical auras within 30 feet.">
-                                                                <h6 class="mb-0">Detect Magic</h6>
-                                                                <span>
-                                                                    <span class="badge bg-primary">Level 1</span>
-                                                                </span>
-                                                            </li>
-                                                            <li class="list-group-item d-flex justify-content-between align-items-center"
-                                                                data-bs-toggle="tooltip"
-                                                                data-bs-title="See and hear a distant location for one minute.">
-                                                                <h6 class="mb-0">Clairvoyance</h6>
-                                                                <span>
-                                                                    <span class="badge bg-primary">Level 3</span>
-                                                                </span>
-                                                            </li>
-                                                        </ul>
-                                                    </div>
-                                                    <div class="col">
-                                                        <h6 class="fw-bold">Transmutation</h6>
-                                                        <ul class="list-group">
-                                                            <li class="list-group-item d-flex justify-content-between align-items-center"
-                                                                data-bs-toggle="tooltip"
-                                                                data-bs-title="Slows a falling creature to a safe drift.">
-                                                                <h6 class="mb-0">Feather Fall</h6>
-                                                                <span>
-                                                                    <span class="badge bg-primary">Level 1</span>
-                                                                </span>
-                                                            </li>
-                                                        </ul>
-                                                    </div>
-                                                </div>
-
-
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="accordion-item">
-                                        <h2 class="accordion-header">
-                                            <button class="accordion-button collapsed" type="button"
-                                                data-bs-toggle="collapse" data-bs-target="#sheet-npc07-items"
-                                                aria-expanded="false" aria-controls="sheet-npc07-items">
-                                                Items
-                                            </button>
-                                        </h2>
-                                        <div id="sheet-npc07-items" class="accordion-collapse collapse">
-                                            <div class="accordion-body">
-                                                <div class="row row-cols-1 row-cols-md-2 g-3">
-                                                    <div class="col">
-                                                        <h6 class="fw-bold">Gear</h6>
-                                                        <ul class="list-group">
-                                                            <li
-                                                                class="list-group-item d-flex justify-content-between align-items-center">
-                                                                Leather Hood
-                                                                <span
-                                                                    class="badge bg-primary">Head</span>
-                                                            </li>
-                                                            <li
-                                                                class="list-group-item d-flex justify-content-between align-items-center">
-                                                                Gnarled Staff
-                                                                <span
-                                                                    class="badge bg-primary">Hand</span>
-                                                            </li>
-                                                            <li
-                                                                class="list-group-item d-flex justify-content-between align-items-center">
-                                                                Amulet of Warding
-                                                                <span
-                                                                    class="badge bg-primary">Accessory</span>
-                                                            </li>
-                                                        </ul>
-                                                    </div>
-                                                    <div class="col">
-                                                        <h6 class="fw-bold">Inventory</h6>
-                                                        <ul class="list-group">
-                                                            <li class="list-group-item d-flex justify-content-between align-items-center"
-                                                                data-bs-toggle="tooltip"
-                                                                data-bs-title="Cures poison and removes one disease.">
-                                                                <h6 class="mb-0">Antidote</h6>
-                                                                <span>
-                                                                    <span> <span class="badge bg-primary">Consumable</span> <span class="badge bg-secondary text-dark rounded-pill">&times;4</span> </span>
-                                                                </span>
-                                                            </li>
-                                                            <li class="list-group-item d-flex justify-content-between align-items-center"
-                                                                data-bs-toggle="tooltip"
-                                                                data-bs-title="Restores 40 mana when used.">
-                                                                <h6 class="mb-0">Mana Potion</h6>
-                                                                <span>
-                                                                    <span> <span class="badge bg-primary">Consumable</span> <span class="badge bg-secondary text-dark rounded-pill">&times;2</span> </span>
-                                                                </span>
-                                                            </li>
-                                                        </ul>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                            </div>
-                        </div>
-                    </li>
-                </ul>
-            </div>
-        </div>
-
-        <!-- Main roster table -->
-        <!-- Sample character rows -->
-        <div class="card mb-5">
-            <div class="card-body">
-                <div class="d-flex align-items-center gap-2 mb-3">
-                    <h3 class="card-title mb-0">All Characters</h3>
-                    <span class="badge bg-primary rounded-pill">4</span>
-                </div>
-                <p class="mb-4 text-body-secondary">A User ID may own several characters; an NPC ID belongs to exactly
-                    one
-                    character.</p>
-
-                <ul class="list-unstyled mb-0" aria-label="All characters currently in the world">
-                    <li class="card mb-3">
-                        <div class="card-body">
-                            <div class="d-flex flex-wrap align-items-center gap-3">
-                                <img src="Assets/Images/anvil.png" alt="Portrait of Sylas Vane" class="rounded-circle roster-portrait">
-                                <div class="flex-grow-1">
-                                    <h5 class="mb-1">Sylas Vane</h5>
-                                    <div class="text-body-secondary">Ashbound Evoker</div>
-                                    <span class="badge bg-primary">Player</span>
-                                    <span class="badge bg-secondary text-dark">U-88</span>
-                                    <span class="badge bg-success rounded-pill">Level 7</span>
-                                </div>
-                                <div class="d-flex flex-wrap align-items-center gap-2">
-                                    <button class="btn btn-outline-primary btn-expand" type="button"
-                                        data-bs-toggle="collapse" data-bs-target="#detail-pc1025"
-                                        aria-expanded="false" aria-controls="detail-pc1025"
-                                        aria-label="Sheet for Sylas Vane">
-                                        <i class="bi bi-chevron-down"></i> Sheet
-                                    </button>
-                                    <div class="btn-group btn-group-sm" role="group"
-                                        aria-label="Actions for Sylas Vane">
-                                        <input type="checkbox" class="btn-check" id="lockPc1025" autocomplete="off">
-                                        <label class="btn btn-outline-primary btn-icon" for="lockPc1025" data-bs-toggle="tooltip"
-                                            data-bs-title="Lock for comparison - keeps this character on screen while you search">
-                                            <i class="bi bi-unlock"></i>
-                                        </label>
-                                        <a href="creation-character.html" class="btn btn-outline-primary btn-icon"
-                                            data-bs-toggle="tooltip"
-                                            data-bs-title="Edit in the forge with this sheet loaded">
-                                            <i class="bi bi-pencil-square"></i>
-                                        </a>
-                                        <button type="button" class="btn btn-outline-danger btn-icon" data-bs-toggle="modal"
-                                            data-bs-target="#deleteCharacterModal" aria-label="Delete Sylas Vane">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="collapse" id="detail-pc1025">
-                                <hr>
-
-                                <div class="accordion" id="sheet-pc1025">
-                                    <div class="accordion-item">
-                                        <h2 class="accordion-header">
-                                            <button class="accordion-button" type="button"
-                                                data-bs-toggle="collapse" data-bs-target="#sheet-pc1025-vitals"
-                                                aria-expanded="true" aria-controls="sheet-pc1025-vitals">
-                                                Vitals
-                                            </button>
-                                        </h2>
-                                        <div id="sheet-pc1025-vitals" class="accordion-collapse collapse show">
-                                            <div class="accordion-body">
-                                                <div class="row row-cols-1 row-cols-lg-3 g-3 mb-4">
-                                                    <div class="col">
-                                                        <div class="d-flex align-items-center gap-2">
-                                                            <span class="form-label mb-0 vitals-label">HP</span>
-                                                            <div class="progress flex-grow-1" role="progressbar" aria-label="HP"
-                                                                aria-valuenow="19" aria-valuemin="0" aria-valuemax="28">
-                                                                <div class="progress-bar bg-health" style="width: 68%"></div>
-                                                            </div>
-                                                            <span class="badge vitals-value bg-secondary text-dark">19 / 28</span>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col">
-                                                        <div class="d-flex align-items-center gap-2">
-                                                            <span class="form-label mb-0 vitals-label">MP</span>
-                                                            <div class="progress flex-grow-1" role="progressbar" aria-label="MP"
-                                                                aria-valuenow="36" aria-valuemin="0" aria-valuemax="44">
-                                                                <div class="progress-bar bg-mana" style="width: 82%"></div>
-                                                            </div>
-                                                            <span class="badge vitals-value bg-secondary text-dark">36 / 44</span>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col">
-                                                        <div class="d-flex align-items-center gap-2">
-                                                            <span class="form-label mb-0 vitals-label">SP</span>
-                                                            <div class="progress flex-grow-1" role="progressbar" aria-label="SP"
-                                                                aria-valuenow="12" aria-valuemin="0" aria-valuemax="22">
-                                                                <div class="progress-bar bg-stamina" style="width: 55%"></div>
-                                                            </div>
-                                                            <span class="badge vitals-value bg-secondary text-dark">12 / 22</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="accordion-item">
-                                        <h2 class="accordion-header">
-                                            <button class="accordion-button collapsed" type="button"
-                                                data-bs-toggle="collapse" data-bs-target="#sheet-pc1025-stats"
-                                                aria-expanded="false" aria-controls="sheet-pc1025-stats">
-                                                Stats
-                                            </button>
-                                        </h2>
-                                        <div id="sheet-pc1025-stats" class="accordion-collapse collapse">
-                                            <div class="accordion-body">
-                                                <p class="mb-3 text-body-secondary">
-                                                    Stat Points
-                                                    <span class="badge bg-secondary text-dark">88 /
-                                                        128</span>
-                                                </p>
-                                                <div class="row row-cols-3 row-cols-md-6 g-2 text-center">
-                                                    <div class="col">
-                                                        <div class="stat-box border border-primary-subtle rounded bg-light p-2 h-100"
-                                                            data-bs-toggle="tooltip" data-bs-title="Physical power, lifting, and close-combat force.">
-                                                            <div class="stat-label text-body-secondary text-uppercase">Str</div>
-                                                            <div class="stat-score fw-bold">5</div>
-                                                            <div class="progress sheet-bar" role="progressbar" aria-label="Strength"
-                                                                aria-valuenow="5" aria-valuemin="1" aria-valuemax="20">
-                                                                <div class="progress-bar bg-success" style="width: 25%"></div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col">
-                                                        <div class="stat-box border border-primary-subtle rounded bg-light p-2 h-100"
-                                                            data-bs-toggle="tooltip" data-bs-title="Speed, coordination, balance, and precision.">
-                                                            <div class="stat-label text-body-secondary text-uppercase">Dex</div>
-                                                            <div class="stat-score fw-bold">14</div>
-                                                            <div class="progress sheet-bar" role="progressbar" aria-label="Dexterity"
-                                                                aria-valuenow="14" aria-valuemin="1" aria-valuemax="20">
-                                                                <div class="progress-bar bg-success" style="width: 70%"></div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col">
-                                                        <div class="stat-box border border-primary-subtle rounded bg-light p-2 h-100"
-                                                            data-bs-toggle="tooltip" data-bs-title="Reasoning, memory, learning, and problem-solving.">
-                                                            <div class="stat-label text-body-secondary text-uppercase">Int</div>
-                                                            <div class="stat-score fw-bold">20</div>
-                                                            <div class="progress sheet-bar" role="progressbar" aria-label="Intelligence"
-                                                                aria-valuenow="20" aria-valuemin="1" aria-valuemax="20">
-                                                                <div class="progress-bar bg-success" style="width: 100%"></div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="accordion-item">
-                                        <h2 class="accordion-header">
-                                            <button class="accordion-button collapsed" type="button"
-                                                data-bs-toggle="collapse" data-bs-target="#sheet-pc1025-spells"
-                                                aria-expanded="false" aria-controls="sheet-pc1025-spells">
-                                                Spells
-                                            </button>
-                                        </h2>
-                                        <div id="sheet-pc1025-spells" class="accordion-collapse collapse">
-                                            <div class="accordion-body">
-                                                <div class="row row-cols-1 row-cols-md-2 g-3">
-                                                    <div class="col">
-                                                        <h6 class="fw-bold">Evocation</h6>
-                                                        <ul class="list-group">
-                                                            <li class="list-group-item d-flex justify-content-between align-items-center"
-                                                                data-bs-toggle="tooltip"
-                                                                data-bs-title="Three darts of force, each dealing 4 damage.">
-                                                                <h6 class="mb-0">Magic Missile</h6>
-                                                                <span>
-                                                                    <span class="badge bg-primary">Level 1</span>
-                                                                </span>
-                                                            </li>
-                                                            <li class="list-group-item d-flex justify-content-between align-items-center"
-                                                                data-bs-toggle="tooltip"
-                                                                data-bs-title="A roaring sphere of flame centered on a point you choose.">
-                                                                <h6 class="mb-0">Fireball</h6>
-                                                                <span>
-                                                                    <span class="badge bg-primary">Level 3</span>
-                                                                </span>
-                                                            </li>
-                                                        </ul>
-                                                    </div>
-                                                    <div class="col">
-                                                        <h6 class="fw-bold">Conjuration</h6>
-                                                        <ul class="list-group">
-                                                            <li class="list-group-item d-flex justify-content-between align-items-center"
-                                                                data-bs-toggle="tooltip"
-                                                                data-bs-title="Blink up to 30 feet to an unoccupied space you can see.">
-                                                                <h6 class="mb-0">Misty Step</h6>
-                                                                <span>
-                                                                    <span class="badge bg-primary">Level 2</span>
-                                                                </span>
-                                                            </li>
-                                                        </ul>
-                                                    </div>
-                                                </div>
-
-
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="accordion-item">
-                                        <h2 class="accordion-header">
-                                            <button class="accordion-button collapsed" type="button"
-                                                data-bs-toggle="collapse" data-bs-target="#sheet-pc1025-items"
-                                                aria-expanded="false" aria-controls="sheet-pc1025-items">
-                                                Items
-                                            </button>
-                                        </h2>
-                                        <div id="sheet-pc1025-items" class="accordion-collapse collapse">
-                                            <div class="accordion-body">
-                                                <div class="row row-cols-1 row-cols-md-2 g-3">
-                                                    <div class="col">
-                                                        <h6 class="fw-bold">Gear</h6>
-                                                        <ul class="list-group">
-                                                            <li
-                                                                class="list-group-item d-flex justify-content-between align-items-center">
-                                                                Dagger
-                                                                <span
-                                                                    class="badge bg-primary">Hand</span>
-                                                            </li>
-                                                            <li
-                                                                class="list-group-item d-flex justify-content-between align-items-center">
-                                                                Leather Pants
-                                                                <span
-                                                                    class="badge bg-primary">Legs</span>
-                                                            </li>
-                                                        </ul>
-                                                    </div>
-                                                    <div class="col">
-                                                        <h6 class="fw-bold">Inventory</h6>
-                                                        <ul class="list-group">
-                                                            <li class="list-group-item d-flex justify-content-between align-items-center"
-                                                                data-bs-toggle="tooltip"
-                                                                data-bs-title="Restores 40 mana when used.">
-                                                                <h6 class="mb-0">Mana Potion</h6>
-                                                                <span>
-                                                                    <span> <span class="badge bg-primary">Consumable</span> <span class="badge bg-secondary text-dark rounded-pill">&times;5</span> </span>
-                                                                </span>
-                                                            </li>
-                                                            <li class="list-group-item d-flex justify-content-between align-items-center"
-                                                                data-bs-toggle="tooltip"
-                                                                data-bs-title="Fortune favors the bearer. Slightly.">
-                                                                <h6 class="mb-0">Lucky Charm</h6>
-                                                                <span>
-                                                                    <span> <span class="badge bg-primary">Accessory</span> <span class="badge bg-secondary text-dark rounded-pill">&times;1</span> </span>
-                                                                </span>
-                                                            </li>
-                                                        </ul>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                            </div>
-                        </div>
-                    </li>
-                    <li class="card mb-3">
-                        <div class="card-body">
-                            <div class="d-flex flex-wrap align-items-center gap-3">
-                                <img src="Assets/Images/anvil.png" alt="Portrait of Mara Quill" class="rounded-circle roster-portrait">
-                                <div class="flex-grow-1">
-                                    <h5 class="mb-1">Mara Quill</h5>
-                                    <div class="text-body-secondary">Hollowreach Scout</div>
-                                    <span class="badge bg-primary">Player</span>
-                                    <span class="badge bg-secondary text-dark">U-104</span>
-                                    <span class="badge bg-success rounded-pill">Level 5</span>
-                                </div>
-                                <div class="d-flex flex-wrap align-items-center gap-2">
-                                    <button class="btn btn-outline-primary btn-expand" type="button"
-                                        data-bs-toggle="collapse" data-bs-target="#detail-pc1031"
-                                        aria-expanded="false" aria-controls="detail-pc1031"
-                                        aria-label="Sheet for Mara Quill">
-                                        <i class="bi bi-chevron-down"></i> Sheet
-                                    </button>
-                                    <div class="btn-group btn-group-sm" role="group"
-                                        aria-label="Actions for Mara Quill">
-                                        <input type="checkbox" class="btn-check" id="lockPc1031" autocomplete="off">
-                                        <label class="btn btn-outline-primary btn-icon" for="lockPc1031" data-bs-toggle="tooltip"
-                                            data-bs-title="Lock for comparison - keeps this character on screen while you search">
-                                            <i class="bi bi-unlock"></i>
-                                        </label>
-                                        <a href="creation-character.html" class="btn btn-outline-primary btn-icon"
-                                            data-bs-toggle="tooltip"
-                                            data-bs-title="Edit in the forge with this sheet loaded">
-                                            <i class="bi bi-pencil-square"></i>
-                                        </a>
-                                        <button type="button" class="btn btn-outline-danger btn-icon" data-bs-toggle="modal"
-                                            data-bs-target="#deleteCharacterModal" aria-label="Delete Mara Quill">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="collapse" id="detail-pc1031">
-                                <hr>
-
-                                <div class="accordion" id="sheet-pc1031">
-                                    <div class="accordion-item">
-                                        <h2 class="accordion-header">
-                                            <button class="accordion-button" type="button"
-                                                data-bs-toggle="collapse" data-bs-target="#sheet-pc1031-vitals"
-                                                aria-expanded="true" aria-controls="sheet-pc1031-vitals">
-                                                Vitals
-                                            </button>
-                                        </h2>
-                                        <div id="sheet-pc1031-vitals" class="accordion-collapse collapse show">
-                                            <div class="accordion-body">
-                                                <div class="row row-cols-1 row-cols-lg-3 g-3 mb-4">
-                                                    <div class="col">
-                                                        <div class="d-flex align-items-center gap-2">
-                                                            <span class="form-label mb-0 vitals-label">HP</span>
-                                                            <div class="progress flex-grow-1" role="progressbar" aria-label="HP"
-                                                                aria-valuenow="16" aria-valuemin="0" aria-valuemax="22">
-                                                                <div class="progress-bar bg-health" style="width: 73%"></div>
-                                                            </div>
-                                                            <span class="badge vitals-value bg-secondary text-dark">16 / 22</span>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col">
-                                                        <div class="d-flex align-items-center gap-2">
-                                                            <span class="form-label mb-0 vitals-label">MP</span>
-                                                            <div class="progress flex-grow-1" role="progressbar" aria-label="MP"
-                                                                aria-valuenow="9" aria-valuemin="0" aria-valuemax="18">
-                                                                <div class="progress-bar bg-mana" style="width: 50%"></div>
-                                                            </div>
-                                                            <span class="badge vitals-value bg-secondary text-dark">9 / 18</span>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col">
-                                                        <div class="d-flex align-items-center gap-2">
-                                                            <span class="form-label mb-0 vitals-label">SP</span>
-                                                            <div class="progress flex-grow-1" role="progressbar" aria-label="SP"
-                                                                aria-valuenow="20" aria-valuemin="0" aria-valuemax="24">
-                                                                <div class="progress-bar bg-stamina" style="width: 83%"></div>
-                                                            </div>
-                                                            <span class="badge vitals-value bg-secondary text-dark">20 / 24</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="accordion-item">
-                                        <h2 class="accordion-header">
-                                            <button class="accordion-button collapsed" type="button"
-                                                data-bs-toggle="collapse" data-bs-target="#sheet-pc1031-stats"
-                                                aria-expanded="false" aria-controls="sheet-pc1031-stats">
-                                                Stats
-                                            </button>
-                                        </h2>
-                                        <div id="sheet-pc1031-stats" class="accordion-collapse collapse">
-                                            <div class="accordion-body">
-                                                <p class="mb-3 text-body-secondary">
-                                                    Stat Points
-                                                    <span class="badge bg-secondary text-dark">71 /
-                                                        128</span>
-                                                </p>
-                                                <div class="row row-cols-3 row-cols-md-6 g-2 text-center">
-                                                    <div class="col">
-                                                        <div class="stat-box border border-primary-subtle rounded bg-light p-2 h-100"
-                                                            data-bs-toggle="tooltip" data-bs-title="Speed, coordination, balance, and precision.">
-                                                            <div class="stat-label text-body-secondary text-uppercase">Dex</div>
-                                                            <div class="stat-score fw-bold">18</div>
-                                                            <div class="progress sheet-bar" role="progressbar" aria-label="Dexterity"
-                                                                aria-valuenow="18" aria-valuemin="1" aria-valuemax="20">
-                                                                <div class="progress-bar bg-success" style="width: 90%"></div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col">
-                                                        <div class="stat-box border border-primary-subtle rounded bg-light p-2 h-100"
-                                                            data-bs-toggle="tooltip" data-bs-title="Awareness, perception, judgment, and intuition.">
-                                                            <div class="stat-label text-body-secondary text-uppercase">Wis</div>
-                                                            <div class="stat-score fw-bold">15</div>
-                                                            <div class="progress sheet-bar" role="progressbar" aria-label="Wisdom"
-                                                                aria-valuenow="15" aria-valuemin="1" aria-valuemax="20">
-                                                                <div class="progress-bar bg-success" style="width: 75%"></div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col">
-                                                        <div class="stat-box border border-primary-subtle rounded bg-light p-2 h-100"
-                                                            data-bs-toggle="tooltip" data-bs-title="Confidence, presence, influence, and leadership.">
-                                                            <div class="stat-label text-body-secondary text-uppercase">Cha</div>
-                                                            <div class="stat-score fw-bold">12</div>
-                                                            <div class="progress sheet-bar" role="progressbar" aria-label="Charisma"
-                                                                aria-valuenow="12" aria-valuemin="1" aria-valuemax="20">
-                                                                <div class="progress-bar bg-success" style="width: 60%"></div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="accordion-item">
-                                        <h2 class="accordion-header">
-                                            <button class="accordion-button collapsed" type="button"
-                                                data-bs-toggle="collapse" data-bs-target="#sheet-pc1031-skills"
-                                                aria-expanded="false" aria-controls="sheet-pc1031-skills">
-                                                Skills
-                                            </button>
-                                        </h2>
-                                        <div id="sheet-pc1031-skills" class="accordion-collapse collapse">
-                                            <div class="accordion-body">
-                                                <ul class="list-group list-group-flush">
-                                                    <li class="list-group-item d-flex align-items-center gap-2"
-                                                        data-bs-toggle="tooltip" data-bs-title="The skill of pulling a living from rivers and coasts.">
-                                                        <span class="flex-grow-1">Fishing</span>
-                                                        <div class="progress sheet-bar" role="progressbar" aria-label="Fishing"
-                                                            aria-valuenow="55" aria-valuemin="1" aria-valuemax="100">
-                                                            <div class="progress-bar bg-success" style="width: 55%"></div>
-                                                        </div>
-                                                        <span class="badge bg-secondary text-dark">55</span>
-                                                    </li>
-                                                    <li class="list-group-item d-flex align-items-center gap-2"
-                                                        data-bs-toggle="tooltip" data-bs-title="The skill of taking usable hide from a fallen beast.">
-                                                        <span class="flex-grow-1">Skinning</span>
-                                                        <div class="progress sheet-bar" role="progressbar" aria-label="Skinning"
-                                                            aria-valuenow="42" aria-valuemin="1" aria-valuemax="100">
-                                                            <div class="progress-bar bg-success" style="width: 42%"></div>
-                                                        </div>
-                                                        <span class="badge bg-secondary text-dark">42</span>
+                                        <!-- Skills -->
+                                        <div class="col">
+                                            <h6 class="fw-bold">Skills</h6>
+                                            <template
+                                                v-for="category in characterSkillCategories(character)"
+                                                :key="category.id">
+                                                <p class="fw-semibold mb-1">{{ category.name }}</p>
+                                                <ul class="list-group list-group-flush mb-2">
+                                                    <li class="list-group-item d-flex justify-content-between align-items-center"
+                                                        v-for="skill in category.skills" :key="skill.id">
+                                                        {{ skill.name }}
+                                                        <span
+                                                            class="badge bg-secondary text-dark">{{ skill.value }}</span>
                                                     </li>
                                                 </ul>
-                                            </div>
+                                            </template>
+                                            <p class="text-body-secondary mb-0"
+                                                v-if="characterSkillCategories(character).length === 0">
+                                                No skills recorded.
+                                            </p>
                                         </div>
-                                    </div>
-                                    <div class="accordion-item">
-                                        <h2 class="accordion-header">
-                                            <button class="accordion-button collapsed" type="button"
-                                                data-bs-toggle="collapse" data-bs-target="#sheet-pc1031-items"
-                                                aria-expanded="false" aria-controls="sheet-pc1031-items">
-                                                Items
-                                            </button>
-                                        </h2>
-                                        <div id="sheet-pc1031-items" class="accordion-collapse collapse">
-                                            <div class="accordion-body">
-                                                <div class="row row-cols-1 row-cols-md-2 g-3">
-                                                    <div class="col">
-                                                        <h6 class="fw-bold">Gear</h6>
-                                                        <ul class="list-group">
-                                                            <li
-                                                                class="list-group-item d-flex justify-content-between align-items-center">
-                                                                Leather Hood
-                                                                <span
-                                                                    class="badge bg-primary">Head</span>
-                                                            </li>
-                                                            <li
-                                                                class="list-group-item d-flex justify-content-between align-items-center">
-                                                                Short Sword
-                                                                <span
-                                                                    class="badge bg-primary">Hand</span>
-                                                            </li>
-                                                        </ul>
-                                                    </div>
-                                                    <div class="col">
-                                                        <h6 class="fw-bold">Inventory</h6>
-                                                        <ul class="list-group">
-                                                            <li class="list-group-item d-flex justify-content-between align-items-center"
-                                                                data-bs-toggle="tooltip"
-                                                                data-bs-title="A day's hard rations.">
-                                                                <h6 class="mb-0">Bread</h6>
-                                                                <span>
-                                                                    <span> <span class="badge bg-primary">Consumable</span> <span class="badge bg-secondary text-dark rounded-pill">&times;8</span> </span>
-                                                                </span>
-                                                            </li>
-                                                            <li class="list-group-item d-flex justify-content-between align-items-center"
-                                                                data-bs-toggle="tooltip"
-                                                                data-bs-title="Fifty feet of sturdy hemp rope.">
-                                                                <h6 class="mb-0">Rope</h6>
-                                                                <span>
-                                                                    <span> <span class="badge bg-primary">Gear</span> <span class="badge bg-secondary text-dark rounded-pill">&times;2</span> </span>
-                                                                </span>
-                                                            </li>
-                                                        </ul>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
 
-                            </div>
-                        </div>
-                    </li>
-                    <li class="card mb-3">
-                        <div class="card-body">
-                            <div class="d-flex flex-wrap align-items-center gap-3">
-                                <img src="Assets/Images/anvil.png" alt="Portrait of Bartrand the Smith" class="rounded-circle roster-portrait">
-                                <div class="flex-grow-1">
-                                    <h5 class="mb-1">Bartrand the Smith</h5>
-                                    <div class="text-body-secondary">Forgemaster of Kell</div>
-                                    <span class="badge bg-secondary text-dark">NPC</span>
-                                    <span class="badge bg-secondary text-dark">NPC-12</span>
-                                    <span class="badge bg-success rounded-pill">Level 14</span>
-                                </div>
-                                <div class="d-flex flex-wrap align-items-center gap-2">
-                                    <button class="btn btn-outline-primary btn-expand" type="button"
-                                        data-bs-toggle="collapse" data-bs-target="#detail-npc12"
-                                        aria-expanded="false" aria-controls="detail-npc12"
-                                        aria-label="Sheet for Bartrand the Smith">
-                                        <i class="bi bi-chevron-down"></i> Sheet
-                                    </button>
-                                    <div class="btn-group btn-group-sm" role="group"
-                                        aria-label="Actions for Bartrand the Smith">
-                                        <input type="checkbox" class="btn-check" id="lockNpc12" autocomplete="off">
-                                        <label class="btn btn-outline-primary btn-icon" for="lockNpc12" data-bs-toggle="tooltip"
-                                            data-bs-title="Lock for comparison - keeps this character on screen while you search">
-                                            <i class="bi bi-unlock"></i>
-                                        </label>
-                                        <a href="creation-character.html" class="btn btn-outline-primary btn-icon"
-                                            data-bs-toggle="tooltip"
-                                            data-bs-title="Edit in the forge with this sheet loaded">
-                                            <i class="bi bi-pencil-square"></i>
-                                        </a>
-                                        <button type="button" class="btn btn-outline-danger btn-icon" data-bs-toggle="modal"
-                                            data-bs-target="#deleteCharacterModal"
-                                            aria-label="Delete Bartrand the Smith">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
+                                        <!-- Abilities and feats -->
+                                        <div class="col">
+                                            <h6 class="fw-bold">Abilities</h6>
+                                            <p class="mb-2">
+                                                <span class="badge bg-success me-1"
+                                                    v-for="ability in characterAbilities(character)"
+                                                    :key="ability.id">{{ ability.name }}</span>
+                                                <span class="text-body-secondary"
+                                                    v-if="characterAbilities(character).length === 0">None
+                                                    learned.</span>
+                                            </p>
+
+                                            <h6 class="fw-bold">Feats</h6>
+                                            <p class="mb-0">
+                                                <span class="badge bg-primary me-1"
+                                                    v-for="feat in characterFeats(character)"
+                                                    :key="feat.id">{{ feat.name }}</span>
+                                                <span class="text-body-secondary"
+                                                    v-if="characterFeats(character).length === 0">None taken.</span>
+                                            </p>
+                                        </div>
+
+                                        <!-- Spells -->
+                                        <div class="col">
+                                            <h6 class="fw-bold">Spellbook</h6>
+                                            <ul class="list-group list-group-flush">
+                                                <li class="list-group-item d-flex justify-content-between align-items-center"
+                                                    v-for="spell in characterSpells(character)" :key="spell.id">
+                                                    {{ spell.name }}
+                                                    <span>
+                                                        <span
+                                                            class="badge bg-primary">{{ spellLevelLabel(spell) }}</span>
+                                                        <span
+                                                            class="badge bg-secondary text-dark">{{ spellCostLabel(spell) }}</span>
+                                                    </span>
+                                                </li>
+                                            </ul>
+                                            <p class="text-body-secondary mb-0"
+                                                v-if="characterSpells(character).length === 0">
+                                                No spells learned.
+                                            </p>
+                                        </div>
+
+                                        <!-- Inventory -->
+                                        <div class="col">
+                                            <h6 class="fw-bold">Inventory</h6>
+                                            <ul class="list-group list-group-flush">
+                                                <li class="list-group-item d-flex justify-content-between align-items-center"
+                                                    v-for="item in characterInventory(character)" :key="item.id">
+                                                    <span><span
+                                                            class="badge bg-secondary text-dark me-2">{{ item.qty }}</span>{{ item.name }}</span>
+                                                    <span
+                                                        class="badge bg-primary">{{ itemSlotLabel(item) }}</span>
+                                                </li>
+                                            </ul>
+                                            <p class="text-body-secondary mb-0"
+                                                v-if="characterInventory(character).length === 0">
+                                                Carrying nothing.
+                                            </p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-
-                            <div class="collapse" id="detail-npc12">
-                                <hr>
-
-                                <div class="accordion" id="sheet-npc12">
-                                    <div class="accordion-item">
-                                        <h2 class="accordion-header">
-                                            <button class="accordion-button" type="button"
-                                                data-bs-toggle="collapse" data-bs-target="#sheet-npc12-vitals"
-                                                aria-expanded="true" aria-controls="sheet-npc12-vitals">
-                                                Vitals
-                                            </button>
-                                        </h2>
-                                        <div id="sheet-npc12-vitals" class="accordion-collapse collapse show">
-                                            <div class="accordion-body">
-                                                <div class="row row-cols-1 row-cols-lg-3 g-3 mb-4">
-                                                    <div class="col">
-                                                        <div class="d-flex align-items-center gap-2">
-                                                            <span class="form-label mb-0 vitals-label">HP</span>
-                                                            <div class="progress flex-grow-1" role="progressbar" aria-label="HP"
-                                                                aria-valuenow="48" aria-valuemin="0" aria-valuemax="58">
-                                                                <div class="progress-bar bg-health" style="width: 83%"></div>
-                                                            </div>
-                                                            <span class="badge vitals-value bg-secondary text-dark">48 / 58</span>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col">
-                                                        <div class="d-flex align-items-center gap-2">
-                                                            <span class="form-label mb-0 vitals-label">MP</span>
-                                                            <div class="progress flex-grow-1" role="progressbar" aria-label="MP"
-                                                                aria-valuenow="6" aria-valuemin="0" aria-valuemax="20">
-                                                                <div class="progress-bar bg-mana" style="width: 30%"></div>
-                                                            </div>
-                                                            <span class="badge vitals-value bg-secondary text-dark">6 / 20</span>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col">
-                                                        <div class="d-flex align-items-center gap-2">
-                                                            <span class="form-label mb-0 vitals-label">SP</span>
-                                                            <div class="progress flex-grow-1" role="progressbar" aria-label="SP"
-                                                                aria-valuenow="33" aria-valuemin="0" aria-valuemax="50">
-                                                                <div class="progress-bar bg-stamina" style="width: 66%"></div>
-                                                            </div>
-                                                            <span class="badge vitals-value bg-secondary text-dark">33 / 50</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="accordion-item">
-                                        <h2 class="accordion-header">
-                                            <button class="accordion-button collapsed" type="button"
-                                                data-bs-toggle="collapse" data-bs-target="#sheet-npc12-stats"
-                                                aria-expanded="false" aria-controls="sheet-npc12-stats">
-                                                Stats
-                                            </button>
-                                        </h2>
-                                        <div id="sheet-npc12-stats" class="accordion-collapse collapse">
-                                            <div class="accordion-body">
-                                                <div class="row row-cols-3 row-cols-md-6 g-2 text-center">
-                                                    <div class="col">
-                                                        <div class="stat-box border border-primary-subtle rounded bg-light p-2 h-100"
-                                                            data-bs-toggle="tooltip" data-bs-title="Physical power, lifting, and close-combat force.">
-                                                            <div class="stat-label text-body-secondary text-uppercase">Str</div>
-                                                            <div class="stat-score fw-bold">20</div>
-                                                            <div class="progress sheet-bar" role="progressbar" aria-label="Strength"
-                                                                aria-valuenow="20" aria-valuemin="1" aria-valuemax="20">
-                                                                <div class="progress-bar bg-success" style="width: 100%"></div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col">
-                                                        <div class="stat-box border border-primary-subtle rounded bg-light p-2 h-100"
-                                                            data-bs-toggle="tooltip" data-bs-title="Endurance, toughness, and resistance to harm.">
-                                                            <div class="stat-label text-body-secondary text-uppercase">Con</div>
-                                                            <div class="stat-score fw-bold">16</div>
-                                                            <div class="progress sheet-bar" role="progressbar" aria-label="Constitution"
-                                                                aria-valuenow="16" aria-valuemin="1" aria-valuemax="20">
-                                                                <div class="progress-bar bg-success" style="width: 80%"></div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="accordion-item">
-                                        <h2 class="accordion-header">
-                                            <button class="accordion-button collapsed" type="button"
-                                                data-bs-toggle="collapse" data-bs-target="#sheet-npc12-items"
-                                                aria-expanded="false" aria-controls="sheet-npc12-items">
-                                                Items
-                                            </button>
-                                        </h2>
-                                        <div id="sheet-npc12-items" class="accordion-collapse collapse">
-                                            <div class="accordion-body">
-                                                <div class="row row-cols-1 row-cols-md-2 g-3">
-                                                    <div class="col">
-                                                        <h6 class="fw-bold">Gear</h6>
-                                                        <ul class="list-group">
-                                                            <li
-                                                                class="list-group-item d-flex justify-content-between align-items-center">
-                                                                Smith's Hammer
-                                                                <span
-                                                                    class="badge bg-primary">Hand</span>
-                                                            </li>
-                                                            <li
-                                                                class="list-group-item d-flex justify-content-between align-items-center">
-                                                                Heavy Apron
-                                                                <span
-                                                                    class="badge bg-primary">Chest</span>
-                                                            </li>
-                                                        </ul>
-                                                    </div>
-                                                    <div class="col">
-                                                        <h6 class="fw-bold">Inventory</h6>
-                                                        <ul class="list-group">
-                                                            <li class="list-group-item d-flex justify-content-between align-items-center"
-                                                                data-bs-toggle="tooltip"
-                                                                data-bs-title="Raw stock for the forge.">
-                                                                <h6 class="mb-0">Iron Ingot</h6>
-                                                                <span>
-                                                                    <span> <span class="badge bg-primary">Material</span> <span class="badge bg-secondary text-dark rounded-pill">&times;24</span> </span>
-                                                                </span>
-                                                            </li>
-                                                        </ul>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                            </div>
-                        </div>
-                    </li>
-                    <li class="card mb-3">
-                        <div class="card-body">
-                            <div class="d-flex flex-wrap align-items-center gap-3">
-                                <img src="Assets/Images/anvil.png" alt="Portrait of the Hollow King" class="rounded-circle roster-portrait">
-                                <div class="flex-grow-1">
-                                    <h5 class="mb-1">Hollow King</h5>
-                                    <div class="text-body-secondary">Throne of Ash</div>
-                                    <span class="badge bg-secondary text-dark">NPC</span>
-                                    <span class="badge bg-secondary text-dark">NPC-19</span>
-                                    <span class="badge bg-success rounded-pill">Level 30</span>
-                                </div>
-                                <div class="d-flex flex-wrap align-items-center gap-2">
-                                    <button class="btn btn-outline-primary btn-expand" type="button"
-                                        data-bs-toggle="collapse" data-bs-target="#detail-npc19"
-                                        aria-expanded="false" aria-controls="detail-npc19"
-                                        aria-label="Sheet for Hollow King">
-                                        <i class="bi bi-chevron-down"></i> Sheet
-                                    </button>
-                                    <div class="btn-group btn-group-sm" role="group"
-                                        aria-label="Actions for Hollow King">
-                                        <input type="checkbox" class="btn-check" id="lockNpc19" autocomplete="off">
-                                        <label class="btn btn-outline-primary btn-icon" for="lockNpc19" data-bs-toggle="tooltip"
-                                            data-bs-title="Lock for comparison - keeps this character on screen while you search">
-                                            <i class="bi bi-unlock"></i>
-                                        </label>
-                                        <a href="creation-character.html" class="btn btn-outline-primary btn-icon"
-                                            data-bs-toggle="tooltip"
-                                            data-bs-title="Edit in the forge with this sheet loaded">
-                                            <i class="bi bi-pencil-square"></i>
-                                        </a>
-                                        <button type="button" class="btn btn-outline-danger btn-icon" data-bs-toggle="modal"
-                                            data-bs-target="#deleteCharacterModal" aria-label="Delete Hollow King">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="collapse" id="detail-npc19">
-                                <hr>
-
-                                <div class="accordion" id="sheet-npc19">
-                                    <div class="accordion-item">
-                                        <h2 class="accordion-header">
-                                            <button class="accordion-button" type="button"
-                                                data-bs-toggle="collapse" data-bs-target="#sheet-npc19-vitals"
-                                                aria-expanded="true" aria-controls="sheet-npc19-vitals">
-                                                Vitals
-                                            </button>
-                                        </h2>
-                                        <div id="sheet-npc19-vitals" class="accordion-collapse collapse show">
-                                            <div class="accordion-body">
-                                                <div class="row row-cols-1 row-cols-lg-3 g-3 mb-4">
-                                                    <div class="col">
-                                                        <div class="d-flex align-items-center gap-2">
-                                                            <span class="form-label mb-0 vitals-label">HP</span>
-                                                            <div class="progress flex-grow-1" role="progressbar" aria-label="HP"
-                                                                aria-valuenow="96" aria-valuemin="0" aria-valuemax="120">
-                                                                <div class="progress-bar bg-health" style="width: 80%"></div>
-                                                            </div>
-                                                            <span class="badge vitals-value bg-secondary text-dark">96 / 120</span>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col">
-                                                        <div class="d-flex align-items-center gap-2">
-                                                            <span class="form-label mb-0 vitals-label">MP</span>
-                                                            <div class="progress flex-grow-1" role="progressbar" aria-label="MP"
-                                                                aria-valuenow="74" aria-valuemin="0" aria-valuemax="90">
-                                                                <div class="progress-bar bg-mana" style="width: 82%"></div>
-                                                            </div>
-                                                            <span class="badge vitals-value bg-secondary text-dark">74 / 90</span>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col">
-                                                        <div class="d-flex align-items-center gap-2">
-                                                            <span class="form-label mb-0 vitals-label">SP</span>
-                                                            <div class="progress flex-grow-1" role="progressbar" aria-label="SP"
-                                                                aria-valuenow="51" aria-valuemin="0" aria-valuemax="80">
-                                                                <div class="progress-bar bg-stamina" style="width: 64%"></div>
-                                                            </div>
-                                                            <span class="badge vitals-value bg-secondary text-dark">51 / 80</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="accordion-item">
-                                        <h2 class="accordion-header">
-                                            <button class="accordion-button collapsed" type="button"
-                                                data-bs-toggle="collapse" data-bs-target="#sheet-npc19-stats"
-                                                aria-expanded="false" aria-controls="sheet-npc19-stats">
-                                                Stats
-                                            </button>
-                                        </h2>
-                                        <div id="sheet-npc19-stats" class="accordion-collapse collapse">
-                                            <div class="accordion-body">
-                                                <div class="row row-cols-3 row-cols-md-6 g-2 text-center">
-                                                    <div class="col">
-                                                        <div class="stat-box border border-primary-subtle rounded bg-light p-2 h-100"
-                                                            data-bs-toggle="tooltip" data-bs-title="Reasoning, memory, learning, and problem-solving.">
-                                                            <div class="stat-label text-body-secondary text-uppercase">Int</div>
-                                                            <div class="stat-score fw-bold">20</div>
-                                                            <div class="progress sheet-bar" role="progressbar" aria-label="Intelligence"
-                                                                aria-valuenow="20" aria-valuemin="1" aria-valuemax="20">
-                                                                <div class="progress-bar bg-success" style="width: 100%"></div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col">
-                                                        <div class="stat-box border border-primary-subtle rounded bg-light p-2 h-100"
-                                                            data-bs-toggle="tooltip" data-bs-title="Confidence, presence, influence, and leadership.">
-                                                            <div class="stat-label text-body-secondary text-uppercase">Cha</div>
-                                                            <div class="stat-score fw-bold">20</div>
-                                                            <div class="progress sheet-bar" role="progressbar" aria-label="Charisma"
-                                                                aria-valuenow="20" aria-valuemin="1" aria-valuemax="20">
-                                                                <div class="progress-bar bg-success" style="width: 100%"></div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="accordion-item">
-                                        <h2 class="accordion-header">
-                                            <button class="accordion-button collapsed" type="button"
-                                                data-bs-toggle="collapse" data-bs-target="#sheet-npc19-items"
-                                                aria-expanded="false" aria-controls="sheet-npc19-items">
-                                                Items
-                                            </button>
-                                        </h2>
-                                        <div id="sheet-npc19-items" class="accordion-collapse collapse">
-                                            <div class="accordion-body">
-                                                <div class="row row-cols-1 row-cols-md-2 g-3">
-                                                    <div class="col">
-                                                        <h6 class="fw-bold">Gear</h6>
-                                                        <ul class="list-group">
-                                                            <li
-                                                                class="list-group-item d-flex justify-content-between align-items-center">
-                                                                Crown of Cinders
-                                                                <span
-                                                                    class="badge bg-primary">Head</span>
-                                                            </li>
-                                                            <li
-                                                                class="list-group-item d-flex justify-content-between align-items-center">
-                                                                Ashen Greatsword
-                                                                <span
-                                                                    class="badge bg-primary">Hand</span>
-                                                            </li>
-                                                        </ul>
-                                                    </div>
-                                                    <div class="col">
-                                                        <h6 class="fw-bold">Inventory</h6>
-                                                        <ul class="list-group">
-                                                            <li class="list-group-item d-flex justify-content-between align-items-center"
-                                                                data-bs-toggle="tooltip"
-                                                                data-bs-title="Opens the sealed door beneath the throne.">
-                                                                <h6 class="mb-0">Ashen Key</h6>
-                                                                <span>
-                                                                    <span> <span class="badge bg-primary">Quest</span> <span class="badge bg-secondary text-dark rounded-pill">&times;1</span> </span>
-                                                                </span>
-                                                            </li>
-                                                        </ul>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                            </div>
-                        </div>
-                    </li>
-                </ul>
-
-                <!-- Roster paging -->
-                <nav aria-label="Roster pages" class="mt-3">
-                    <ul class="pagination justify-content-center mb-0">
-                        <li class="page-item disabled">
-                            <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Previous</a>
-                        </li>
-                        <li class="page-item active" aria-current="page">
-                            <a class="page-link" href="#">1</a>
-                        </li>
-                        <li class="page-item"><a class="page-link" href="#">2</a></li>
-                        <li class="page-item"><a class="page-link" href="#">3</a></li>
-                        <li class="page-item">
-                            <a class="page-link" href="#">Next</a>
                         </li>
                     </ul>
-                </nav>
-            </div>
-        </div>
-    </div>
 
-    <!-- Delete character modal -->
-    <!-- One modal shared by every delete button -->
-    <div class="modal fade" id="deleteCharacterModal" tabindex="-1" aria-labelledby="deleteCharacterModalLabel"
-        aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="deleteCharacterModalLabel">
-                        <i class="bi bi-exclamation-triangle-fill text-danger"></i> Delete Character?
-                    </h5>
+                    <!-- Paging. The page numbers come from the list's own length,
+                         so the pager appears and disappears on its own rather
+                         than promising pages that do not exist. -->
+                    <nav aria-label="Roster pages" class="mt-3" v-if="rosterPageCount > 1">
+                        <ul class="pagination justify-content-center mb-0">
+                            <li class="page-item" :class="rosterPage === 1 ? 'disabled' : ''">
+                                <button class="page-link" type="button"
+                                    @click="goToPage(rosterPage - 1)">Previous</button>
+                            </li>
 
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
-                    </button>
-                </div>
+                            <li class="page-item" v-for="page in rosterPages" :key="page"
+                                :class="page === rosterPage ? 'active' : ''"
+                                :aria-current="page === rosterPage ? 'page' : null">
+                                <button class="page-link" type="button"
+                                    @click="goToPage(page)">{{ page }}</button>
+                            </li>
 
-                <div class="modal-body">
-                    <p class="mb-2">
-                        You are about to permanently delete
-                        <strong data-delete-character-name>this character</strong>
-                        from the world.
-                    </p>
-                    <p class="mb-0 text-dark">Stats, skills, abilities, spells, and items go with it. This cannot be
-                        undone.</p>
-                </div>
-
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        Cancel
-                    </button>
-
-                    <button type="button" class="btn btn-danger">
-                        Delete Character
-                    </button>
+                            <li class="page-item" :class="rosterPage === rosterPageCount ? 'disabled' : ''">
+                                <button class="page-link" type="button"
+                                    @click="goToPage(rosterPage + 1)">Next</button>
+                            </li>
+                        </ul>
+                    </nav>
                 </div>
             </div>
         </div>
+
+        <!-- Delete character modal. One modal for every row, pointed at
+             whichever character the kebab set as pendingDelete. -->
+        <div class="modal fade" id="deleteCharacterModal" tabindex="-1"
+            aria-labelledby="deleteCharacterModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="deleteCharacterModalLabel">
+                            <i class="bi bi-exclamation-triangle-fill text-danger"></i> Delete Character?
+                        </h5>
+
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                        </button>
+                    </div>
+
+                    <div class="modal-body">
+                        <p class="mb-2">
+                            You are about to permanently delete
+                            <strong>{{ pendingDelete === null ? 'this character' : pendingDelete.name }}</strong>
+                            from the world.
+                        </p>
+                        <p class="mb-0 text-dark">Stats, skills, abilities, spells, and items go with it. This
+                            cannot be undone.</p>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            Cancel
+                        </button>
+
+                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal"
+                            @click="confirmDelete">
+                            Delete Character
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
+    <!-- end #app -->
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
         crossorigin="anonymous"></script>
-    <!-- Popper JS -->
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"
-        integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r"
-        crossorigin="anonymous"></script>
-    <!-- Start the tooltips -->
-    <script>
-        document.querySelectorAll('[data-bs-toggle="tooltip"]')
-            .forEach((element) => new bootstrap.Tooltip(element));
+    <!-- Vue: owns the page. Tooltips are started from mounted/updated. -->
+    <script type="module">
+        import app from "./scripts/app.js";
+        app.mount("#app");
     </script>
 </body>
 
