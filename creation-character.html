@@ -72,15 +72,15 @@
     </nav>
 
     <!-- The hero video lives on the home page only. This is a working page and
-         the 800px of auto-playing iframe just pushed the form off the screen. -->
+        the 800px of auto-playing iframe just pushed the form off the screen. -->
 
     <!-- Main content -->
     <!-- Vue owns the page from here down through the modals -->
     <div id="app">
         <div class="container text-start mt-5 pt-5">
             <!-- No page heading here. The Character Design card below already
-                 names the page, and the home page's card says the same thing
-                 again - three headings for one page. -->
+                names the page, and the home page's card says the same thing
+                again - three headings for one page. -->
 
             <!-- Character creation card -->
             <div class="row row-cols-1 row-cols-md-1 g-4">
@@ -95,22 +95,22 @@
 
                             <!-- Vitals bar. Sits outside the form so it shows on every step.
 
-                                 Nothing here stores a maximum. Every ceiling is a computed
-                                 property in app.js, worked out from the attributes and the
-                                 level:
+                                Nothing here stores a maximum. Every ceiling is a computed
+                                property in app.js, worked out from the attributes and the
+                                level:
 
                                    HP = Constitution * 3 + Level * 2
                                    MP = Wisdom * 2 + Level
                                    SP = Dexterity * 2 + Constitution + Level
 
-                                 Those same equations reach the page as tooltips on the
-                                 HP / MP / SP labels, from bar.formula in vitalBars. -->
+                                Those same equations reach the page as tooltips on the
+                                HP / MP / SP labels, from bar.formula in vitalBars. -->
                             <div class="card mb-4 border-primary">
                                 <div class="card-body">
                                     <h4 class="card-title">Vitals</h4>
 
                                     <!-- Level. Same three-part row as HP/MP/SP below, a size up:
-                                         it feeds all three of them, so it is not their peer. -->
+                                        it feeds all three of them, so it is not their peer. -->
                                     <div class="d-flex align-items-center gap-2 level-row">
                                         <label for="level" class="form-label mb-0 vitals-label" data-bs-toggle="tooltip"
                                             data-bs-placement="top"
@@ -781,8 +781,8 @@
                                 <!-- Spells Step -->
                                 <div class="character-step" v-show="currentStep === 4">
                                     <!-- The eight schools are fixed. They belong to the world, not
-                                         to a character, so there is nothing to add or remove here -
-                                         only which spells within them the character carries. -->
+                                        to a character, so there is nothing to add or remove here -
+                                        only which spells within them the character carries. -->
                                     <h3 class="card-title">Spells</h3>
 
                                     <p class="mb-3 text-body-secondary">
@@ -791,7 +791,7 @@
                                     </p>
 
                                     <!-- How much the spellbook holds. Intelligence + Level, worked
-                                         out in app.js, so the cap moves with the character. -->
+                                        out in app.js, so the cap moves with the character. -->
                                     <div class="d-flex align-items-center gap-2 mb-4">
                                         <label class="form-label fw-semibold mb-0">Spells known:
                                             <output class="badge"
@@ -811,7 +811,7 @@
                                                 </h2>
 
                                                 <!-- Add a spell to this school. The school itself stays;
-                                                     only its spells are the character's to change. -->
+                                                    only its spells are the character's to change. -->
                                                 <div class="dropdown">
                                                     <button class="btn btn-outline-primary btn-kebab" type="button"
                                                         data-bs-toggle="dropdown" aria-expanded="false"
@@ -854,7 +854,7 @@
                                                                     <ul class="dropdown-menu dropdown-menu-end">
                                                                         <li>
                                                                             <!-- Goes to Spell Design once that
-                                                                                 page exists -->
+                                                                                page exists -->
                                                                             <a class="dropdown-item" href="#">
                                                                                 <i class="bi bi-pencil-square me-2"></i>Edit
                                                                             </a>
@@ -1022,7 +1022,7 @@
                                                                     <ul class="dropdown-menu dropdown-menu-end">
                                                                         <li>
                                                                             <!-- Goes to Item Design once that page
-                                                                                 exists -->
+                                                                                exists -->
                                                                             <a class="dropdown-item" href="#">
                                                                                 <i class="bi bi-pencil-square me-2"></i>Edit
                                                                             </a>
@@ -1055,7 +1055,7 @@
                                         </button>
 
                                         <!-- Stays a submit so the form still validates; the
-                                             handler opens the confirmation modal -->
+                                            handler opens the confirmation modal -->
                                         <button type="submit" class="btn btn-primary">
                                             Finish &raquo;
                                         </button>
