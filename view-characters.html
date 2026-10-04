@@ -63,23 +63,12 @@
     </nav>
 
     <!-- The hero video lives on the home page only. This is a working page and
-         the 800px of auto-playing iframe just pushed the roster off the screen. -->
+        the 800px of auto-playing iframe just pushed the roster off the screen. -->
 
     <!-- Main content -->
     <!-- Vue owns the page from here down through the modal -->
     <div id="app">
         <div class="container text-start mt-5 pt-5">
-            <!-- Page heading -->
-            <div class="row bg-secondary mb-4 px-2 row-cols-1 g-0 page-heading">
-                <div class="container col">
-                    <h1 class="display-1 pb-2 border-bottom border-primary">The Character Roster</h1>
-                    <p class="lead">Every player character and non-player character forged into the world lives
-                        here. Search the roster by name or by ID, expand a character to read the full sheet, lock
-                        a character to keep it on screen while you look up another, and edit or delete from the
-                        same row.</p>
-                </div>
-            </div>
-
             <!-- Roster toolbar: search, filter, add -->
             <div class="card mb-4">
                 <div class="card-body">
@@ -88,7 +77,7 @@
                         the list by character type.</p>
 
                     <!-- No submit handler: the list is a computed property, so it
-                         narrows as you type and there is nothing to submit. -->
+                        narrows as you type and there is nothing to submit. -->
                     <form role="search" @submit.prevent>
                         <div class="row g-3 align-items-end">
                             <div class="col-12 col-lg-3">
@@ -142,7 +131,7 @@
                     </form>
 
                     <!-- Active filter chips. Clearing one writes the data back to
-                         its starting value; the list follows on its own. -->
+                        its starting value; the list follows on its own. -->
                     <div class="d-flex gap-2 flex-wrap mt-3">
                         <div class="alert alert-secondary py-1 px-3 mb-0" role="alert"
                             v-if="rosterSearchChip !== ''">
@@ -228,8 +217,8 @@
                                         <h5 class="mb-1">
                                             {{ character.name }}
                                             <!-- The padlock reads on its own; the border on the card
-                                                 already says the row is pinned. Fixed title, so the
-                                                 tooltip Bootstrap caches never goes stale. -->
+                                                already says the row is pinned. Fixed title, so the
+                                                tooltip Bootstrap caches never goes stale. -->
                                             <i class="bi bi-lock-fill text-primary" v-if="isLocked(character)"
                                                 data-bs-toggle="tooltip"
                                                 title="Locked for comparison"></i>
@@ -367,8 +356,8 @@
                     </ul>
 
                     <!-- Paging. The page numbers come from the list's own length,
-                         so the pager appears and disappears on its own rather
-                         than promising pages that do not exist. -->
+                        so the pager appears and disappears on its own rather
+                        than promising pages that do not exist. -->
                     <nav aria-label="Roster pages" class="mt-3" v-if="rosterPageCount > 1">
                         <ul class="pagination justify-content-center mb-0">
                             <li class="page-item" :class="rosterPage === 1 ? 'disabled' : ''">
@@ -394,7 +383,7 @@
         </div>
 
         <!-- Delete character modal. One modal for every row, pointed at
-             whichever character the kebab set as pendingDelete. -->
+            whichever character the kebab set as pendingDelete. -->
         <div class="modal fade" id="deleteCharacterModal" tabindex="-1"
             aria-labelledby="deleteCharacterModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">

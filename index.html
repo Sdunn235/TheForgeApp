@@ -72,36 +72,19 @@
     <!-- Main content: one card per design area -->
     <!-- Page heading -->
     <div id="app" class="container text-start mt-5 pt-5">
-        <div class="row bg-secondary mb-4 px-2 row-cols-1 g-0 page-heading">
-            <div class="container col">
-                <h1 class="display-1 pb-2 border-bottom border-primary">{{ appName }}</h1>
-                <p class="lead">{{ tagline }}</p>
-            </div>
-        </div>
+        <page-content-header :title="appName" :description="tagline"></page-content-header>
 
-        <!-- One card per forge. The shape lives here once; the words for each
-            one live in forges in app.js. -->
+        <!-- One card per forge. The frame lives in AppCard; the words for
+            each one live in forges in app.js. -->
         <div class="row row-cols-1 row-cols-md-2 g-4">
             <div class="col" v-for="forge in forges" :key="forge.title">
-                <div class="card h-100"><img :src="forge.image" :alt="forge.alt">
-                    <div class="card-body">
-                        <h3 class="card-title">{{ forge.title }}</h3>
-                        <p class="card-text pt-2">{{ forge.description }}</p>
-                    </div>
-                    <div class="card-body flex-grow-0">
-                        <div class="dropdown d-grid">
-                            <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown"
-                                aria-expanded="false">
-                                {{ forge.buttonLabel }}
-                            </button>
-                            <ul class="dropdown-menu dropdown-menu-lg-end">
-                                <li v-for="link in forge.links" :key="link.label">
-                                    <a class="dropdown-item" :href="link.href">{{ link.label }}</a>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
+                <app-card :title="forge.title" :description="forge.description"
+                    :image="forge.image" :image-alt="forge.alt">
+                    <template #footer>
+                        <action-menu class="d-grid" variant="button" :items="forge.links"
+                            :label="forge.buttonLabel"></action-menu>
+                    </template>
+                </app-card>
             </div>
         </div>
     </div>

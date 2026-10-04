@@ -111,17 +111,9 @@
 
                                     <!-- Level. Same three-part row as HP/MP/SP below, a size up:
                                         it feeds all three of them, so it is not their peer. -->
-                                    <div class="d-flex align-items-center gap-2 level-row">
-                                        <label for="level" class="form-label mb-0 vitals-label" data-bs-toggle="tooltip"
-                                            data-bs-placement="top"
-                                            title="Overall experience. Every ceiling below is worked out from this and your attributes.">Level</label>
-                                        <input type="range" class="form-range flex-grow-1 range-level" id="level"
-                                            name="level" :min="levelRange.min" :max="levelRange.max"
-                                            v-model.number="vitals.level"
-                                            :style="{ '--range-fill': fillPercent(levelBar) }" />
-                                        <output for="level" class="badge vitals-value bg-primary" aria-hidden="true">{{
-                                            vitals.level }} / {{ levelRange.max }}</output>
-                                    </div>
+                                    <range-slider id="level" label="Level" variant="level"
+                                        :min="levelRange.min" :max="levelRange.max" v-model="vitals.level"
+                                        :tooltip="levelTooltip" show-max></range-slider>
 
                                     <!-- HP / MP / SP -->
                                     <div class="row row-cols-1 row-cols-lg-2 g-4">

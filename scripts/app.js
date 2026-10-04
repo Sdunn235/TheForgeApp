@@ -1,6 +1,18 @@
 import { createApp } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js';
+import ActionMenu from './components/ActionMenu.js';
+import AppCard from './components/AppCard.js';
+import PageContentHeader from './components/PageContentHeader.js';
+import RangeSlider from './components/RangeSlider.js';
+
 
 const app = createApp({
+    // components: the components this app's HTML can use as tags
+    components: {
+        ActionMenu,
+        AppCard,
+        PageContentHeader,
+        RangeSlider,
+    },
     // data: all the data for the app
     data: function () {
         return {
@@ -301,6 +313,9 @@ const app = createApp({
 
             // Level is the one vital whose range is fixed rather than derived.
             levelRange: { min: 1, max: 50 },
+
+            // Hover text for the Level label. HP/MP/SP keep theirs in vitalBars.
+            levelTooltip: 'Overall experience. Every ceiling below is worked out from this and your attributes.',
 
             // Stat points: what you start with, and what each level adds.
             // Six stats capped at 20 could absorb 114, so the budget stays
@@ -2068,15 +2083,6 @@ const app = createApp({
         // still static markup until Section 10.
         spellsKnown: function () {
             return this.statValue('intelligence') + this.vitals.level;
-        },
-
-        // The Level slider in the shape fillPercent expects.
-        levelBar: function () {
-            return {
-                min: this.levelRange.min,
-                max: this.levelRange.max,
-                value: this.vitals.level,
-            };
         },
 
         // The three derived bars. Everything one bar needs — its colour class,
