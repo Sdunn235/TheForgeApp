@@ -300,6 +300,37 @@ $sheet-bar-width: 5rem;
     margin-left: 0;
     margin-right: $accordion-chevron-gap;
 }
+// An accordion header that also holds a ⋮ menu. A button cannot sit inside
+// another button, so the menu sits beside it, and this row takes on the
+// button's colours instead. :has() follows the open state: Bootstrap drops
+// .collapsed from the button when its panel opens.
+.accordion-header-row {
+    background-color: var(--bs-accordion-btn-bg);
+
+    &:has(.accordion-button:not(.collapsed)) {
+        background-color: var(--bs-accordion-active-bg);
+        box-shadow: inset 0 calc(-1 * var(--bs-accordion-border-width)) 0 var(--bs-accordion-border-color);
+    }
+    // Bootstrap rings the button on focus, which leaves the ⋮ outside the
+    // box. Ring the whole row instead, and only for keyboard focus
+    // (:focus-visible) - a mouse click does not need one.
+    .accordion-button:focus {
+        box-shadow: none;
+    }
+
+    &:has(.accordion-button:focus-visible) {
+        position: relative;
+        z-index: 3;
+        box-shadow: var(--bs-accordion-btn-focus-box-shadow);
+    }
+}
+
+// The first row's top corners match the accordion's rounded border.
+.accordion-item:first-of-type > .accordion-header-row {
+    border-top-left-radius: var(--bs-accordion-inner-border-radius);
+    border-top-right-radius: var(--bs-accordion-inner-border-radius);
+}
+
 
 // Dropdowns
 .dropdown-menu {

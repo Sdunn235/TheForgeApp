@@ -1,0 +1,1078 @@
+# The Forge: Code Guide (Vue App 2.0, Components)
+
+A study guide for explaining this code: what each piece does, why it is built
+that way, and what every bit of syntax means. Each section stands on its own.
+
+**Contents**
+
+1. [The one-minute version](#1-the-one-minute-version)
+2. [How the files connect](#2-how-the-files-connect)
+3. [The pattern and the rules](#3-the-pattern-and-the-rules)
+4. [The three layers, and when something becomes a component](#4-the-three-layers-and-when-something-becomes-a-component)
+5. [Component by component](#5-component-by-component)
+6. [Following the data: three walkthroughs](#6-following-the-data-three-walkthroughs)
+7. [Syntax reference: the template (HTML side)](#7-syntax-reference-the-template-html-side)
+8. [Syntax reference: JavaScript](#8-syntax-reference-javascript)
+9. [Decisions log: what we chose and what we turned down](#9-decisions-log-what-we-chose-and-what-we-turned-down)
+10. [Honest exceptions](#10-honest-exceptions)
+11. [Where the assignment stands](#11-where-the-assignment-stands)
+12. [Questions I might be asked](#12-questions-i-might-be-asked)
+
+---
+
+## 1. The one-minute version
+
+- **The pattern is "the parent owns, the child shows"** (also called
+  Container / Presentational). The page (the root app in `app.js`) owns the
+  data. Components get what they show through **props**, work out whatever
+  they can from those props in **computed**, and report what the user did with
+  **emits**. The parent makes the actual change.
+- **The principle is one-way data flow: props go down, events go up.** That
+  is the Vue docs' own wording. A component never changes data that does not
+  belong to it.
+- **Reuse is the main goal.** One `ActionMenu` replaces 13 hand-written
+  dropdowns, one `RangeSlider` runs every slider on the forge page, and one
+  `ConfirmModal` replaces the four "are you sure?" modals.
+- **Six components do real work so far:** RangeSlider, StatCard, ActionMenu,
+  SkillCard, AppModal and ConfirmModal. AppCard and PageContentHeader are
+  display-only frames. They are used, but they are not counted toward the five.
+
+---
+
+## 2. How the files connect
+
+```
+scripts/
+├── app.js                  the root app: owns the data, registers components
+└── components/
+    ├── ActionMenu.js       layer 1: one dropdown for the whole app
+    ├── AppCard.js          layer 1: the card frame
+    ├── AppModal.js         layer 1: the Bootstrap modal shell
+    ├── PageContentHeader.js layer 1: the big page heading (index only)
+    ├── RangeSlider.js      layer 1: slider + label + value badge
+    ├── ConfirmModal.js     built on AppModal: "are you sure?"
+    ├── StatCard.js         layer 2: AppCard + RangeSlider + the points rule
+    ├── SkillCard.js        layer 2: AppCard + RangeSlider + ActionMenu
+    └── CharacterRoster.js  empty placeholder, not used yet
+└── directives/
+    └── tooltip.js          v-tooltip: a Bootstrap tooltip that cleans up after itself
+```
+
+Three steps connect a component to a page. All three are needed; skip one and
+the tag silently does nothing, or Vue warns `Failed to resolve component`.
+
+1. **Export it** at the bottom of its own file:
+   ```js
+   export default StatCard;
+   ```
+2. **Import and register it** in whatever uses it:
+   ```js
+   import StatCard from './components/StatCard.js';
+   // ...
+   components: {
+       StatCard,
+   },
+   ```
+3. **Use it as a tag**, in kebab-case:
+   ```html
+   <stat-card :stat="stat" v-model="stat.value" :points-left="statPointsLeft"></stat-card>
+   ```
+
+**Who registers what.** A component is registered where it is *used*, not
+once for the whole app:
+
+| Registered in | Components | Why there |
+|---|---|---|
+| `app.js` | ActionMenu, AppCard, ConfirmModal, PageContentHeader, RangeSlider, SkillCard, StatCard | The page markup uses these tags directly |
+| `StatCard.js` | AppCard, RangeSlider | StatCard's own template uses them |
+| `SkillCard.js` | ActionMenu, AppCard, RangeSlider | SkillCard's own template uses them |
+| `ConfirmModal.js` | AppModal | Only ConfirmModal uses AppModal |
+
+Directives are registered the same way, in their own `directives: {}`
+block: `app.js` registers `tooltip` for the page markup, and `RangeSlider.js`
+registers it again for its own template (the vitals' formula tooltips).
+
+This is the same as the teacher's demo, where `ShoppingList` registers
+`ShoppingListItem` itself. It also keeps the parts list honest: open a
+component and its `components: {}` lists what it is built from.
+
+**All three pages load the same `app.js`.** Each page's HTML is the root
+app's template. Vue reads the HTML inside `<div id="app">` and turns it into
+the page. That is why page markup has to follow the "in-DOM" rules in
+[section 7](#in-dom-rules-why-the-html-side-looks-the-way-it-does).
+
+---
+
+## 3. The pattern and the rules
+
+### The eight rules every component follows
+
+| # | Rule | Why |
+|---|---|---|
+| 1 | **Never write to a prop.** That includes a field on an object prop (`this.stat.value = 5` is out too). | Vue docs, Props → One-Way Data Flow: *"the child should emit an event to let the parent perform the mutation."* If any child could change shared data, a bug could come from anywhere. If only the owner changes it, there is one place to look. |
+| 2 | **Be smart about calculations.** A component works out everything it can from its own props, in `computed`. | This is the "move the logic into the components" part of the assignment. `fillPercent`, `affordableMax` and `menuLabel` all live in the component that uses them. |
+| 3 | **One value changing → component `v-model`.** The child has a `modelValue` prop and emits `update:modelValue`. | The parent writes `v-model="stat.value"`, so the parent does the assignment. It is still props down, events up. Vue just writes both halves for you. |
+| 4 | **Add / remove / toggle → an event named with a verb**, like `remove`. | The child says what the user wants and the parent runs the method it already has (`removeSkill`). The child does not need to know how the list is stored. |
+| 5 | **Events don't bubble.** A parent only hears its direct child, so a middle component passes events up one level. | Vue docs: component events do not bubble. StatCard and SkillCard relay RangeSlider's change up to the page. |
+| 6 | **Declare everything:** `props` with a type and `required` or `default`, plus an `emits` list. | Vue warns in the console when a required prop is missing or the wrong type, and the file documents itself. |
+| 7 | **Data only one component uses lives in that component.** | The assignment's own example: "options for a select menu". So the variant tables live in their components, and SkillCard holds its own menu items. |
+| 8 | **No searching the page and no globals.** Use `ref` + `$refs` instead of `document.querySelector` or `getElementById`. | The assignment forbids DOM manipulation. The Vue docs say refs are for the cases data cannot handle, like handing an element to a library such as Bootstrap. |
+
+### What "DOM manipulation" means here
+
+The test for any line of code: **could data plus the template do this job?**
+If yes, doing it by hand breaks the rule.
+
+- Old way: find an element, change it (`querySelector(...)` then `.classList.add(...)`).
+- Vue way: change the data, and the template redraws itself.
+
+The Vue docs (Template Refs) name the cases where touching an element *is*
+right: *"programmatically focus an input on mount, or initialize a 3rd party
+library on an element."* Bootstrap is a third-party library, so AppModal
+handing its own element to `new bootstrap.Modal(...)` is that case.
+
+---
+
+## 4. The three layers, and when something becomes a component
+
+```
+Layer 3  Pages          the root app (app.js + each page's HTML)
+            │  owns the data, runs the methods that change it
+            ▼
+Layer 2  Feature cards  StatCard, SkillCard
+            │  built from layer 1, adds one job each (a rule, a menu)
+            ▼
+Layer 1  Building blocks ActionMenu, RangeSlider, AppCard, AppModal → ConfirmModal
+               generic, know nothing about characters
+```
+
+**The test for "should this be a component?"** It must pass at least one:
+
+1. It is **used in 2 or more places**, or
+2. it has **its own job or logic**.
+
+The test cut four components that were planned early:
+
+| Cut | Why |
+|---|---|
+| ForgeDropdownButton | Too narrow. Every dropdown in the app is one component (ActionMenu). |
+| ForgeCard | Used once with no logic, once AppCard existed. |
+| ForgeList | Just a grid and a `v-for`. The page can do that itself. |
+| HeroBanner, PageContent | Single use, display only. |
+
+**Props vs slots.** Both pass things into a component. The rule we use:
+
+- **Props carry what every instance has,** always the same kind of thing in
+  the same spot. Every card has a title and a description, so those are props.
+- **Slots carry what differs in shape.** One card holds a slider, another a
+  menu, another a button. That goes through slots.
+
+**Variants (looks).** The page picks a look by name (`variant="kebab"`); the
+component keeps the Bootstrap classes for each look in its own `data`. So the
+page never has Bootstrap class strings for a component's look. **The parent
+still decides layout and size.** That is why `class="d-grid"` sits on the
+`<action-menu>` tag on the home page: making it full width is the page's call.
+
+---
+
+## 5. Component by component
+
+Each one follows the teacher's `SampleComponent.js` order: `components`,
+`data`, `props`, `emits`, `computed`, `methods`, lifecycle hooks, `template`.
+
+### RangeSlider (layer 1) ✅ counts
+
+**Job:** a slider with its label and value badge, as one piece. It is used for
+Level, HP/MP/SP, all six stats, and every skill.
+
+| Props | Type | Notes |
+|---|---|---|
+| `id` | String, required | Links the `<label for>` and `<output for>` to the input |
+| `label` | String, required | Visible text, or screen-reader-only in the `card` look |
+| `min`, `max` | Number, required | The track's range |
+| `modelValue` | Number, required | The value. `v-model` on the tag fills it in |
+| `cap` | Number, default `null` | The highest value allowed *right now*. `null` = no cap |
+| `tooltip` | String, default `''` | Hover text on the label |
+| `fillClass` | String, default `''` | Overrides the track colour (HP red, MP blue...) |
+| `showMax` | Boolean, default `false` | The badge reads "12 / 50" instead of "12" |
+| `variant` | String, required | `level`, `vital` or `card`, checked by a validator |
+
+**Emits:** `update:modelValue`.
+
+**Computed:**
+- `look`: picks this slider's entry from the `variants` table.
+- `fillPercent`: how far along the track the thumb sits, as a percentage.
+  The Sass reads it from the CSS variable `--range-fill` to colour the filled
+  part of the track.
+  ```js
+  const span = this.max - this.min;
+  const filled = span === 0 ? 0 : (this.modelValue - this.min) / span * 100;
+  return Math.round(filled) + '%';
+  ```
+  Line by line: `span` is the track length. If the track has no length (min
+  equals max) the answer is 0, because dividing by zero would give `NaN`.
+  Otherwise, find how far past `min` the value is, divide by the length, and
+  times 100 for a percentage. Then round it and add `'%'`, so CSS gets `"55%"`.
+
+**Methods:** `onInput(event)` runs on every drag.
+- A slider hands back **text** (`"12"`), so `Number(...)` turns it into a number.
+- If the value is past the `cap`, it is pulled back to the cap.
+- Then the component emits the allowed value. It never assigns it.
+
+**Why `:value` + `@input` and not `v-model` inside the template?** `v-model`
+would assign to `modelValue`, which is a prop (rule 1). Splitting it lets the
+slider *show* the parent's value and *ask* for a new one.
+
+**What to say:** "Every slider in the app is this one component. It doesn't
+own the number. It shows it, works out the fill, refuses values past the cap,
+and asks the parent to change it."
+
+---
+
+### ActionMenu (layer 1) ✅ counts
+
+**Job:** one dropdown for the whole app: the forge buttons on the home page,
+the ⋮ menus on cards, and later the + menus and the roster menus.
+
+| Props | Type | Notes |
+|---|---|---|
+| `items` | Array, required | Each item: `{ label, href?, icon?, danger? }`, plus any field the parent wants for itself |
+| `label` | String, required | Button text, or what a screen reader says for the icon-only ⋮ |
+| `variant` | String, default `'kebab'` | `button` or `kebab`, checked by a validator |
+
+**Emits:** `select`, sending the whole item that was clicked.
+
+**Two kinds of item:**
+
+| The item has... | It draws | On click |
+|---|---|---|
+| `href` | an `<a>` link | the browser goes there |
+| no `href` | a `<button>` | emits `select` with the item |
+
+**Why it sends the whole item and not just the label:** the parent can put
+its own fields on an item (SkillCard adds `action: 'remove'`). ActionMenu
+ignores fields it doesn't use and hands them back untouched. The menu doesn't
+need to know what "Remove" means. Only the parent knows that.
+
+**Why one menu and not one per page section:** the teacher warned about
+near-duplicate components, and all 13 dropdowns have the same shape: a
+button, a list, and items that are links or actions. The differences are looks
+(variants) and extras (icon, danger), which are data, not new components.
+
+**What to say:** "The menu shows choices and reports which one was picked.
+It never decides what a choice does. The emit is what makes it more than a
+display piece."
+
+---
+
+### AppCard (layer 1), display only
+
+**Job:** the card frame every card in the app uses.
+
+| Props | Notes |
+|---|---|
+| `title` (required), `description`, `image`, `imageAlt` | What every card has |
+
+| Slots | Where it shows |
+|---|---|
+| default | the card body, under the description |
+| `#footer` | its own strip at the bottom (the home page's forge button) |
+| `#menu` | the top-right corner (SkillCard's ⋮) |
+
+**Design calls:**
+- **One look.** It started with two looks (`feature` and `tile`); the tile
+  look won for the whole app, so the variant table was removed. A lookup table
+  with one entry is code with no job. It comes back if a second look ever does.
+- **The title is always an `<h3>` with the class `h5`.** The tag is for the
+  page outline (screen readers jump between headings by level). The class only
+  sets the size. Bootstrap's `.h1`–`.h6` classes make any element *look* like
+  that heading size.
+- **`v-if="$slots.menu"`** draws the corner only if the page filled it, and
+  **`:class="{ 'pe-5': $slots.menu }"`** pads the title only then, so long
+  names don't run under the ⋮.
+- `description` is a **prop**, not a slot: every card has one (props vs slots
+  rule).
+
+**Lesson learned:** if a page fills a slot the component doesn't have, Vue
+**silently throws the content away**. When the ⋮ went missing, the cause was
+AppCard missing its `<slot name="menu">`.
+
+---
+
+### StatCard (layer 2) ✅ counts
+
+**Job:** one attribute on the Stats step, plus the rule *you can't spend
+points you don't have*.
+
+| Props | Notes |
+|---|---|
+| `stat` (Object, required) | id, label, description, min, max. Read only |
+| `modelValue` (Number, required) | the stat's value, filled by `v-model` |
+| `pointsLeft` (Number, required) | what's left in the shared pool |
+
+**Emits:** `update:modelValue`.
+
+**Computed, `affordableMax`** (moved here from app.js):
+```js
+return Math.min(this.stat.max, this.modelValue + this.pointsLeft);
+```
+The highest this stat can go is whichever comes first: its own ceiling, or
+what it has now plus what's left in the pool.
+
+In app.js it was a **method** taking `(stat)`, because one function served
+six cards. Inside the component the stat is already a prop, so it needs no
+argument. That means it can be a **computed**, which Vue caches until
+`modelValue` or `pointsLeft` changes.
+
+**The relay (rule 5):**
+```html
+<range-slider ... :model-value="modelValue"
+    @update:model-value="$emit('update:modelValue', $event)"></range-slider>
+```
+StatCard cannot write `v-model="modelValue"` here, because that assigns to
+its own prop. So it splits `v-model` into its two halves by hand: pass the
+value down, pass the change up. `$event` is what RangeSlider sent.
+
+**Why the pool total stays in app.js:** `statPointsLeft` adds up all six
+stats. No single card can see the other five, so the page, which owns all
+six, works it out and passes it to each card.
+
+---
+
+### SkillCard (layer 2) ✅ counts
+
+**Job:** one skill the character has: its card, slider and ⋮ menu.
+
+| | |
+|---|---|
+| **Props** | `skill` (Object, required), `modelValue` (Number, required) |
+| **Emits** | `update:modelValue` (slider moved), `remove` (Remove picked) |
+| **Data** | `menuItems`: Edit (a link) and Remove (a button, red, trash icon) |
+| **Computed** | `menuLabel`: `'Actions for ' + skill.name`, for screen readers |
+| **Methods** | `onSelect(item)`: if `item.action === 'remove'`, emit `remove` |
+
+**Who knows what:**
+- ActionMenu doesn't know what "remove" means.
+- SkillCard doesn't know which **category** it is in, or how to take a skill
+  out of a list.
+- The page knows both. It is already inside the category loop:
+  ```html
+  <skill-card :skill="skill" v-model="skill.value"
+      @remove="removeSkill(category, skill)"></skill-card>
+  ```
+
+That is why `remove` carries no data. The page fills in `category` and
+`skill` itself.
+
+**Why the items have an `action` field:** matching on the label
+(`item.label === 'Remove'`) would break if the wording changed. `action` is
+an ID that only code reads.
+
+---
+
+### AppModal (layer 1) ✅ counts
+
+**Job:** the Bootstrap modal shell (header, body, footer). It owns the
+Bootstrap `Modal` object for its own element.
+
+| | |
+|---|---|
+| **Props** | `id` (String, required, given by the page), `title` (String, required) |
+| **Data** | `bsModal` (the Bootstrap object), `closing` (true while closing) |
+| **Computed** | `titleId`: `id + 'Label'`, so `aria-labelledby` points at the heading |
+| **Methods** | `open()`, `close()` (for parents to call through a ref), `onShow()`, `onHide()` |
+| **Lifecycle** | `mounted`: create the Bootstrap object and start listening. `beforeUnmount`: stop listening and `dispose()` |
+
+**Refs instead of IDs.** `ref="modal"` on the outer `<div>` means
+`this.$refs.modal` *is* that element, this component's own and nobody
+else's. There is no searching the page.
+
+**Lifecycle hooks.** `mounted` runs once the element exists, so that is when
+Bootstrap can be given it. `beforeUnmount` runs just before it is removed, so
+that is when we clean up. Creating something in `mounted` and disposing of it
+in `beforeUnmount` is the pattern the tooltip bug fix will use too.
+
+**The focus fix, and why `inert`.** When a modal closes, Bootstrap hides it
+from screen readers (`aria-hidden`) while the clicked button still has focus.
+Chrome warns about that, and Bootstrap 5.3.8 still has the bug (we tested
+it). Chrome's warning itself suggests the `inert` attribute, which makes the
+browser drop focus from inside an element. So:
+
+```
+Bootstrap starts closing → onHide sets closing = true      (data)
+Vue redraws              → :inert="closing" adds inert     (template)
+browser                  → drops focus from inside
+Bootstrap (300ms later)  → adds aria-hidden: nothing is focused, no warning
+```
+
+`onShow` sets it back to `false` so the buttons work the next time it opens.
+No code reaches for the focused element. The template does the work from
+data. The timing works because the `fade` class makes Bootstrap wait about
+300ms, while Vue redraws almost instantly.
+
+**Why `addEventListener` here:** Vue's `@` can't listen for
+`hide.bs.modal`, because Vue reads the dots as modifiers (like
+`@click.prevent`). So AppModal listens on its **own** element through its ref,
+the third-party-library case from the Vue docs. See [section 10](#10-honest-exceptions).
+
+**Why the ID comes from the page:** Bootstrap links like
+`data-bs-target="#leavePageModal"` find a modal by ID, so HTML needs one. The
+rule is: never hard-code an ID inside a component's template; let the page
+supply it as data.
+
+---
+
+### ConfirmModal (built on AppModal) ✅ counts
+
+**Job:** "Are you sure?" Cancel always just closes; Confirm either goes
+somewhere (`href`) or emits `confirm`.
+
+| Props | Notes |
+|---|---|
+| `id`, `title`, `confirmLabel` | required |
+| `message` | the body text, unless the page fills the slot |
+| `cancelLabel` | default `'Cancel'` |
+| `danger` | Boolean: a red confirm button for things you can't undo |
+| `href` | if set, confirm is a link; if not, confirm is an event |
+
+**Emits:** `confirm`.
+
+**Methods:** `open()` passes straight through to AppModal. `confirm()` closes
+the modal, then emits. The page never needs to know AppModal exists.
+
+**Slot fallback content:**
+```html
+<slot>{{ message }}</slot>
+```
+This means "show what the page put here, **or** the message if it put
+nothing." The save modal uses the message. The roster's delete modal will
+fill the slot with the character's name in bold.
+
+**Two layers of refs.** The page calls `this.$refs.saveModal.open()` on its
+ConfirmModal, and ConfirmModal calls `this.$refs.modal.open()` on its
+AppModal. Each layer only talks to the one directly below it.
+
+**The text lives in data** (no paragraphs in page markup):
+```js
+saveConfirm: {
+    id: 'confirmSaveModal',
+    title: 'Save This Character?',
+    message: 'This will save the character and start a new blank form.',
+    confirmLabel: 'Save Character',
+    cancelLabel: 'Keep Editing',
+},
+```
+and the page hands the whole object over at once:
+```html
+<confirm-modal ref="saveModal" v-bind="saveConfirm" @confirm="saveCharacter"></confirm-modal>
+```
+
+---
+
+### v-tooltip (a custom directive, not a component)
+
+**Job:** give any element a Bootstrap tooltip that is created when the
+element appears, updated when its text changes, and **removed when the element
+is removed**.
+
+```html
+<li ... v-tooltip="effect.description">
+<i ... v-tooltip="'Locked for comparison'"></i>   <!-- fixed text: quotes inside quotes -->
+```
+
+**The bug it fixes (from class presentations).** The old code
+(`startTooltips`) ran `document.querySelectorAll('[data-bs-toggle="tooltip"]')`
+on load and after **every** redraw, and never cleaned anything up. Bootstrap
+draws a tooltip's box at the end of `<body>`, not inside the element, so when
+a buff was removed while its tooltip was showing, Vue deleted the row and the
+box stayed on screen. A second bug had the same cause: Bootstrap keeps the text
+it was created with, so the ability and spell "Learn" tooltips showed outdated
+text after you learned something.
+
+**Why a directive and not a component.** The Vue docs: custom directives are
+*"mainly intended for reusing logic that involves low-level DOM access on
+plain elements."* The tooltips sit on plain elements (list rows, labels,
+buttons). Wrapping each one in a component just to clean up a tooltip would be
+heavy. A directive is a set of lifecycle hooks you can attach to any element.
+You already use Vue's built-in ones: `v-if`, `v-for`, `v-model`.
+
+| Hook | When Vue runs it | What it does |
+|---|---|---|
+| `mounted(el, binding)` | the element just appeared | `new bootstrap.Tooltip(el, { title: binding.value })`. No text, no tooltip. |
+| `updated(el, binding)` | the page redrew | if `binding.value !== binding.oldValue`, put the new text in with `setContent` |
+| `beforeUnmount(el)` | the element is about to be removed | `dispose()`, which takes the tooltip box off the page |
+
+- **`el` is the element itself**, handed over by Vue, the same idea as a ref.
+  Nothing searches the page.
+- **`binding.value`** is whatever is in the quotes; **`binding.oldValue`**
+  is what it was before the redraw.
+- **`bootstrap.Tooltip.getInstance(el)`** asks Bootstrap whether it has a
+  tooltip for *this* element. It looks the element up in Bootstrap's own
+  list, not on the page.
+
+It's the same create/clean-up pattern as AppModal (`mounted` +
+`beforeUnmount`), packaged so any element can use it. It doesn't count as a
+component, but it is reuse: one file replaced every tooltip setup in the app.
+
+---
+
+### PageContentHeader (layer 1), display only
+
+**Job:** the big heading block (title over a description). It is used on the
+home page only for now. It was kept because future landing pages will reuse
+it. It is honestly display-only, so it doesn't count toward the five.
+
+### CharacterRoster.js
+
+An empty placeholder from early planning. It isn't imported anywhere. The
+roster components get built after the required work, or the file gets
+deleted.
+
+---
+
+## 6. Following the data: three walkthroughs
+
+### A. Dragging Strength from 10 to 12
+
+```
+1. RangeSlider   onInput: "12" → Number → 12. Under the cap? Yes.
+                 $emit('update:modelValue', 12)
+2. StatCard      @update:model-value hears it and relays:
+                 $emit('update:modelValue', 12)
+3. page          v-model="stat.value" → stat.value = 12   (the ONLY assignment)
+4. app.js        statPointsLeft recomputes (the pool shrinks by 2)
+5. back down     StatCard gets modelValue 12 and a new pointsLeft
+                 → affordableMax recomputes
+                 RangeSlider gets modelValue 12 → fillPercent recomputes,
+                 badge shows 12
+```
+Every card's `affordableMax` updates too, because every card gets the new
+`pointsLeft`. That is how one card's spending limits the others without them
+ever talking to each other.
+
+### B. Removing a skill
+
+```
+1. ActionMenu   Remove is a button item → $emit('select', item)
+2. SkillCard    onSelect(item): item.action === 'remove' → $emit('remove')
+3. page         @remove="removeSkill(category, skill)"
+4. app.js       removeSkill finds the skill in category.skills and splices it out
+5. back down    v-for redraws; that SkillCard is gone. The skill reappears in
+                the category's "Add a skill" menu because availableSkills
+                recomputes.
+```
+
+### C. Finish → Save
+
+```
+1. page        Finish submits the form → nextStep()
+2. app.js      last step? → this.$refs.saveModal.open()
+3. ConfirmModal open() → this.$refs.modal.open()
+4. AppModal    open() → this.bsModal.show()   (Bootstrap animates it in)
+5. user        clicks Save Character
+6. ConfirmModal confirm() → closes, $emit('confirm')
+7. page        @confirm="saveCharacter" → saves, resets the form
+```
+Notice the shape: **refs go down** (a parent asks a child to do something,
+like open), and **events go up** (a child tells a parent something happened).
+
+---
+
+## 7. Syntax reference: the template (HTML side)
+
+### The colon `:`: "this is JavaScript, not text"
+
+```html
+variant="card"         the text "card"
+:min="stat.min"        the value of stat.min (a number, from JavaScript)
+:cap="affordableMax"   the value of the computed affordableMax
+```
+Without the colon, Vue passes the exact characters as a string. With it, Vue
+runs what's in the quotes as JavaScript. `:min="1"` gives the **number** 1,
+while `min="1"` gives the **text** "1", and the `Number` prop type would warn.
+`:` is short for `v-bind:`.
+
+**A boolean prop with no value means `true`:**
+```html
+<range-slider ... show-max></range-slider>   showMax is true
+```
+
+**Binding to `null` removes the attribute:**
+```html
+:title="tooltip || null"
+```
+If `tooltip` is empty, `||` falls through to `null` and the `title` attribute
+isn't drawn at all, instead of an empty `title=""`.
+
+### The at sign `@`: "when this happens, run this"
+
+```html
+@input="onInput"                                   call the method
+@remove="removeSkill(category, skill)"             call it with arguments
+@update:model-value="$emit('update:modelValue', $event)"   relay an event
+```
+`@` is short for `v-on:`. On a normal element it hears browser events
+(`click`, `input`). On a component tag it hears that component's emits.
+**`$event`** is the thing that came with the event: the browser event object,
+or the value a component emitted.
+
+### `v-model`: two-way binding, built from one prop and one event
+
+On a component, this:
+```html
+<stat-card v-model="stat.value"></stat-card>
+```
+is shorthand for:
+```html
+<stat-card :model-value="stat.value"
+    @update:model-value="newValue => stat.value = newValue"></stat-card>
+```
+So the parent still does the assignment, and props-down/events-up still
+holds. **`v-model` must point at real data** (`stat.value`,
+`vitals[bar.id]`), never at a computed copy. Assigning to a computed copy
+changes nothing.
+
+### `{{ }}`: print a value as text
+
+```html
+<h3 class="card-title h5">{{ title }}</h3>
+```
+Vue prints it as text, never as HTML, so it is safe from injected markup.
+
+### `v-if` / `v-else`: draw it or don't
+
+```html
+<a v-if="item.href" ...>...</a>
+<button v-else ...>...</button>
+```
+If the condition is false, the element **is not on the page at all**. That is
+different from `v-show`, which draws it and hides it with CSS. The forge steps
+use `v-show` so each step keeps what you typed while hidden.
+
+### `v-for` + `:key`: one per item
+
+```html
+<div class="col" v-for="stat in stats" :key="stat.id">
+```
+`:key` gives each copy an identity. When a skill is removed, Vue removes
+*that* card instead of shuffling values between the cards that are left. Use
+something unique and stable, like an ID.
+
+### `:class`: three forms
+
+```html
+class="card h-100"                       always these
+:class="look.rowClass"                   a string from data
+:class="{ 'text-danger': item.danger }"  "add text-danger IF item.danger is true"
+```
+A plain `class` and a bound `:class` on the same tag are **merged**. The
+fixed classes stay, and the bound ones are added. In the object form, the key
+is the class name and the value switches it on or off.
+
+### `:style` with a CSS variable
+
+```html
+:style="{ '--range-fill': fillPercent }"
+```
+This sets a CSS custom property on the element. The Sass reads
+`var(--range-fill)` to paint the track. JavaScript supplies the number, and CSS
+does the drawing.
+
+### Slots
+
+| In the component | On the page | Meaning |
+|---|---|---|
+| `<slot></slot>` | content between the tags | the default hole |
+| `<slot name="menu"></slot>` | `<template #menu> ... </template>` | a named hole |
+| `<slot>{{ message }}</slot>` | (nothing) | **fallback**: shown when the page fills nothing |
+| `v-if="$slots.footer"` | | "did the page fill this slot?" |
+
+`#menu` is short for `v-slot:menu`. **Slot content is built where it is
+written** (on the page or in the parent), so it can use the parent's data. The
+component only decides *where* it goes.
+
+### `ref` and `$refs`
+
+```html
+<div ref="modal" ...>                       on an element: $refs.modal is the element
+<confirm-modal ref="saveModal" ...>         on a component: $refs.saveModal is the component
+```
+A ref on a component gives you the component, so you can call its methods:
+`this.$refs.saveModal.open()`. Refs replace `getElementById`. A component
+only ever sees its own refs.
+
+### `v-bind="object"`: many props at once
+
+```html
+<confirm-modal v-bind="saveConfirm"></confirm-modal>
+```
+Each key of `saveConfirm` lands on the prop with the same name. It's the same
+as writing `:id="saveConfirm.id" :title="saveConfirm.title" ...` five times.
+
+### `$emit`, `$slots`, `$refs`, `$event`
+
+The `$` marks things Vue provides on every component:
+
+| | What it is |
+|---|---|
+| `$emit('name', value)` | send an event to the parent |
+| `$slots` | which slots the parent filled |
+| `$refs` | this component's ref'd elements and child components |
+| `$event` | (in a template handler) what came with the event |
+
+### Custom directives: `v-tooltip`
+
+```html
+<li v-tooltip="effect.description">
+```
+A `v-` attribute we wrote ourselves. Like `:`, what's in the quotes is
+**JavaScript**, so fixed text needs its own quotes inside:
+`v-tooltip="'Locked for comparison'"`. Without the inner `'...'`, Vue would
+look for a variable named `Locked`. Registered in `directives: { tooltip: vTooltip }`;
+Vue adds the `v-` itself. See [v-tooltip in section 5](#v-tooltip-a-custom-directive-not-a-component).
+
+### In-DOM rules: why the HTML side looks the way it does
+
+Page markup lives in `.html` files, so the **browser** reads it before Vue
+does. Browsers lowercase tag and attribute names and don't understand
+self-closing custom tags. So, on the page:
+
+- **kebab-case** tags and props: `<stat-card :points-left="...">`, never
+  `<StatCard :pointsLeft="...">`. Vue matches `points-left` to the prop
+  `pointsLeft` automatically.
+- **Explicit closing tags**: `<stat-card ...></stat-card>`, never
+  `<stat-card />`.
+- Inside `<ul>`, `<table>` or `<select>`, a component would need
+  `is="vue:component-name"`. We haven't needed it yet.
+
+A component's `template:` string is read by Vue, not the browser, so these
+rules don't strictly apply there. We follow them anyway so everything reads
+the same.
+
+**camelCase in JavaScript, kebab-case in templates:** `emits: ['update:modelValue']`
+and `$emit('update:modelValue')` in JS; `@update:model-value` in a template.
+Vue translates between them, the same way `image-alt` → `imageAlt`.
+
+---
+
+## 8. Syntax reference: JavaScript
+
+### `import` / `export default`
+
+```js
+export default StatCard;                         // at the bottom of StatCard.js
+import StatCard from './components/StatCard.js'; // where it is used
+```
+Each file is a **module**: nothing in it is visible to other files unless it
+is exported. That is how we have **no globals**. Every component is a
+`const` inside its own file. The `.js` extension and `./` path are required
+because the browser loads these files directly (no build step). That is also
+why the pages need Live Server: modules don't load from `file://`.
+
+### A component is just an object
+
+```js
+const StatCard = {
+    props: { ... },
+    computed: { ... },
+    template: `...`,
+};
+```
+`{ }` makes an object, and each `name: value` pair is a property. Vue reads
+the properties it knows (`props`, `data`, `computed`, `methods`, `emits`,
+`components`, `template`, `mounted`...) and builds the component from them.
+
+### `function ()` vs `=>`: why both appear, and where each one goes
+
+This is the one people ask about most.
+
+**Rule: Vue's own options use `function ()`. Callbacks inside them use `=>`.**
+
+```js
+computed: {
+    affordableMax: function () {            // Vue option: function ()
+        return Math.min(this.stat.max, this.modelValue + this.pointsLeft);
+    },
+},
+```
+```js
+otherCharacters: function () {               // Vue option: function ()
+    return this.roster.filter((entry) => entry.id !== this.editingId);
+},                                           //       ↑ callback: arrow
+```
+
+**Why: it's all about `this`.**
+
+- A **`function ()`** gets its `this` from *how it is called*. Vue calls
+  `data`, `computed`, `methods` and the lifecycle hooks with `this` set to the
+  component. That's how `this.modelValue` and `this.$emit` work.
+- An **arrow `=>`** has **no `this` of its own**. It borrows the `this` of
+  the code around it.
+
+So:
+- An **arrow as a Vue option** would borrow `this` from the module, which is
+  `undefined`. `this.modelValue` would crash. The Vue docs warn: *"you
+  should avoid using arrow functions when defining methods, as that prevents
+  Vue from binding the appropriate `this` value."*
+- An **arrow as a callback** inside a method borrows the *method's* `this`,
+  which is the component. That is exactly what you want. In the example
+  above, `this.editingId` inside the arrow still means the component's
+  `editingId`. With a `function ()` callback there, `filter` would call it
+  with no `this`, and it would crash.
+
+**The teacher's demo writes `data() { ... }`** (method shorthand). That is
+the same as `data: function () { ... }`: same `this`, shorter to write. This
+project uses `name: function ()` because the rest of `app.js` already did,
+and one style throughout reads more easily. Either is correct; arrows are the
+only wrong choice for Vue options.
+
+**Arrow shapes you'll see in app.js:**
+```js
+(entry) => entry.id === saved.id        // one expression: returned automatically
+(skill) => { return ...; }              // braces: needs its own return
+(stat) => ({ id: stat.id, ... })        // returning an OBJECT: wrap it in ( )
+```
+The last one needs the parentheses because `{` right after `=>` would be read
+as the start of a function body, not an object.
+
+### Template literals: the backticks
+
+```js
+template: `
+    <div class="card">
+        ...
+    </div>
+`,
+```
+Backticks make a string that can **span many lines**. A normal `'...'`
+string can't. That is why every `template:` uses them. (They can also insert
+values with `${...}`, which we don't use, because Vue's `{{ }}` does that
+inside templates.)
+
+### `data` is a function that returns an object
+
+```js
+data: function () {
+    return {
+        bsModal: null,
+        closing: false,
+    };
+},
+```
+**Why a function and not just an object:** every copy of a component needs
+its **own** data. Six StatCards on a page get six fresh objects. If `data`
+were one shared object, closing one modal would set `closing` on all of them.
+
+### Props: type, required, default, validator
+
+```js
+props: {
+    title: { type: String, required: true },     // must be given
+    cap: { type: Number, default: null },        // optional, falls back to null
+    variant: {
+        type: String,
+        default: 'kebab',
+        validator: function (value) {
+            return ['button', 'kebab'].includes(value);
+        },
+    },
+},
+```
+- `type` makes Vue warn if a parent passes the wrong kind of value.
+- `required: true` makes Vue warn if it's missing.
+- `default` is what to use when the parent leaves it off.
+- `validator` returns `true` if the value is allowed. A typo like
+  `variant="buton"` gets a console warning. Then `look` comes back
+  `undefined`, so a red error follows. That's a loud, early failure, which is
+  what you want.
+
+### `computed` vs `methods`
+
+| | `computed` | `methods` |
+|---|---|---|
+| Used like | a value: `affordableMax` | a call: `onInput(event)` |
+| Runs | when something it reads changes; otherwise the cached answer is reused | every time it's called |
+| Takes arguments | no | yes |
+| Use it for | values worked out from data or props | actions, event handlers |
+
+`affordableMax` moved from a method to a computed because, inside StatCard,
+it no longer needs an argument.
+
+### Small operators used throughout
+
+| Syntax | Meaning | Example |
+|---|---|---|
+| `===` / `!==` | equal / not equal, **without** type conversion (`'1' === 1` is false) | `span === 0` |
+| `a ? b : c` | ternary: if `a` then `b`, else `c` | `this.danger ? 'btn-danger' : 'btn-primary'` |
+| `a \|\| b` | `a` if it has a value, otherwise `b` | `fillClass \|\| look.fillClass` |
+| `!` | not | `!category.skills.some(...)` |
+| `const` / `let` | `const` can't be reassigned; `let` can | `let wanted` changes when capped |
+| `Number(x)` | text → number | `Number(event.target.value)` |
+| `Math.min(a, b)` | the smaller of the two | `affordableMax` |
+| `Math.round(x)` | nearest whole number | `fillPercent` |
+| `array.includes(x)` | is `x` in the array? | the validators |
+| `'Actions for ' + name` | join text | `menuLabel` |
+
+---
+
+## 9. Decisions log: what we chose and what we turned down
+
+| Decision | Why | Turned down |
+|---|---|---|
+| Strict props down / events up, even for fields on object props | Vue docs recommend it; one owner per piece of data | The teacher's demo edits in place (`item.qty++` in the child). Simpler, but it breaks the docs' rule |
+| Children do their own calculations | "Move the logic" without breaking the data rule | Keeping every calculation in app.js |
+| One ActionMenu for all dropdowns | Teacher wants reuse; every dropdown has the same shape | ForgeDropdownButton (home only), one component per menu |
+| Looks as variants inside the component | No Bootstrap class strings in page markup; one place to change a look | Passing `button-class="..."` from the page |
+| No paragraphs in markup; text in data | Content in one place; markup stays structure | Typing the text into the HTML |
+| Same prop names everywhere (`title`, `description`) | Learn once, use everywhere | name / label / heading used interchangeably |
+| `description` is a prop, not a slot | Every card has one (props vs slots rule) | A slot for it |
+| AppCard has one look | The tile look won on every page | Keeping a `feature` variant nothing uses |
+| Card title `<h3 class="h5">` | Tag = outline, class = size | Different tags per card type by accident |
+| StatCard and SkillCard as separate components | Each has its own job (points rule vs menu) | One "do everything" card with flags |
+| Skill menu items in SkillCard's data, with `action` | Only SkillCard uses them (rule 7); `action` survives wording changes | Matching on the label text |
+| `remove` carries no data; the page adds `category` | The card doesn't need to know where it lives | Passing the category into SkillCard |
+| AppModal + ConfirmModal (two components) | The shell is reusable for non-confirm modals later | One modal component that does everything |
+| A `v-tooltip` directive for tooltips | Tooltips sit on plain elements; the directive's hooks create, update and dispose them per element | A tooltip component wrapped around every row; keeping `querySelectorAll` and adding cleanup to it |
+| `inert` from data for the focus warning | No reaching for the focused element; Chrome's own advice | `document.activeElement.blur()` (page-wide read, direct change) |
+| Commit at milestones (C0009 baseline, C0010 first components, C0011 six components + tooltip fix) | Each commit is a working state I can show or go back to | Committing after every small edit |
+
+---
+
+## 10. Honest exceptions
+
+These places touch an element directly, and each has a reason. Better to
+name them than have them found.
+
+| Where | What | Why it's there |
+|---|---|---|
+| `RangeSlider.onInput` | `event.target.value = wanted` | When the parent's value is already at the cap, asking for it again changes nothing, so Vue has nothing to redraw, and the thumb would stay past the cap. This puts it back. It's the element that sent the event, not a page search. |
+| `AppModal.mounted` | `new bootstrap.Modal(this.$refs.modal)` | Handing its own element to a third-party library is the case the Vue docs name. The teacher's AppModal does the same. |
+| `AppModal.mounted` | `addEventListener('show.bs.modal' / 'hide.bs.modal')` | Vue's `@` can't hear event names with dots. It listens on its own ref only, and is removed in `beforeUnmount`. |
+| `v-tooltip` | `new bootstrap.Tooltip(el, ...)` / `dispose()` | The element Vue hands the directive, given to a third-party library and cleaned up when the element goes. Same case as AppModal. |
+| `bootstrap` | a global from Bootstrap's `<script>` tag | It belongs to the library, not to us. "No globals" means we don't create any. |
+| app.js `downloadCharacter` | `document.createElement('a')` | Creates a temporary download link that is never added to the page. **Question for the teacher.** |
+
+**Still to remove** (a real page search, scheduled):
+- `scrollToStep`: `document.querySelector('.step-tracker')`. Fixed when the step tracker becomes a component.
+
+**Already removed:** `startTooltips` (`document.querySelectorAll` on every
+redraw, never cleaned up), now replaced by `v-tooltip`.
+
+---
+
+## 11. Where the assignment stands
+
+| Requirement | Status |
+|---|---|
+| At least 5 working components with props or slots | ✅ 6: RangeSlider, StatCard, ActionMenu, SkillCard, AppModal, ConfirmModal |
+| Not purely visual | ✅ Each has an emit, a calculation or a lifecycle job |
+| Logic moved into components | 🟡 Slider fill, the cap, `affordableMax`, the menu choice, modal open/close. More to come |
+| No globals / no DOM manipulation | 🟡 1 page search left (step tracker) + 1 teacher question |
+| Class-presentation fixes | 🟡 1 of 3: tooltips now go away with their element (`v-tooltip`). Left: duplicate-on-save, buffs/debuffs not saved |
+
+**Removed from app.js so far:** `levelBar`, `setVital`, `setStatValue`,
+`fillPercent`, `affordableMax`, `releaseModalFocus`, `startTooltips`, the
+root `updated` hook, and the old `getElementById('confirmSaveModal')`.
+
+**Next, in order:**
+1. Move the forge page's navbars inside `#app` → one leave modal with
+   `:href="leaveHref"` instead of two → the roster's delete modal as a
+   ConfirmModal.
+2. Bug: editing a player and saving makes a second copy. `storeCharacter`
+   looks it up by a key built from the *edited* name or User ID, so after a
+   rename it can't find the original. Fix: when editing, find it by
+   `editingId`.
+3. Bug: buffs/debuffs aren't saved. `effects` is missing from
+   `collectCharacter` and `applyCharacter`.
+4. StepTracker component, which removes the last page search
+   (`scrollToStep`).
+
+---
+
+## 12. Questions I might be asked
+
+**"Why doesn't the child just change the value? Your demo did."**
+The Vue docs say a child should emit and let the parent change it. If only
+the owner changes data, a wrong value can only come from one place. The
+demo's way is shorter, but if a dozen components can all edit the same
+character, finding a bug means checking all of them.
+
+**"Isn't `v-model` two-way binding? Doesn't that break one-way flow?"**
+On a component, `v-model` is shorthand for a prop going down plus an event
+coming up. The parent still makes the assignment. It's one-way flow with less
+typing.
+
+**"Why does StatCard pass the slider's event up instead of handling it?"**
+StatCard doesn't own the stat, the page does. Events only go up one level, so
+StatCard relays it. StatCard's own job is the limit (`affordableMax`), and it
+does handle that.
+
+**"Why are there both StatCard and SkillCard? Isn't that duplication?"**
+They share everything that's the same through AppCard and RangeSlider. What's
+left is different: StatCard enforces the points pool, and SkillCard has a menu
+and can be removed. Merging them would mean one component full of "if this is
+a stat..." checks.
+
+**"Why is ActionMenu one component for buttons, ⋮ menus and + menus?"**
+They are all a button that opens a list of choices. The differences are looks
+(variants) and item extras (icons, red text), which are data. One component
+means one place to fix a bug or change behaviour.
+
+**"Where did you use refs instead of IDs?"**
+AppModal hands `this.$refs.modal` to Bootstrap, and the page opens the save
+modal with `this.$refs.saveModal.open()`. The old code used
+`document.getElementById`. IDs that remain exist only because HTML needs them
+(a label's `for`, `aria-labelledby`, Bootstrap's `data-bs-target`), and they
+come from data, never hard-coded inside a component.
+
+**"Why `function ()` instead of arrow functions?"**
+Vue sets `this` to the component when it calls `data`, `computed`, `methods`
+and the hooks, and only a regular function receives that `this`. Arrows don't
+have their own `this`. Inside methods, arrows *are* used for callbacks like
+`.filter(...)`, because there they borrow the method's `this`. See
+[section 8](#function--vs--why-both-appear-and-where-each-one-goes).
+
+**"What's the colon for?"**
+`:` means "the value in the quotes is JavaScript." Without it, it's plain
+text. `:min="stat.min"` passes the number; `min="stat.min"` would pass the
+words "stat.min".
+
+**"What does `$event` mean in the relay?"**
+It's whatever the child emitted. When RangeSlider emits
+`update:modelValue` with 12, `$event` is 12.
+
+**"How do you handle a modal without `getElementById`?"**
+The modal is a component with `ref="modal"` on its own element. It gives that
+element to Bootstrap in `mounted` and disposes of it in `beforeUnmount`. The
+page reaches the component through its own ref and calls `open()`.
+
+**"What's `inert` doing in AppModal?"**
+It fixes a Chrome accessibility warning. Bootstrap hides a closing modal from
+screen readers while its button still has focus. `inert` tells the browser
+to drop focus from inside first. It's driven by a data value (`closing`), so
+the template sets it, not hand-written element code.
+
+**"Why are the menu items in SkillCard and not in app.js?"**
+Only SkillCard uses them. The assignment's own example of data that belongs in
+a component is a select menu's options.
+
+**"How did you fix the tooltips that stayed on screen?"**
+The old code found every tooltip with `querySelectorAll` and never cleaned
+up. Bootstrap draws the box at the end of the page, so deleting the row left
+it behind. I wrote a custom directive, `v-tooltip`. Vue hands it the element
+when it appears (create the tooltip), when the page redraws (update the text),
+and just before it's removed (`dispose()`, which takes the box away). The Vue
+docs say directives are for exactly this: low-level element work on plain
+elements.
+
+**"Is v-tooltip a component?"**
+No. A component brings its own HTML. A directive adds behaviour to an element
+that already exists, like `v-if` or `v-model` do. It doesn't count toward the
+five, but it fixed a bug from class and replaced every tooltip setup with one
+file.
+
+**"What would you do next?"**
+Finish converting the last modals, fix the two remaining bugs from class
+presentations (duplicate-on-save, buffs not saved), and turn the step tracker
+into a component to remove the last page search. Optional: a shared navbar
+component, since all three pages copy the same navbar.

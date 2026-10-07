@@ -87,8 +87,7 @@
                 <div class="col">
                     <div class="card mb-3">
                         <div class="card-body">
-                            <h3 class="card-title display-3">Character
-                                Design</h3>
+                            <h3 class="card-title display-3">Character Design</h3>
                             <p class="mb-4 text-dark display-6">
                                 Build your character from the ground up.
                             </p>
@@ -111,30 +110,20 @@
 
                                     <!-- Level. Same three-part row as HP/MP/SP below, a size up:
                                         it feeds all three of them, so it is not their peer. -->
-                                    <range-slider id="level" label="Level" variant="level"
-                                        :min="levelRange.min" :max="levelRange.max" v-model="vitals.level"
-                                        :tooltip="levelTooltip" show-max></range-slider>
+                                    <range-slider id="level" label="Level" variant="level" :min="levelRange.min"
+                                        :max="levelRange.max" v-model="vitals.level" :tooltip="levelTooltip"
+                                        show-max></range-slider>
 
                                     <!-- HP / MP / SP -->
                                     <div class="row row-cols-1 row-cols-lg-2 g-4">
                                         <!-- Buffs makes this row tall, so spread the three bars
                                             down the space instead of leaving a gap under them -->
                                         <div class="col d-flex flex-column justify-content-evenly">
-                                            <div class="d-flex align-items-center gap-2 vitals-row"
-                                                v-for="bar in vitalBars" :key="bar.id">
-                                                <!-- The equation lives on hover. bar.formula is a
-                                                    fixed string per bar, so the tooltip Bootstrap
-                                                    builds once never goes stale. -->
-                                                <label :for="bar.id" class="form-label mb-0 vitals-label"
-                                                    data-bs-toggle="tooltip" data-bs-placement="top"
-                                                    :title="bar.formula">{{ bar.label }}</label>
-                                                <input type="range" class="form-range flex-grow-1"
-                                                    :class="bar.fillClass" :id="bar.id" :name="bar.id" :min="bar.min"
-                                                    :max="bar.max" :value="bar.value" @input="setVital(bar, $event)"
-                                                    :style="{ '--range-fill': fillPercent(bar) }" />
-                                                <output :for="bar.id" class="badge vitals-value bg-secondary text-dark"
-                                                    aria-hidden="true">{{ bar.value }} / {{ bar.max }}</output>
-                                            </div>
+                                            <!-- The equation lives on hover, from bar.formula -->
+                                            <range-slider v-for="bar in vitalBars" :key="bar.id" :id="bar.id"
+                                                :label="bar.label" variant="vital" :min="bar.min" :max="bar.max"
+                                                v-model="vitals[bar.id]" :fill-class="bar.fillClass"
+                                                :tooltip="bar.formula" show-max></range-slider>
                                         </div>
 
                                         <!-- Buffs / Debuffs -->
@@ -154,7 +143,8 @@
                                                             </button>
                                                             <ul class="dropdown-menu add-skill-menu">
                                                                 <li>
-                                                                    <h6 class="dropdown-header">{{ group.addLabel }}
+                                                                    <h6 class="dropdown-header">
+                                                                        {{ group.addLabel }}
                                                                     </h6>
                                                                 </li>
                                                                 <li v-if="availableEffects(group.kind).length === 0">
@@ -177,10 +167,10 @@
                                                     <ul class="list-group list-group-flush">
                                                         <li class="list-group-item d-flex flex-wrap justify-content-between align-items-center gap-2"
                                                             v-for="effect in group.effects" :key="effect.id"
-                                                            data-bs-toggle="tooltip"
-                                                            :data-bs-title="effect.description">
+                                                            v-tooltip="effect.description">
                                                             <h6 class="mb-0">{{ effect.name }}</h6>
-                                                            <span class="d-flex flex-wrap align-items-center gap-2 ms-auto">
+                                                            <span
+                                                                class="d-flex flex-wrap align-items-center gap-2 ms-auto">
                                                                 <span class="badge" :class="group.badgeClass">{{
                                                                     group.tag }}</span>
                                                                 <span
@@ -241,19 +231,16 @@
                                         :class="index <= currentStep ? 'btn-primary' : 'btn-secondary'"
                                         :style="{ left: dotLeft(index) }" :aria-label="dotLabel(step, index)"
                                         :disabled="stepDisabled(index)" @click="goToStep(index)"
-                                        data-bs-toggle="tooltip" data-bs-placement="top"
-                                        :data-bs-title="step.label">
+                                        v-tooltip="step.label">
                                         {{ index + 1 }}
                                     </button>
                                 </div>
 
                                 <!-- Character Step -->
                                 <div class="character-step" v-show="currentStep === 0">
-                                    <h3 class="card-title-dark">Character
-                                        Information</h3>
+                                    <h3 class="card-title-dark">Character Information</h3>
                                     <p class="mb-4 text-body-secondary">
-                                        Character Needs ID and name before
-                                        creation.
+                                        Character Needs ID and name before creation.
                                     </p>
                                     <div class="mb-3">
                                         <label for="characterName" class="form-label">
@@ -268,8 +255,7 @@
                                     </div>
 
                                     <fieldset class="mb-3">
-                                        <legend class="form-label">Character
-                                            Type</legend>
+                                        <legend class="form-label">Character Type</legend>
 
                                         <div class="form-check">
                                             <input class="form-check-input" type="radio" name="characterType"
@@ -292,15 +278,13 @@
                                         one cannot block validation the way a hidden
                                         required field would -->
                                     <div class="mb-3" v-if="character.type === 'player'">
-                                        <label for="userId" class="form-label">
-                                            User ID </label>
+                                        <label for="userId" class="form-label"> User ID </label>
                                         <input class="form-control" type="text" id="userId" name="userId"
                                             placeholder="Enter User ID" v-model="character.userId" required />
                                     </div>
 
                                     <div class="mb-3" v-else>
-                                        <label for="npcId" class="form-label">
-                                            NPC ID </label>
+                                        <label for="npcId" class="form-label"> NPC ID </label>
                                         <input class="form-control" type="text" id="npcId" name="npcId"
                                             placeholder="Enter NPC ID" v-model="character.npcId" required
                                             :class="npcIdTaken ? 'is-invalid' : ''" />
@@ -323,54 +307,25 @@
 
                                 <!-- Stats Step -->
                                 <div class="character-step" v-show="currentStep === 1">
-                                    <h3 class="card-title-dark">Build
-                                        Character Stats</h3>
+                                    <h3 class="card-title-dark">Build Character Stats</h3>
                                     <div>
                                         <div class="mb-3">
                                             <!-- Stat points. Matches the Level label style. -->
-                                            <label class="form-label fw-semibold">Available
-                                                Stat Points:
+                                            <label class="form-label fw-semibold">Available Stat Points:
                                                 <output class="badge align-self-start" :class="statPointsBadge">{{
-                                                    statPointsLeft
-                                                    }}</output></label>
+                                                    statPointsLeft }}</output></label>
                                             <p class="mb-3 text-body-secondary">
-                                                Choose a value from 1 to 20
-                                                for each ability. Spend
-                                                these across the six
-                                                attributes below.
+                                                Choose a value from 1 to 20 for each ability. Spend
+                                                these across the six attributes below.
                                             </p>
                                             <input type="hidden" id="statPoints" name="statPoints"
                                                 :value="statPointsLeft" />
                                         </div>
-                                        <!-- One card per attribute. Vue owns this block;
-                                        the rest of the form is still plain JS. -->
+                                        <!-- One card per attribute. -->
                                         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
                                             <div class="col" v-for="stat in stats" :key="stat.id">
-                                                <div class="card h-100 p-3 bg-light border-primary-subtle shadow-sm">
-                                                    <div class="card-body d-flex flex-column">
-                                                        <h5 class="card-title">{{
-                                                            stat.label
-                                                            }}</h5>
-                                                        <label :for="stat.id"
-                                                            class="form-label fw-semibold visually-hidden">{{
-                                                            stat.label
-                                                            }}</label>
-                                                        <p class="flex-grow-1 mb-3 text-body-secondary">
-                                                            {{
-                                                            stat.description
-                                                            }}
-                                                        </p>
-                                                        <input type="range" class="form-range range-stat" :id="stat.id"
-                                                            :name="stat.id" :min="stat.min" :max="stat.max"
-                                                            :value="stat.value" @input="setStatValue(stat, $event)"
-                                                            :style="{ '--range-fill': fillPercent(stat) }" />
-                                                        <output :for="stat.id"
-                                                            class="badge bg-secondary text-dark align-self-center fs-3 mt-2"
-                                                            aria-hidden="true">{{
-                                                            stat.value
-                                                            }}</output>
-                                                    </div>
-                                                </div>
+                                                <stat-card :stat="stat" v-model="stat.value"
+                                                    :points-left="statPointsLeft"></stat-card>
                                             </div>
                                         </div>
                                     </div>
@@ -419,7 +374,7 @@
                                         <div class="accordion" id="skillAccordion">
                                             <div class="accordion-item" v-for="category in skillCategories"
                                                 :key="category.id">
-                                                <div class="d-flex align-items-center">
+                                                <div class="d-flex align-items-center accordion-header-row">
                                                     <h2 class="accordion-header flex-grow-1">
                                                         <button class="accordion-button collapsed" type="button"
                                                             data-bs-toggle="collapse"
@@ -458,7 +413,8 @@
                                                             <li>
                                                                 <button class="dropdown-item text-danger" type="button"
                                                                     @click="removeCategory(category)">
-                                                                    <i class="bi bi-trash me-2"></i>Remove category
+                                                                    <i class="bi bi-trash me-2"></i>Remove
+                                                                    category
                                                                 </button>
                                                             </li>
                                                         </ul>
@@ -470,76 +426,22 @@
                                                         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
                                                             <div class="col" v-for="skill in category.skills"
                                                                 :key="skill.id">
-                                                                <div
-                                                                    class="card h-100 p-3 bg-light border-primary-subtle shadow-sm position-relative">
-                                                                    <!-- Kebab in the corner, where cards
-                                                                        conventionally put their controls -->
-                                                                    <div
-                                                                        class="dropdown card-kebab">
-                                                                        <button
-                                                                            class="btn btn-outline-primary btn-kebab"
-                                                                            type="button" data-bs-toggle="dropdown"
-                                                                            aria-expanded="false"
-                                                                            :aria-label="actionsLabel(skill.name)">
-                                                                            <i class="bi bi-three-dots-vertical"></i>
-                                                                        </button>
-                                                                        <ul class="dropdown-menu dropdown-menu-end">
-                                                                            <li>
-                                                                                <!-- Goes to the design page for this
-                                                                                    skill once that page exists -->
-                                                                                <a class="dropdown-item" href="#">
-                                                                                    <i
-                                                                                        class="bi bi-pencil-square me-2"></i>Edit
-                                                                                </a>
-                                                                            </li>
-                                                                            <li>
-                                                                                <button
-                                                                                    class="dropdown-item text-danger"
-                                                                                    type="button"
-                                                                                    @click="removeSkill(category, skill)">
-                                                                                    <i
-                                                                                        class="bi bi-trash me-2"></i>Remove
-                                                                                </button>
-                                                                            </li>
-                                                                        </ul>
-                                                                    </div>
-
-                                                                    <div class="card-body d-flex flex-column">
-                                                                        <h5 class="card-title pe-5">{{ skill.name }}
-                                                                        </h5>
-                                                                        <label :for="skill.id"
-                                                                            class="form-label fw-semibold visually-hidden">{{
-                                                                            skill.name }}</label>
-                                                                        <p class="flex-grow-1 mb-3 text-body-secondary">
-                                                                            {{ skill.description }}
-                                                                        </p>
-                                                                        <input type="range"
-                                                                            class="form-range range-stat" :id="skill.id"
-                                                                            :name="skill.id" :min="skill.min"
-                                                                            :max="skill.max"
-                                                                            v-model.number="skill.value"
-                                                                            :style="{ '--range-fill': fillPercent(skill) }" />
-                                                                        <output :for="skill.id"
-                                                                            class="badge bg-secondary text-dark align-self-center fs-3 mt-2"
-                                                                            aria-hidden="true">{{ skill.value
-                                                                            }}</output>
-                                                                    </div>
-                                                                </div>
+                                                                <skill-card :skill="skill" v-model="skill.value"
+                                                                    @remove="removeSkill(category, skill)"></skill-card>
                                                             </div>
 
-                                                            <div class="col" v-if="category.skills.length === 0">
-                                                                <p class="text-body-secondary mb-0">
-                                                                    No skills here yet. Use this category's menu
-                                                                    to add one.
-                                                                </p>
-                                                            </div>
                                                         </div>
+                                                        <p class="text-body-secondary mb-0"
+                                                            v-if="category.skills.length === 0">
+                                                            No skills here yet. Use this category's menu to add one.
+                                                        </p>
                                                     </div>
                                                 </div>
                                             </div>
 
                                             <p class="text-body-secondary mb-0" v-if="skillCategories.length === 0">
-                                                No skill categories yet. Use the + beside the heading above.
+                                                No skill categories yet. Use the + beside the heading
+                                                above.
                                             </p>
                                         </div>
                                     </div>
@@ -558,8 +460,7 @@
                                 <!-- Abilities Step -->
                                 <div class="character-step" v-show="currentStep === 3">
                                     <div class="d-flex align-items-center gap-2 mb-2">
-                                        <h3 class="card-title mb-0">Abilities
-                                            &amp; Feats</h3>
+                                        <h3 class="card-title mb-0">Abilities &amp; Feats</h3>
                                     </div>
                                     <div class="row row-cols-1 g-3 mb-3">
                                         <!-- Feats -->
@@ -581,14 +482,16 @@
                                                             <ul class="dropdown-menu add-skill-menu">
                                                                 <template v-for="kind in featKinds" :key="kind.id">
                                                                     <li>
-                                                                        <h6 class="dropdown-header">{{ kind.label }}
+                                                                        <h6 class="dropdown-header">
+                                                                            {{ kind.label }}
                                                                         </h6>
                                                                     </li>
                                                                     <li v-for="entry in availableFeats(kind.id)"
                                                                         :key="entry.id">
                                                                         <button class="dropdown-item" type="button"
                                                                             @click="addFeat(entry)">
-                                                                            {{ entry.name }} &mdash; {{ entry.summary }}
+                                                                            {{ entry.name }} &mdash; {{
+                                                                            entry.summary }}
                                                                         </button>
                                                                     </li>
                                                                     <li v-if="availableFeats(kind.id).length === 0">
@@ -621,8 +524,8 @@
                                                     </div>
 
                                                     <div id="featCountHelp" class="form-text mb-3">
-                                                        One feat every {{ featsPerLevel }} levels. You may take more,
-                                                        never fewer.
+                                                        One feat every {{ featsPerLevel }} levels. You may
+                                                        take more, never fewer.
                                                     </div>
 
                                                     <h6>Current Feats</h6>
@@ -630,10 +533,10 @@
                                                         <ul class="list-group list-group-flush">
                                                             <li class="list-group-item d-flex flex-wrap justify-content-between align-items-center gap-2"
                                                                 v-for="feat in feats" :key="feat.id"
-                                                                data-bs-toggle="tooltip"
-                                                                :data-bs-title="feat.description">
+                                                                v-tooltip="feat.description">
                                                                 <h6 class="mb-0">{{ feat.name }}</h6>
-                                                                <span class="d-flex flex-wrap align-items-center gap-2 ms-auto">
+                                                                <span
+                                                                    class="d-flex flex-wrap align-items-center gap-2 ms-auto">
                                                                     <span class="badge"
                                                                         :class="featKindBadge(feat).badgeClass">{{
                                                                         featKindBadge(feat).tag }}</span>
@@ -715,8 +618,7 @@
                                                                         @change="toggleAbility(skill, ability)" />
                                                                     <label class="btn ability-toggle"
                                                                         :for="abilityDomId(ability)"
-                                                                        data-bs-toggle="tooltip"
-                                                                        :data-bs-title="abilityTitle(skill, ability)">{{
+                                                                        v-tooltip="abilityTitle(skill, ability)">{{
                                                                         ability.name }}</label>
 
                                                                     <div class="dropdown">
@@ -747,7 +649,8 @@
 
                                                         <p class="text-body-secondary mb-0"
                                                             v-if="category.skills.length === 0">
-                                                            No skills in this category. Add one on the Skills step.
+                                                            No skills in this category. Add one on the
+                                                            Skills step.
                                                         </p>
                                                     </div>
                                                 </div>
@@ -778,26 +681,26 @@
                                     <h3 class="card-title">Spells</h3>
 
                                     <p class="mb-3 text-body-secondary">
-                                        Spells are grouped by school of magic. Click Learn to add a spell to
-                                        your spellbook.
+                                        Spells are grouped by school of magic. Click Learn to add
+                                        a spell to your spellbook.
                                     </p>
 
                                     <!-- How much the spellbook holds. Intelligence + Level, worked
                                         out in app.js, so the cap moves with the character. -->
                                     <div class="d-flex align-items-center gap-2 mb-4">
                                         <label class="form-label fw-semibold mb-0">Spells known:
-                                            <output class="badge"
-                                                :class="spellsBadgeClass">{{ spellsLearned }} / {{ spellsKnown }}</output></label>
+                                            <output class="badge" :class="spellsBadgeClass">{{ spellsLearned }} / {{
+                                                spellsKnown }}</output></label>
                                     </div>
 
                                     <div class="accordion mb-3" id="spellsAccordion">
                                         <div class="accordion-item" v-for="school in spellSchools" :key="school.id">
-                                            <div class="d-flex align-items-center">
+                                            <div class="d-flex align-items-center accordion-header-row">
                                                 <h2 class="accordion-header flex-grow-1">
                                                     <button class="accordion-button collapsed" type="button"
                                                         data-bs-toggle="collapse"
-                                                        :data-bs-target="spellPanelTarget(school)"
-                                                        aria-expanded="false" :aria-controls="spellPanelId(school)">
+                                                        :data-bs-target="spellPanelTarget(school)" aria-expanded="false"
+                                                        :aria-controls="spellPanelId(school)">
                                                         {{ school.name }}
                                                     </button>
                                                 </h2>
@@ -832,8 +735,7 @@
                                             <div :id="spellPanelId(school)" class="accordion-collapse collapse">
                                                 <div class="accordion-body">
                                                     <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
-                                                        <div class="col" v-for="spell in school.spells"
-                                                            :key="spell.id">
+                                                        <div class="col" v-for="spell in school.spells" :key="spell.id">
                                                             <div
                                                                 class="card h-100 p-3 bg-light border-primary-subtle shadow-sm position-relative">
                                                                 <div class="dropdown card-kebab">
@@ -848,7 +750,8 @@
                                                                             <!-- Goes to Spell Design once that
                                                                                 page exists -->
                                                                             <a class="dropdown-item" href="#">
-                                                                                <i class="bi bi-pencil-square me-2"></i>Edit
+                                                                                <i
+                                                                                    class="bi bi-pencil-square me-2"></i>Edit
                                                                             </a>
                                                                         </li>
                                                                         <li>
@@ -862,13 +765,15 @@
                                                                 </div>
 
                                                                 <div class="card-body d-flex flex-column">
-                                                                    <h5 class="card-title pe-5">{{ spell.name }}</h5>
+                                                                    <h5 class="card-title pe-5">
+                                                                        {{ spell.name }}
+                                                                    </h5>
 
                                                                     <div class="mb-2">
-                                                                        <span
-                                                                            class="badge bg-primary">{{ spellLevelLabel(spell) }}</span>
-                                                                        <span
-                                                                            class="badge bg-secondary text-dark">{{ spellCostLabel(spell) }}</span>
+                                                                        <span class="badge bg-primary">{{
+                                                                            spellLevelLabel(spell) }}</span>
+                                                                        <span class="badge bg-secondary text-dark">{{
+                                                                            spellCostLabel(spell) }}</span>
                                                                     </div>
 
                                                                     <p class="flex-grow-1 mb-3 text-body-secondary">
@@ -884,16 +789,15 @@
                                                                     <label
                                                                         class="btn btn-sm ability-toggle align-self-start"
                                                                         :for="spellDomId(spell)"
-                                                                        data-bs-toggle="tooltip"
-                                                                        :data-bs-title="spellLearnTitle(spell)">Learn</label>
+                                                                        v-tooltip="spellLearnTitle(spell)">Learn</label>
                                                                 </div>
                                                             </div>
                                                         </div>
 
                                                         <div class="col" v-if="school.spells.length === 0">
                                                             <p class="text-body-secondary mb-0">
-                                                                No spells here yet. Use this school's menu to add
-                                                                one.
+                                                                No spells here yet. Use this school's menu to
+                                                                add one.
                                                             </p>
                                                         </div>
                                                     </div>
@@ -922,9 +826,9 @@
                                     <h3 class="card-title">Items</h3>
 
                                     <p class="mb-4 text-body-secondary">
-                                        Equip gear on the left. Manage your inventory on the right. A slot
-                                        only offers what you are carrying, so pick something up before you
-                                        can put it on.
+                                        Equip gear on the left. Manage your inventory on the
+                                        right. A slot only offers what you are carrying, so pick
+                                        something up before you can put it on.
                                     </p>
 
                                     <div class="row row-cols-1 row-cols-lg-2 g-3 mb-3">
@@ -935,10 +839,11 @@
                                                     <h5 class="card-title">Gear</h5>
 
                                                     <div class="mb-3" v-for="slot in gearSlots" :key="slot.id">
-                                                        <label :for="slot.id"
-                                                            class="form-label fw-semibold">{{ slot.label }}</label>
+                                                        <label :for="slot.id" class="form-label fw-semibold">{{
+                                                            slot.label }}</label>
                                                         <select class="form-select" :id="slot.id" :name="slot.id"
-                                                            :value="slot.equipped" @change="equipItem(slot, $event.target.value)">
+                                                            :value="slot.equipped"
+                                                            @change="equipItem(slot, $event.target.value)">
                                                             <option value="">&mdash; Empty &mdash;</option>
                                                             <option v-for="item in equippableIn(slot)" :key="item.id"
                                                                 :value="item.id">
@@ -965,10 +870,13 @@
                                                             </button>
                                                             <ul class="dropdown-menu add-skill-menu">
                                                                 <li>
-                                                                    <h6 class="dropdown-header">Choose an item</h6>
+                                                                    <h6 class="dropdown-header">
+                                                                        Choose an item
+                                                                    </h6>
                                                                 </li>
                                                                 <li v-if="availableItems.length === 0">
-                                                                    <span class="dropdown-item-text text-body-secondary">
+                                                                    <span
+                                                                        class="dropdown-item-text text-body-secondary">
                                                                         Carrying everything there is
                                                                     </span>
                                                                 </li>
@@ -985,24 +893,24 @@
                                                     <ul class="list-group">
                                                         <li class="list-group-item d-flex flex-wrap justify-content-between align-items-center gap-2"
                                                             v-for="item in inventory" :key="item.id"
-                                                            data-bs-toggle="tooltip"
-                                                            :data-bs-title="item.description">
+                                                            v-tooltip="item.description">
                                                             <h6 class="mb-0">{{ item.name }}</h6>
 
-                                                            <span class="d-flex flex-wrap align-items-center gap-2 ms-auto">
-                                                                <span
-                                                                    class="badge bg-primary">{{ itemSlotLabel(item) }}</span>
+                                                            <span
+                                                                class="d-flex flex-wrap align-items-center gap-2 ms-auto">
+                                                                <span class="badge bg-primary">{{ itemSlotLabel(item)
+                                                                    }}</span>
                                                                 <span class="badge bg-success"
-                                                                    v-if="equippedCount(item) > 0">{{ equippedCount(item) }} worn</span>
+                                                                    v-if="equippedCount(item) > 0">{{
+                                                                    equippedCount(item) }} worn</span>
 
-                                                                <label :for="item.id"
-                                                                    class="visually-hidden">{{ item.name }} quantity</label>
+                                                                <label :for="item.id" class="visually-hidden">{{
+                                                                    item.name }} quantity</label>
                                                                 <input type="number"
                                                                     class="form-control form-control-sm item-qty-input"
                                                                     :id="item.id" :name="item.id"
-                                                                    v-model.number="item.qty"
-                                                                    min="0" :max="itemQtyRange.max"
-                                                                    step="1" />
+                                                                    v-model.number="item.qty" min="0"
+                                                                    :max="itemQtyRange.max" step="1" />
 
                                                                 <div class="dropdown">
                                                                     <button class="btn btn-outline-primary btn-kebab"
@@ -1016,13 +924,13 @@
                                                                             <!-- Goes to Item Design once that page
                                                                                 exists -->
                                                                             <a class="dropdown-item" href="#">
-                                                                                <i class="bi bi-pencil-square me-2"></i>Edit
+                                                                                <i
+                                                                                    class="bi bi-pencil-square me-2"></i>Edit
                                                                             </a>
                                                                         </li>
                                                                         <li>
                                                                             <button class="dropdown-item text-danger"
-                                                                                type="button"
-                                                                                @click="removeItem(item)">
+                                                                                type="button" @click="removeItem(item)">
                                                                                 <i class="bi bi-trash me-2"></i>Remove
                                                                             </button>
                                                                         </li>
@@ -1053,8 +961,9 @@
                                         </button>
                                     </div>
                                 </div>
-                                <div class="alert mt-3" :class="message.kind" v-if="message.text" role="alert">{{
-                                    message.text }}</div>
+                                <div class="alert mt-3" :class="message.kind" v-if="message.text" role="alert">
+                                    {{ message.text }}
+                                </div>
                             </form>
                         </div>
                     </div>
@@ -1075,8 +984,7 @@
                     </div>
 
                     <div class="modal-body">
-                        You will lose all unsaved data. Are you sure you
-                        want to continue?
+                        You will lose all unsaved data. Are you sure you want to continue?
                     </div>
 
                     <div class="modal-footer">
@@ -1084,43 +992,14 @@
                             No
                         </button>
 
-                        <a href="index.html" class="btn btn-danger"> Yes
-                        </a>
+                        <a href="index.html" class="btn btn-danger"> Yes </a>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Final save confirmation, opened from the Finish button -->
-        <div class="modal fade" id="confirmSaveModal" tabindex="-1" aria-labelledby="confirmSaveModalLabel"
-            aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="confirmSaveModalLabel">
-                            Save This Character?
-                        </h5>
-
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-
-                    <div class="modal-body">
-                        This will save the character and start a new blank
-                        form.
-                    </div>
-
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                            Keep Editing
-                        </button>
-
-                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal" @click="saveCharacter">
-                            Save Character
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <confirm-modal ref="saveModal" v-bind="saveConfirm" @confirm="saveCharacter"></confirm-modal>
 
         <!-- Same warning, but for the roster. A modal can only point at one
         destination, so each exit gets its own. -->
@@ -1137,8 +1016,7 @@
                     </div>
 
                     <div class="modal-body">
-                        You will lose all unsaved data. Are you sure you
-                        want to view the
+                        You will lose all unsaved data. Are you sure you want to view the
                         roster?
                     </div>
 

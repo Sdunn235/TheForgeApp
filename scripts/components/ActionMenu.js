@@ -27,7 +27,9 @@ const ActionMenu = {
     // props:   Data passed in from the parent through attributes.
     //          Read them, never assign to them. They belong to the parent.
     props: {
-        // Each entry: { label, href }. More kinds get added as pages need them.
+        // Each entry: { label, href?, icon?, danger? }
+        //   href    -> a link; the browser goes there
+        //   no href -> a button; the parent hears "select" with the item
         items: { type: Array, required: true },
         label: { type: String, required: true },
         variant: {
@@ -40,6 +42,10 @@ const ActionMenu = {
         },
     },
 
+    // emits:   "select" - a button item was clicked. The menu does not know
+    //          what Remove or Edit means; the parent does.
+    emits: ['select'],
+
     // computed:    The look for whichever variant the parent picked.
     computed: {
         look: function () {
@@ -47,7 +53,8 @@ const ActionMenu = {
         },
     },
 
-    // template:    This component's HTML.
+    // template:    This component's HTML. A link item goes where it points;
+    //              a button item reports itself to the parent.
     template: `
         <div class="dropdown">
             <button type="button" :class="look.buttonClass" data-bs-toggle="dropdown" aria-expanded="false"
@@ -57,7 +64,14 @@ const ActionMenu = {
             </button>
             <ul class="dropdown-menu" :class="look.menuClass">
                 <li v-for="item in items" :key="item.label">
-                    <a class="dropdown-item" :href="item.href">{{ item.label }}</a>
+                    <a v-if="item.href" class="dropdown-item" :class="{ 'text-danger': item.danger }"
+                        :href="item.href">
+                        <i v-if="item.icon" class="me-2" :class="item.icon"></i>{{ item.label }}
+                    </a>
+                    <button v-else type="button" class="dropdown-item" :class="{ 'text-danger': item.danger }"
+                        @click="$emit('select', item)">
+                        <i v-if="item.icon" class="me-2" :class="item.icon"></i>{{ item.label }}
+                    </button>
                 </li>
             </ul>
         </div>

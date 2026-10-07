@@ -3,6 +3,12 @@ import ActionMenu from './components/ActionMenu.js';
 import AppCard from './components/AppCard.js';
 import PageContentHeader from './components/PageContentHeader.js';
 import RangeSlider from './components/RangeSlider.js';
+import StatCard from './components/StatCard.js';
+import SkillCard from './components/SkillCard.js';
+import ConfirmModal from './components/ConfirmModal.js';
+import vTooltip from './directives/tooltip.js';
+
+
 
 
 const app = createApp({
@@ -12,6 +18,13 @@ const app = createApp({
         AppCard,
         PageContentHeader,
         RangeSlider,
+        SkillCard,
+        StatCard,
+        ConfirmModal,
+    },
+    // directives: custom v- attributes this app's HTML can use
+    directives: {
+        tooltip: vTooltip,
     },
     // data: all the data for the app
     data: function () {
@@ -316,6 +329,16 @@ const app = createApp({
 
             // Hover text for the Level label. HP/MP/SP keep theirs in vitalBars.
             levelTooltip: 'Overall experience. Every ceiling below is worked out from this and your attributes.',
+
+            // The Finish button's "are you sure". Keys match ConfirmModal's
+            // props, so the page can hand the whole object over at once.
+            saveConfirm: {
+                id: 'confirmSaveModal',
+                title: 'Save This Character?',
+                message: 'This will save the character and start a new blank form.',
+                confirmLabel: 'Save Character',
+                cancelLabel: 'Keep Editing',
+            },
 
             // Stat points: what you start with, and what each level adds.
             // Six stats capped at 20 could absorb 114, so the budget stays
@@ -792,32 +815,6 @@ const app = createApp({
 
     // methods: usually "events" triggered by v-on:
     methods: {
-        // How far along its track a slider is, as a percentage. forge.scss
-        // paints the filled part of the track from --range-fill.
-        fillPercent: function (stat) {
-            const span = stat.max - stat.min;
-            const filled = span === 0 ? 0 : (stat.value - stat.min) / span * 100;
-
-            return Math.round(filled) + '%';
-        },
-        // The highest this stat can reach right now: its own ceiling, or
-        // whatever the remaining pool can pay for, whichever comes first.
-        affordableMax: function (stat) {
-            return Math.min(stat.max, stat.value + this.statPointsLeft);
-        },
-
-        // Runs on every drag. Refuses any value the pool cannot pay for.
-        setStatValue: function (stat, event) {
-            const wanted = Number(event.target.value);
-            const allowed = Math.min(wanted, this.affordableMax(stat));
-
-            stat.value = allowed;
-
-            // The thumb may have been dragged past what we allowed. If the
-            // value did not change, Vue has nothing to patch and the thumb
-            // would stay where the mouse left it, so put it back by hand.
-            event.target.value = allowed;
-        },
         // Where a tracker dot sits along the bar, as a percentage. Six dots
         // works out to 0, 20, 40, 60, 80, 100 — which is what the hand-written
         // start-0 / start-20 / ... classes were doing.
@@ -846,9 +843,7 @@ const app = createApp({
                 this.currentStep++;
                 this.scrollToStep();
             } else {
-                bootstrap.Modal
-                    .getOrCreateInstance(document.getElementById('confirmSaveModal'))
-                    .show();
+                this.$refs.saveModal.open();
             }
         },
 
@@ -881,17 +876,6 @@ const app = createApp({
         scrollToStep: function () {
             document.querySelector('.step-tracker')
                 .scrollIntoView({ behavior: 'smooth', block: 'start' });
-        },
-
-        // Bootstrap builds a tooltip per element rather than listening on the
-        // document the way dropdowns and modals do, so anything Vue re-renders
-        // loses its tooltip. getOrCreateInstance means re-running this is safe.
-        startTooltips: function () {
-            const triggers = document.querySelectorAll('[data-bs-toggle="tooltip"]');
-
-            for (const trigger of triggers) {
-                bootstrap.Tooltip.getOrCreateInstance(trigger);
-            }
         },
 
         // Confirming the save. A real save would send the character to a
@@ -1501,32 +1485,6 @@ const app = createApp({
             return stat === undefined ? 0 : stat.value;
         },
 
-        // Runs on every drag of an HP/MP/SP slider. The ceiling is derived, so
-        // it can move underneath the value; refuse anything above it. Same
-        // manual write-back as setStatValue, for the same reason.
-        setVital: function (bar, event) {
-            const allowed = Math.min(Number(event.target.value), bar.max);
-
-            this.vitals[bar.id] = allowed;
-            event.target.value = allowed;
-        },
-
-        // Bootstrap marks a closed modal aria-hidden while the button that
-        // dismissed it still holds focus, and Chrome rightly objects to hiding
-        // a focused element from assistive technology. Handing focus back to
-        // the page just before the modal hides clears the warning.
-        // Bound once from mounted, never from updated - that would stack up a
-        // fresh listener on every re-render.
-        releaseModalFocus: function () {
-            for (const modal of document.querySelectorAll('.modal')) {
-                modal.addEventListener('hide.bs.modal', function () {
-                    if (modal.contains(document.activeElement)) {
-                        document.activeElement.blur();
-                    }
-                });
-            }
-        },
-
         // Pull every current value back under its ceiling. Called on load and
         // whenever a maximum moves.
         clampVitals: function () {
@@ -2096,7 +2054,6 @@ const app = createApp({
                     fillClass: 'range-health',
                     min: 0,
                     max: this.maxHp,
-                    value: this.vitals.hp,
                     formula: 'HP = Constitution × 3 + Level × 2',
                 },
                 {
@@ -2105,7 +2062,6 @@ const app = createApp({
                     fillClass: 'range-mana',
                     min: 0,
                     max: this.maxMp,
-                    value: this.vitals.mp,
                     formula: 'MP = Wisdom × 2 + Level',
                 },
                 {
@@ -2114,7 +2070,6 @@ const app = createApp({
                     fillClass: 'range-stamina',
                     min: 0,
                     max: this.maxSp,
-                    value: this.vitals.sp,
                     formula: 'SP = Dexterity × 2 + Constitution + Level',
                 },
             ];
@@ -2342,14 +2297,7 @@ const app = createApp({
         this.seedRoster();
         this.loadRoster();
         this.loadFromQuery();
-        this.startTooltips();
         this.clampVitals();
-        this.releaseModalFocus();
-    },
-
-    //updated:  called after a re-render, so new markup gets its tooltips too
-    updated: function () {
-        this.startTooltips();
     },
 
     // watch:   calls the function if the value changes
