@@ -310,8 +310,28 @@ const app = createApp({
                 name: '',
                 type: 'player', // 'player' or 'npc'
                 userId: '',
-                npcId: '',
+                npcType: 'unknown', // 'unknown' or one of the npcTypes below
             },
+
+            // The creature types an NPC can be (most are D&D 5e Place Holder). The forge's dropdown
+            // and the roster's filter both read this one list.
+            npcTypes: [
+                { id: 'unknown', label: 'Unknown' },
+                { id: 'aberration', label: 'Aberration' },
+                { id: 'beast', label: 'Beast' },
+                { id: 'celestial', label: 'Celestial' },
+                { id: 'construct', label: 'Construct' },
+                { id: 'dragon', label: 'Dragon' },
+                { id: 'elemental', label: 'Elemental' },
+                { id: 'fey', label: 'Fey' },
+                { id: 'fiend', label: 'Fiend' },
+                { id: 'giant', label: 'Giant' },
+                { id: 'humanoid', label: 'Humanoid' },
+                { id: 'monstrosity', label: 'Monstrosity' },
+                { id: 'ooze', label: 'Ooze' },
+                { id: 'plant', label: 'Plant' },
+                { id: 'undead', label: 'Undead' },
+            ],
 
             // The Vitals card. Current values only — every ceiling below is
             // computed from the stats and the level, so there is nowhere to
@@ -510,62 +530,78 @@ const app = createApp({
             // Every spell the world offers. The extra ones in each school came
             // from the add menus; their level and cost are placeholders.
             spellCatalog: [
-                { id: 'abjuration', name: 'Abjuration', spells: [
-                    { id: 'arcaneWard', name: 'Arcane Ward', level: 1, cost: 10, description: 'Surround yourself with a shimmering barrier that absorbs damage.' },
-                    { id: 'dispelMagic', name: 'Dispel Magic', level: 3, cost: 25, description: 'End a magical effect on a creature or object.' },
-                    { id: 'shield', name: 'Shield', level: 1, cost: 5, description: 'A sudden barrier turns aside one incoming attack.' },
-                    { id: 'counterspell', name: 'Counterspell', level: 3, cost: 25, description: 'Interrupt another caster mid-incantation.' },
-                    { id: 'banishment', name: 'Banishment', level: 4, cost: 40, description: 'Send a creature to another plane for a time.' },
-                ] },
-                { id: 'conjuration', name: 'Conjuration', spells: [
-                    { id: 'summonFamiliar', name: 'Summon Familiar', level: 1, cost: 10, description: 'Call a small spirit animal to scout and assist you.' },
-                    { id: 'mistyStep', name: 'Misty Step', level: 2, cost: 15, description: 'Teleport a short distance in a puff of silver mist.' },
-                    { id: 'web', name: 'Web', level: 2, cost: 20, description: 'Fill an area with thick, clinging strands.' },
-                    { id: 'cloudkill', name: 'Cloudkill', level: 5, cost: 50, description: 'A rolling fog of poison that drifts forward.' },
-                    { id: 'teleport', name: 'Teleport', level: 5, cost: 55, description: 'Cross a great distance in a single step.' },
-                ] },
-                { id: 'divination', name: 'Divination', spells: [
-                    { id: 'detectMagic', name: 'Detect Magic', level: 1, cost: 5, description: 'Sense the presence of magic nearby.' },
-                    { id: 'clairvoyance', name: 'Clairvoyance', level: 3, cost: 30, description: 'See and hear a distant place you have visited before.' },
-                    { id: 'identify', name: 'Identify', level: 1, cost: 10, description: 'Learn what an object is and what it does.' },
-                    { id: 'locateObject', name: 'Locate Object', level: 2, cost: 20, description: 'Sense the direction of something you know well.' },
-                    { id: 'trueSeeing', name: 'True Seeing', level: 4, cost: 40, description: 'See through illusion, invisibility and disguise.' },
-                ] },
-                { id: 'enchantment', name: 'Enchantment', spells: [
-                    { id: 'charmPerson', name: 'Charm Person', level: 1, cost: 10, description: 'Make a humanoid treat you as a friendly acquaintance.' },
-                    { id: 'holdPerson', name: 'Hold Person', level: 2, cost: 20, description: 'Freeze a humanoid in place for a short time.' },
-                    { id: 'sleep', name: 'Sleep', level: 1, cost: 10, description: 'Send the weakest nearby creatures into slumber.' },
-                    { id: 'suggestion', name: 'Suggestion', level: 2, cost: 20, description: 'Plant a reasonable-sounding course of action.' },
-                    { id: 'confusion', name: 'Confusion', level: 4, cost: 40, description: 'Targets act at random for a short while.' },
-                ] },
-                { id: 'evocation', name: 'Evocation', spells: [
-                    { id: 'magicMissile', name: 'Magic Missile', level: 1, cost: 10, description: 'Three glowing darts that never miss their target.' },
-                    { id: 'fireball', name: 'Fireball', level: 3, cost: 30, description: 'A burst of flame that engulfs everything in the blast.' },
-                    { id: 'lightningBolt', name: 'Lightning Bolt', level: 3, cost: 30, description: 'A line of arcing lightning through everything in its path.' },
-                    { id: 'iceStorm', name: 'Ice Storm', level: 4, cost: 40, description: 'Hail and freezing rain batter an area.' },
-                    { id: 'coneOfCold', name: 'Cone of Cold', level: 5, cost: 50, description: 'A widening blast of killing cold.' },
-                ] },
-                { id: 'illusion', name: 'Illusion', spells: [
-                    { id: 'minorIllusion', name: 'Minor Illusion', level: 0, cost: 5, description: 'Create a small sound or image to fool onlookers.' },
-                    { id: 'invisibility', name: 'Invisibility', level: 2, cost: 20, description: 'Turn a creature invisible until it attacks.' },
-                    { id: 'disguiseSelf', name: 'Disguise Self', level: 1, cost: 10, description: 'Change how you appear to everyone watching.' },
-                    { id: 'mirrorImage', name: 'Mirror Image', level: 2, cost: 20, description: 'Duplicates of you confuse incoming attacks.' },
-                    { id: 'phantasmalForce', name: 'Phantasmal Force', level: 2, cost: 20, description: 'One creature believes an illusion completely.' },
-                ] },
-                { id: 'necromancy', name: 'Necromancy', spells: [
-                    { id: 'chillTouch', name: 'Chill Touch', level: 0, cost: 5, description: 'A ghostly hand that drains life and stops healing.' },
-                    { id: 'animateDead', name: 'Animate Dead', level: 3, cost: 35, description: 'Raise a skeleton or zombie to serve you.' },
-                    { id: 'falseLife', name: 'False Life', level: 1, cost: 10, description: 'Borrow vitality you do not have.' },
-                    { id: 'vampiricTouch', name: 'Vampiric Touch', level: 3, cost: 30, description: 'Damage dealt returns to you as health.' },
-                    { id: 'blight', name: 'Blight', level: 4, cost: 40, description: 'Draw the life out of a living thing.' },
-                ] },
-                { id: 'transmutation', name: 'Transmutation', spells: [
-                    { id: 'featherFall', name: 'Feather Fall', level: 1, cost: 5, description: 'Slow the fall of up to five creatures.' },
-                    { id: 'haste', name: 'Haste', level: 3, cost: 30, description: "Double a creature's speed and grant an extra action." },
-                    { id: 'enlargeReduce', name: 'Enlarge/Reduce', level: 2, cost: 20, description: 'Grow or shrink a creature or object.' },
-                    { id: 'stoneskin', name: 'Stoneskin', level: 4, cost: 40, description: 'Flesh hardens against blades and blunt force.' },
-                    { id: 'polymorph', name: 'Polymorph', level: 4, cost: 45, description: 'Change a creature into another shape entirely.' },
-                ] },
+                {
+                    id: 'abjuration', name: 'Abjuration', spells: [
+                        { id: 'arcaneWard', name: 'Arcane Ward', level: 1, cost: 10, description: 'Surround yourself with a shimmering barrier that absorbs damage.' },
+                        { id: 'dispelMagic', name: 'Dispel Magic', level: 3, cost: 25, description: 'End a magical effect on a creature or object.' },
+                        { id: 'shield', name: 'Shield', level: 1, cost: 5, description: 'A sudden barrier turns aside one incoming attack.' },
+                        { id: 'counterspell', name: 'Counterspell', level: 3, cost: 25, description: 'Interrupt another caster mid-incantation.' },
+                        { id: 'banishment', name: 'Banishment', level: 4, cost: 40, description: 'Send a creature to another plane for a time.' },
+                    ]
+                },
+                {
+                    id: 'conjuration', name: 'Conjuration', spells: [
+                        { id: 'summonFamiliar', name: 'Summon Familiar', level: 1, cost: 10, description: 'Call a small spirit animal to scout and assist you.' },
+                        { id: 'mistyStep', name: 'Misty Step', level: 2, cost: 15, description: 'Teleport a short distance in a puff of silver mist.' },
+                        { id: 'web', name: 'Web', level: 2, cost: 20, description: 'Fill an area with thick, clinging strands.' },
+                        { id: 'cloudkill', name: 'Cloudkill', level: 5, cost: 50, description: 'A rolling fog of poison that drifts forward.' },
+                        { id: 'teleport', name: 'Teleport', level: 5, cost: 55, description: 'Cross a great distance in a single step.' },
+                    ]
+                },
+                {
+                    id: 'divination', name: 'Divination', spells: [
+                        { id: 'detectMagic', name: 'Detect Magic', level: 1, cost: 5, description: 'Sense the presence of magic nearby.' },
+                        { id: 'clairvoyance', name: 'Clairvoyance', level: 3, cost: 30, description: 'See and hear a distant place you have visited before.' },
+                        { id: 'identify', name: 'Identify', level: 1, cost: 10, description: 'Learn what an object is and what it does.' },
+                        { id: 'locateObject', name: 'Locate Object', level: 2, cost: 20, description: 'Sense the direction of something you know well.' },
+                        { id: 'trueSeeing', name: 'True Seeing', level: 4, cost: 40, description: 'See through illusion, invisibility and disguise.' },
+                    ]
+                },
+                {
+                    id: 'enchantment', name: 'Enchantment', spells: [
+                        { id: 'charmPerson', name: 'Charm Person', level: 1, cost: 10, description: 'Make a humanoid treat you as a friendly acquaintance.' },
+                        { id: 'holdPerson', name: 'Hold Person', level: 2, cost: 20, description: 'Freeze a humanoid in place for a short time.' },
+                        { id: 'sleep', name: 'Sleep', level: 1, cost: 10, description: 'Send the weakest nearby creatures into slumber.' },
+                        { id: 'suggestion', name: 'Suggestion', level: 2, cost: 20, description: 'Plant a reasonable-sounding course of action.' },
+                        { id: 'confusion', name: 'Confusion', level: 4, cost: 40, description: 'Targets act at random for a short while.' },
+                    ]
+                },
+                {
+                    id: 'evocation', name: 'Evocation', spells: [
+                        { id: 'magicMissile', name: 'Magic Missile', level: 1, cost: 10, description: 'Three glowing darts that never miss their target.' },
+                        { id: 'fireball', name: 'Fireball', level: 3, cost: 30, description: 'A burst of flame that engulfs everything in the blast.' },
+                        { id: 'lightningBolt', name: 'Lightning Bolt', level: 3, cost: 30, description: 'A line of arcing lightning through everything in its path.' },
+                        { id: 'iceStorm', name: 'Ice Storm', level: 4, cost: 40, description: 'Hail and freezing rain batter an area.' },
+                        { id: 'coneOfCold', name: 'Cone of Cold', level: 5, cost: 50, description: 'A widening blast of killing cold.' },
+                    ]
+                },
+                {
+                    id: 'illusion', name: 'Illusion', spells: [
+                        { id: 'minorIllusion', name: 'Minor Illusion', level: 0, cost: 5, description: 'Create a small sound or image to fool onlookers.' },
+                        { id: 'invisibility', name: 'Invisibility', level: 2, cost: 20, description: 'Turn a creature invisible until it attacks.' },
+                        { id: 'disguiseSelf', name: 'Disguise Self', level: 1, cost: 10, description: 'Change how you appear to everyone watching.' },
+                        { id: 'mirrorImage', name: 'Mirror Image', level: 2, cost: 20, description: 'Duplicates of you confuse incoming attacks.' },
+                        { id: 'phantasmalForce', name: 'Phantasmal Force', level: 2, cost: 20, description: 'One creature believes an illusion completely.' },
+                    ]
+                },
+                {
+                    id: 'necromancy', name: 'Necromancy', spells: [
+                        { id: 'chillTouch', name: 'Chill Touch', level: 0, cost: 5, description: 'A ghostly hand that drains life and stops healing.' },
+                        { id: 'animateDead', name: 'Animate Dead', level: 3, cost: 35, description: 'Raise a skeleton or zombie to serve you.' },
+                        { id: 'falseLife', name: 'False Life', level: 1, cost: 10, description: 'Borrow vitality you do not have.' },
+                        { id: 'vampiricTouch', name: 'Vampiric Touch', level: 3, cost: 30, description: 'Damage dealt returns to you as health.' },
+                        { id: 'blight', name: 'Blight', level: 4, cost: 40, description: 'Draw the life out of a living thing.' },
+                    ]
+                },
+                {
+                    id: 'transmutation', name: 'Transmutation', spells: [
+                        { id: 'featherFall', name: 'Feather Fall', level: 1, cost: 5, description: 'Slow the fall of up to five creatures.' },
+                        { id: 'haste', name: 'Haste', level: 3, cost: 30, description: "Double a creature's speed and grant an extra action." },
+                        { id: 'enlargeReduce', name: 'Enlarge/Reduce', level: 2, cost: 20, description: 'Grow or shrink a creature or object.' },
+                        { id: 'stoneskin', name: 'Stoneskin', level: 4, cost: 40, description: 'Flesh hardens against blades and blunt force.' },
+                        { id: 'polymorph', name: 'Polymorph', level: 4, cost: 45, description: 'Change a creature into another shape entirely.' },
+                    ]
+                },
             ],
 
             // The kinds of thing an item can be. A slot's badge and the gear
@@ -605,10 +641,17 @@ const app = createApp({
             // are added once and stay deleted if you delete them.
             seedFlagKey: 'theForgeSamplesAdded',
 
-            // The id of the roster entry being edited, or '' when building a new
-            // character. Uniqueness checks ignore this one, so editing a
-            // character does not report it as clashing with itself.
-            editingId: '',
+            // The next id to hand out. Kept apart from the roster so it
+            // remembers ids even after their characters are deleted.
+            nextIdKey: 'theForgeNextId',
+
+            // The id of the roster entry being edited, or null when building a
+            // new character. Not '' or 0: 0 is a real id (the counter starts there).
+            editingId: null,
+
+            // A picture of the empty form, taken in mounted before anything
+            // loads. saveCharacter puts it back to start a new character.
+            blankCharacter: null,
 
             // Paging. Four per page, so ten samples fill three pages.
             rosterPage: 1,
@@ -621,18 +664,20 @@ const app = createApp({
 
             // Which field the search box looks at, and what it is looking for.
             rosterSearchField: 'name',
+            rosterSearchFields: [
+                { id: 'name', label: 'Name' },
+                { id: 'userId', label: 'User ID' },
+            ],
             rosterSearchTerm: '',
             rosterTypeFilter: 'all',
+
+            // Narrows NPCs to one creature type. Only shown when NPCs is picked.
+            rosterNpcType: 'all',
 
             // Characters pinned to the top so they stay on screen while you
             // search for another. Ids, not objects — the roster array is
             // rebuilt from storage and object identity would not survive it.
             lockedIds: [],
-
-            rosterSearchFields: [
-                { id: 'name', label: 'Name' },
-                { id: 'id', label: 'ID' },
-            ],
 
             rosterTypeFilters: [
                 { id: 'all', label: 'All' },
@@ -646,7 +691,7 @@ const app = createApp({
             rosterSorts: [
                 { id: 'name', label: 'Name' },
                 { id: 'level', label: 'Level' },
-                { id: 'id', label: 'ID' },
+                { id: 'newest', label: 'Newest' },
             ],
 
             // The character the delete modal is asking about. One modal
@@ -659,7 +704,7 @@ const app = createApp({
             // cannot describe a skill or item that does not exist.
             sampleRoster: [
                 {
-                    id: 'U-88', name: 'Thorin Ironfist', type: 'player', level: 12,
+                    userId: 'sdunn', name: 'Thorin Ironfist', type: 'player', level: 12,
                     stats: { strength: 16, dexterity: 9, constitution: 14, intelligence: 7, wisdom: 8, charisma: 6 },
                     skills: { gathering: { mining: 62, lumberjacking: 40 }, oneHandedWeapons: { axe: 71 }, mediumArmor: { chainmail: 55 } },
                     abilities: ['richVeins', 'cleave'], feats: ['toughness', 'ironWill'],
@@ -668,7 +713,7 @@ const app = createApp({
                     gear: { gearHead: 'ironHelm', gearRightHand: 'handAxe', gearLegs: 'chainmailLeggings' },
                 },
                 {
-                    id: 'U-91', name: 'Lyra Dawnsong', type: 'player', level: 8,
+                    userId: 'number_one_stunner', name: 'Lyra Dawnsong', type: 'player', level: 8,
                     stats: { strength: 6, dexterity: 12, constitution: 8, intelligence: 14, wisdom: 11, charisma: 17 },
                     skills: { magic: {}, oneHandedWeapons: { dagger: 33 } },
                     abilities: [], feats: ['arcaneGift'],
@@ -678,7 +723,7 @@ const app = createApp({
                     gear: { gearHead: 'leatherHood', gearLeftHand: 'dagger' },
                 },
                 {
-                    id: 'U-104', name: 'Bran Oakenshield', type: 'player', level: 15,
+                    userId: 'maddhatter1113', name: 'Bran Oakenshield', type: 'player', level: 15,
                     stats: { strength: 15, dexterity: 8, constitution: 18, intelligence: 6, wisdom: 10, charisma: 9 },
                     skills: { mediumArmor: { chainmail: 80, brigandine: 45 }, oneHandedWeapons: { mace: 58 } },
                     abilities: ['linkedRings', 'deflect'], feats: ['toughness'],
@@ -687,7 +732,7 @@ const app = createApp({
                     gear: { gearLeftHand: 'woodenShield', gearLegs: 'chainmailLeggings' },
                 },
                 {
-                    id: 'U-112', name: 'Mira Quickfoot', type: 'player', level: 6,
+                    userId: 'xzoxzo', name: 'Mira Quickfoot', type: 'player', level: 6,
                     stats: { strength: 7, dexterity: 17, constitution: 9, intelligence: 11, wisdom: 12, charisma: 10 },
                     skills: { oneHandedWeapons: { dagger: 64 }, lightArmor: {}, gathering: { foraging: 28 } },
                     abilities: ['backstab'], feats: [],
@@ -696,7 +741,7 @@ const app = createApp({
                     gear: { gearLeftHand: 'dagger', gearHead: 'leatherHood' },
                 },
                 {
-                    id: 'U-127', name: 'Sable Vex', type: 'player', level: 20,
+                    userId: 'unborn', name: 'Sable Vex', type: 'player', level: 20,
                     stats: { strength: 5, dexterity: 10, constitution: 11, intelligence: 19, wisdom: 15, charisma: 13 },
                     skills: { magic: {} },
                     abilities: [], feats: ['arcaneGift', 'abilityPoints2'],
@@ -706,7 +751,7 @@ const app = createApp({
                     gear: { gearAccessory1: 'amuletOfWarding' },
                 },
                 {
-                    id: 'NPC-07', name: 'Grenda the Grey', type: 'npc', level: 5,
+                    npcType: 'humanoid', name: 'Grenda the Grey', type: 'npc', level: 5,
                     stats: { strength: 6, dexterity: 8, constitution: 9, intelligence: 12, wisdom: 16, charisma: 11 },
                     skills: { gathering: { foraging: 74, mining: 12 } },
                     abilities: ['keenEye'], feats: [],
@@ -715,7 +760,7 @@ const app = createApp({
                     gear: {},
                 },
                 {
-                    id: 'NPC-12', name: 'Harrow Blackwood', type: 'npc', level: 18,
+                    npcType: 'humanoid', name: 'Harrow Blackwood', type: 'npc', level: 18,
                     stats: { strength: 8, dexterity: 11, constitution: 12, intelligence: 18, wisdom: 14, charisma: 15 },
                     skills: { magic: {}, oneHandedWeapons: { rapier: 41 } },
                     abilities: [], feats: ['arcaneGift'],
@@ -725,7 +770,7 @@ const app = createApp({
                     gear: { gearAccessory1: 'ringOfVigor' },
                 },
                 {
-                    id: 'NPC-19', name: 'Tessa Mudlark', type: 'npc', level: 3,
+                    npcType: 'humanoid', name: 'Tessa Mudlark', type: 'npc', level: 3,
                     stats: { strength: 5, dexterity: 9, constitution: 7, intelligence: 8, wisdom: 10, charisma: 12 },
                     skills: { gathering: { foraging: 21, fishing: 35 } },
                     abilities: [], feats: [],
@@ -734,7 +779,7 @@ const app = createApp({
                     gear: {},
                 },
                 {
-                    id: 'NPC-23', name: 'Korrin Stonejaw', type: 'npc', level: 25,
+                    npcType: 'humanoid', name: 'Korrin Stonejaw', type: 'npc', level: 25,
                     stats: { strength: 20, dexterity: 12, constitution: 19, intelligence: 7, wisdom: 9, charisma: 8 },
                     skills: { twoHandedWeapons: {}, heavyArmor: {}, oneHandedWeapons: { axe: 88, mace: 70 } },
                     abilities: ['cleave', 'rend', 'crushingBlow'], feats: ['toughness', 'ironWill', 'quickDraw'],
@@ -743,14 +788,14 @@ const app = createApp({
                     gear: { gearHead: 'ironHelm', gearRightHand: 'handAxe' },
                 },
                 {
-                    id: 'NPC-31', name: 'Wisp', type: 'npc', level: 1,
+                    npcType: 'fey', name: 'Wisp', type: 'npc', level: 1,
                     stats: {}, skills: {}, abilities: [], feats: [],
                     spells: {}, learned: [], items: {}, gear: {},
                 },
                 // Same User ID as Thorin on purpose — one player, several
                 // characters. Only the names have to differ.
                 {
-                    id: 'U-88', name: 'Dain Emberhand', type: 'player', level: 9,
+                    userId: 'sdunn', name: 'Dain Emberhand', type: 'player', level: 9,
                     stats: { strength: 13, dexterity: 10, constitution: 12, intelligence: 9, wisdom: 8, charisma: 7 },
                     skills: { gathering: { mining: 48, lumberjacking: 31 }, oneHandedWeapons: { mace: 44 } },
                     abilities: ['richVeins'], feats: ['toughness'],
@@ -759,7 +804,7 @@ const app = createApp({
                     gear: { gearHead: 'ironHelm' },
                 },
                 {
-                    id: 'U-91', name: 'Nessa Dawnsong', type: 'player', level: 7,
+                    userId: 'hagrid', name: 'Nessa Dawnsong', type: 'player', level: 7,
                     stats: { strength: 6, dexterity: 13, constitution: 8, intelligence: 13, wisdom: 12, charisma: 15 },
                     skills: { oneHandedWeapons: { dagger: 29 }, magic: {} },
                     abilities: [], feats: [],
@@ -769,7 +814,7 @@ const app = createApp({
                     gear: { gearLeftHand: 'dagger' },
                 },
                 {
-                    id: 'NPC-44', name: 'Old Crow', type: 'npc', level: 14,
+                    npcType: 'beast', name: 'Old Crow', type: 'npc', level: 14,
                     stats: { strength: 7, dexterity: 10, constitution: 10, intelligence: 16, wisdom: 17, charisma: 9 },
                     skills: { gathering: { herbalism: 66 }, magic: {} },
                     abilities: [], feats: ['arcaneGift'],
@@ -779,7 +824,7 @@ const app = createApp({
                     gear: {},
                 },
                 {
-                    id: 'NPC-52', name: 'Ser Gallant', type: 'npc', level: 22,
+                    npcType: 'humanoid', name: 'Ser Gallant', type: 'npc', level: 22,
                     stats: { strength: 18, dexterity: 11, constitution: 17, intelligence: 9, wisdom: 11, charisma: 14 },
                     skills: { heavyArmor: {}, oneHandedWeapons: { sword: 79 }, mediumArmor: { brigandine: 52 } },
                     abilities: ['riposte', 'rivetedGuard'], feats: ['ironWill', 'quickDraw'],
@@ -881,22 +926,14 @@ const app = createApp({
         // Confirming the save. A real save would send the character to a
         // server first; for now it reports it and starts a fresh one.
         saveCharacter: function () {
+            const savedId = this.storeCharacter();
             const savedName = this.character.name;
-            const savedId = this.activeId;
-
-            this.storeCharacter();
             this.loadRoster();
-            this.editingId = '';
+            this.editingId = null;
 
             // Assigning the data back to its starting values is the whole
             // reset. Every field, slider and badge follows on its own.
-            this.character = { name: '', type: 'player', userId: '', npcId: '' };
-
-            for (const stat of this.stats) {
-                stat.value = stat.min;
-            }
-
-            this.currentStep = 0;
+            this.applyCharacter(this.blankCharacter);
 
             this.message.kind = 'alert-success';
             this.message.text = 'Character "' + savedName + '" (' + savedId
@@ -915,37 +952,26 @@ const app = createApp({
         // spread it back on the way in. The shape you edit and the shape you
         // store do not have to be the same.
 
-        // The key a character is stored and linked under. It has to be unique,
-        // and the obvious choice — the ID you typed — is not: one player may
-        // have several characters under one User ID. NPC IDs are unique by
-        // rule, and player names are, so a player's key is their ID and their
-        // name together.
-        characterKey: function (type, userId, npcId, name) {
-            return type === 'npc'
-                ? String(npcId).trim()
-                : String(userId).trim() + ' / ' + String(name).trim();
-        },
-
-        // The ID to show on a roster card: the one that was typed, not the key.
+        // The grey badge on a roster card: a player's User ID, or an NPC's
+        // creature type by its readable label ("Beast", not "beast").
         characterIdLabel: function (character) {
-            return character.type === 'npc'
-                ? character.npcId || character.id
-                : character.userId || character.id;
+            if (character.type === 'npc') {
+                const kind = this.npcTypes.find((entry) => entry.id === character.npcType);
+
+                return kind === undefined ? 'Unknown' : kind.label;
+            }
+
+            return character.userId;
         },
 
         // Everything worth keeping, as one object.
         collectCharacter: function () {
             const snapshot = {
-                id: this.characterKey(
-                    this.character.type,
-                    this.character.userId,
-                    this.character.npcId,
-                    this.character.name
-                ),
+                id: this.editingId,
                 name: this.character.name,
                 type: this.character.type,
                 userId: this.character.userId,
-                npcId: this.character.npcId,
+                npcType: this.character.npcType,
                 vitals: this.vitals,
                 stats: this.stats,
                 skillCategories: this.skillCategories,
@@ -956,6 +982,7 @@ const app = createApp({
                 learnedSpells: this.learnedSpells,
                 gearSlots: this.gearSlots,
                 inventory: this.inventory,
+                effects: this.effects,
                 savedAt: new Date().toISOString(),
             };
 
@@ -975,13 +1002,13 @@ const app = createApp({
                 name: copy.name || '',
                 type: copy.type || 'player',
                 userId: copy.userId || '',
-                npcId: copy.npcId || '',
+                npcType: copy.npcType || 'unknown',
             };
 
             const fields = [
                 'vitals', 'stats', 'skillCategories', 'learnedAbilities',
                 'feats', 'featAllowance', 'spellSchools', 'learnedSpells',
-                'gearSlots', 'inventory',
+                'gearSlots', 'inventory', 'effects',
             ];
 
             for (const field of fields) {
@@ -1016,12 +1043,38 @@ const app = createApp({
             }
         },
 
-        // Save under the character's ID. Same ID means this is an edit of a
-        // character already on the roster, so it replaces rather than adds —
-        // which is what makes the round trip a round trip.
+        // Hand out the next character id and move the counter on. Reading
+        // and writing storage can throw (private window, full quota), so it
+        // fails quietly like the methods above.
+        takeNextId: function () {
+            let next = 0;
+
+            try {
+                const stored = window.localStorage.getItem(this.nextIdKey);
+
+                if (stored !== null) {
+                    next = Number(stored);
+                }
+
+                window.localStorage.setItem(this.nextIdKey, String(next + 1));
+            } catch (error) {
+                console.warn('Could not update the id counter:', error);
+            }
+
+            return next;
+        },
+
+        // Save the character. A new one (id null) takes the next id from the
+        // counter. An edit already has its id, so it finds itself and is
+        // replaced in place, no matter what was renamed.
         storeCharacter: function () {
             const saved = this.collectCharacter();
             const characters = this.readCharacters();
+
+            if (saved.id === null) {
+                saved.id = this.takeNextId();
+            }
+
             const index = characters.findIndex((entry) => entry.id === saved.id);
 
             if (index === -1) {
@@ -1031,6 +1084,7 @@ const app = createApp({
             }
 
             this.writeCharacters(characters);
+            return saved.id;
         },
 
         // --- The roster page ---------------------------------------------
@@ -1052,16 +1106,15 @@ const app = createApp({
             const constitution = stats.constitution === undefined ? 1 : stats.constitution;
             const wisdom = stats.wisdom === undefined ? 1 : stats.wisdom;
             const dexterity = stats.dexterity === undefined ? 1 : stats.dexterity;
-
-            const userId = spec.type === 'npc' ? '' : spec.id;
-            const npcId = spec.type === 'npc' ? spec.id : '';
+            const userId = spec.type === 'npc' ? '' : spec.userId || '';
+            const npcType = spec.type === 'npc' ? spec.npcType : '';
 
             const character = {
-                id: this.characterKey(spec.type, userId, npcId, spec.name),
+                id: this.takeNextId(),
                 name: spec.name,
                 type: spec.type,
                 userId: userId,
-                npcId: npcId,
+                npcType: npcType,
                 vitals: {
                     level: spec.level,
                     hp: this.maxHpFor(constitution, spec.level),
@@ -1182,19 +1235,11 @@ const app = createApp({
             }
 
             const characters = this.readCharacters();
-            const existing = characters.map((entry) => entry.id);
 
+            // Samples are new characters, so each takes the next id like any
+            // other save. The seed flag above already stops this running twice.
             for (const spec of this.sampleRoster) {
-                const key = this.characterKey(
-                    spec.type,
-                    spec.type === 'npc' ? '' : spec.id,
-                    spec.type === 'npc' ? spec.id : '',
-                    spec.name
-                );
-
-                if (!existing.includes(key)) {
-                    characters.push(this.buildSampleCharacter(spec));
-                }
+                characters.push(this.buildSampleCharacter(spec));
             }
 
             this.writeCharacters(characters);
@@ -1359,7 +1404,7 @@ const app = createApp({
 
         // Each sheet needs its own collapse id.
         sheetPanelId: function (character) {
-            return 'sheet-' + character.id.replace(/[^a-zA-Z0-9_-]/g, '-');
+            return 'sheet-' + character.id;
         },
 
         sheetPanelTarget: function (character) {
@@ -1431,12 +1476,14 @@ const app = createApp({
         // The roster links here as creation-character.html?id=U-88. If that
         // id is on the page, load that character instead of starting blank.
         loadFromQuery: function () {
-            const wanted = new URLSearchParams(window.location.search).get('id');
+            const query = new URLSearchParams(window.location.search).get('id');
 
-            if (wanted === null) {
+            if (query === null) {
                 return;
             }
 
+            // The address bar only holds text ("3"); saved ids are numbers (3).
+            const wanted = Number(query);
             const found = this.readCharacters().find((entry) => entry.id === wanted);
 
             if (found === undefined) {
@@ -1937,62 +1984,13 @@ const app = createApp({
         statPointsLeft: function () {
             return this.statPointsBudget - this.statPointsSpent;
         },
-        // Only one of the two ID fields is in play at a time. This is it.
-        activeId: function () {
-            return this.character.type === 'npc'
-                ? this.character.npcId
-                : this.character.userId;
-        },
 
-        // Everyone else on the roster. When editing, the character being
-        // edited is not competing with itself — which is why this keys off
-        // editingId rather than activeId, since a NEW character typing an id
-        // that already exists would otherwise exclude the very row it clashes
-        // with and report no clash at all.
-        otherCharacters: function () {
-            return this.roster.filter((entry) => entry.id !== this.editingId);
-        },
-
-        // Two characters may not share a name.
-        nameTaken: function () {
-            const name = this.character.name.trim().toLowerCase();
-
-            if (name === '') {
-                return false;
-            }
-
-            return this.otherCharacters.some((entry) => {
-                return String(entry.name).trim().toLowerCase() === name;
-            });
-        },
-
-        // An NPC id identifies one NPC, so it has to be unique. A User ID is
-        // the player behind the character, and one player may have several,
-        // so user ids are free to repeat as long as the names differ.
-        npcIdTaken: function () {
-            if (this.character.type !== 'npc') {
-                return false;
-            }
-
-            const id = this.character.npcId.trim().toLowerCase();
-
-            if (id === '') {
-                return false;
-            }
-
-            return this.otherCharacters.some((entry) => {
-                return entry.type === 'npc'
-                    && String(entry.npcId || entry.id).trim().toLowerCase() === id;
-            });
-        },
-
-        // The first step's Save button stays greyed out until there is a name
-        // and an ID, and neither of them clashes with the roster.
+        // The first step's Save button stays greyed out until there is a name,
+        // plus a User ID for a player or a creature type for an NPC.
         infoComplete: function () {
-            return this.character.name.trim() !== ''
-                && this.activeId.trim() !== ''
-                && !this.nameTaken
-                && !this.npcIdTaken;
+            const detail = this.character.type === 'npc'? this.character.npcType: this.character.userId;
+
+            return this.character.name.trim() !== '' && detail.trim() !== '';
         },
 
         // How full the tracker bar is. A computed property is free to call a
@@ -2187,12 +2185,16 @@ const app = createApp({
                     return false;
                 }
 
+                if (this.rosterNpcType !== 'all' && entry.npcType !== this.rosterNpcType) {
+                    return false;
+                }
+
                 if (term === '') {
                     return true;
                 }
 
-                const haystack = this.rosterSearchField === 'id'
-                    ? String(this.characterIdLabel(entry))
+                const haystack = this.rosterSearchField === 'userId'
+                    ? String(entry.userId || '')
                     : String(entry.name);
 
                 return haystack.toLowerCase().includes(term);
@@ -2205,9 +2207,8 @@ const app = createApp({
                     return this.characterLevel(second) - this.characterLevel(first);
                 }
 
-                if (this.rosterSort === 'id') {
-                    return String(this.characterIdLabel(first))
-                        .localeCompare(String(this.characterIdLabel(second)));
+                if (this.rosterSort === 'newest') {
+                    return second.id - first.id;
                 }
 
                 return String(first.name).localeCompare(String(second.name));
@@ -2260,6 +2261,13 @@ const app = createApp({
             return 'Type: ' + (filter === undefined ? 'All' : filter.label);
         },
 
+        // The creature menu's button text: what is picked right now.
+        rosterNpcTypeLabel: function () {
+            const kind = this.npcTypes.find((entry) => entry.id === this.rosterNpcType);
+
+            return kind === undefined ? 'All creature types' : kind.label;
+        },
+
         // Items the character is not already carrying.
         availableItems: function () {
             return this.itemCatalog.filter((entry) => {
@@ -2292,6 +2300,10 @@ const app = createApp({
 
     //mounted:  called after the instance has been mounted,
     mounted: function () {
+        // Before anything loads, the form holds only data()'s starting
+        // values. Keep a copy so a save can put them all back.
+        this.blankCharacter = this.collectCharacter();
+
         // Both pages mount the same app. The forge ignores the roster array
         // and the roster ignores the query string; neither costs anything.
         this.seedRoster();
@@ -2310,7 +2322,14 @@ const app = createApp({
         // to give back. Naming a method as a string is shorthand for calling it.
         // A narrowing search can leave you on a page that no longer exists.
         rosterSearchTerm: function () { this.rosterPage = 1; },
-        rosterTypeFilter: function () { this.rosterPage = 1; },
+        
+        // Leaving NPCs clears the creature type, or a hidden "Beast" filter
+        // would quietly hide every player.
+        rosterTypeFilter: function () {
+            this.rosterPage = 1;
+            this.rosterNpcType = 'all';
+        },
+        rosterNpcType: function () { this.rosterPage = 1; },
 
         maxHp: 'clampVitals',
         maxMp: 'clampVitals',

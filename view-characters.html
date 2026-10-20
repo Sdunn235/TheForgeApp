@@ -79,15 +79,16 @@
                     <!-- No submit handler: the list is a computed property, so it
                         narrows as you type and there is nothing to submit. -->
                     <form role="search" @submit.prevent>
-                        <div class="row g-3 align-items-end">
-                            <div class="col-12 col-lg-3">
+                        <!-- Row 1: search gets the full width, with the forge button beside it -->
+                        <div class="row g-3 align-items-end mb-3">
+                            <div class="col-12 col-lg-9">
                                 <label for="rosterSearch" class="form-label">Find a Character</label>
                                 <div class="input-group">
                                     <label class="visually-hidden" for="rosterSearchField">Search field</label>
                                     <select class="form-select flex-grow-0 w-auto" id="rosterSearchField"
                                         name="searchField" v-model="rosterSearchField">
-                                        <option v-for="field in rosterSearchFields" :key="field.id"
-                                            :value="field.id">{{ field.label }}</option>
+                                        <option v-for="field in rosterSearchFields" :key="field.id" :value="field.id">{{
+                                            field.label }}</option>
                                     </select>
                                     <input type="search" class="form-control" id="rosterSearch" name="searchTerm"
                                         placeholder="Search the roster..." aria-label="Search the roster"
@@ -95,36 +96,58 @@
                                 </div>
                             </div>
 
-                            <div class="col-12 col-md-6 col-lg-3">
-                                <span class="form-label d-block">Character Type</span>
-                                <div class="btn-group w-100" role="group" aria-label="Filter by character type">
-                                    <template v-for="filter in rosterTypeFilters" :key="filter.id">
-                                        <input type="radio" class="btn-check" name="typeFilter"
-                                            :id="'filter-' + filter.id" :value="filter.id"
-                                            v-model="rosterTypeFilter" />
-                                        <label class="btn btn-outline-primary"
-                                            :for="'filter-' + filter.id">{{ filter.label }}</label>
-                                    </template>
-                                </div>
-                            </div>
-
-                            <div class="col-12 col-md-6 col-lg-3">
-                                <span class="form-label d-block">Sort By</span>
-                                <div class="btn-group w-100" role="group" aria-label="Sort the roster">
-                                    <template v-for="order in rosterSorts" :key="order.id">
-                                        <input type="radio" class="btn-check" name="rosterSort"
-                                            :id="'sort-' + order.id" :value="order.id" v-model="rosterSort" />
-                                        <label class="btn btn-outline-primary"
-                                            :for="'sort-' + order.id">{{ order.label }}</label>
-                                    </template>
-                                </div>
-                            </div>
-
-                            <div class="col-12 col-md-6 col-lg-3">
+                            <div class="col-12 col-lg-3">
                                 <a href="creation-character.html" class="btn btn-primary w-100"
                                     v-tooltip="'Open the forge and build a new character'">
                                     <i class="bi bi-plus-lg"></i> Forge New Character
                                 </a>
+                            </div>
+                        </div>
+
+                        <!-- Row 2: filters. Lined up at the top, so the creature
+                            menu can hang below without moving anything. -->
+                        <div class="row g-3 align-items-start">
+                            <div class="col-12 col-md-6">
+                                <span class="form-label d-block">Character Type</span>
+                                <div class="btn-group w-100" role="group" aria-label="Filter by character type">
+                                    <template v-for="filter in rosterTypeFilters" :key="filter.id">
+                                        <input type="radio" class="btn-check" name="typeFilter"
+                                            :id="'filter-' + filter.id" :value="filter.id" v-model="rosterTypeFilter" />
+                                        <label class="btn btn-outline-primary" :for="'filter-' + filter.id">{{
+                                            filter.label }}</label>
+                                    </template>
+                                </div>
+
+                                <div class="dropdown mt-2" v-if="rosterTypeFilter === 'npc'">
+                                    <button class="btn btn-outline-primary dropdown-toggle w-100" type="button"
+                                        data-bs-toggle="dropdown" aria-expanded="false">
+                                        {{ rosterNpcTypeLabel }}
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-scroll">
+                                        <li>
+                                            <button class="dropdown-item" type="button"
+                                                :class="{ active: rosterNpcType === 'all' }"
+                                                @click="rosterNpcType = 'all'">All creature types</button>
+                                        </li>
+                                        <li v-for="kind in npcTypes" :key="kind.id">
+                                            <button class="dropdown-item" type="button"
+                                                :class="{ active: rosterNpcType === kind.id }"
+                                                @click="rosterNpcType = kind.id">{{ kind.label }}</button>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="col-12 col-md-6">
+                                <span class="form-label d-block">Sort By</span>
+                                <div class="btn-group w-100" role="group" aria-label="Sort the roster">
+                                    <template v-for="order in rosterSorts" :key="order.id">
+                                        <input type="radio" class="btn-check" name="rosterSort" :id="'sort-' + order.id"
+                                            :value="order.id" v-model="rosterSort" />
+                                        <label class="btn btn-outline-primary" :for="'sort-' + order.id">{{ order.label
+                                            }}</label>
+                                    </template>
+                                </div>
                             </div>
                         </div>
                     </form>
@@ -132,8 +155,7 @@
                     <!-- Active filter chips. Clearing one writes the data back to
                         its starting value; the list follows on its own. -->
                     <div class="d-flex gap-2 flex-wrap mt-3">
-                        <div class="alert alert-secondary py-1 px-3 mb-0" role="alert"
-                            v-if="rosterSearchChip !== ''">
+                        <div class="alert alert-secondary py-1 px-3 mb-0" role="alert" v-if="rosterSearchChip !== ''">
                             {{ rosterSearchChip }}
                             <button type="button" class="btn-close position-static ms-2 p-2"
                                 aria-label="Clear the search" @click="rosterSearchTerm = ''"></button>
@@ -167,8 +189,8 @@
                     </div>
 
                     <ul class="list-unstyled mb-0">
-                        <li class="card mb-3" :class="rosterCardClass(character)"
-                            v-for="character in visibleRoster" :key="character.id">
+                        <li class="card mb-3" :class="rosterCardClass(character)" v-for="character in visibleRoster"
+                            :key="character.id">
                             <div class="card-body position-relative">
                                 <!-- One menu per character, in the corner -->
                                 <div class="dropdown card-kebab">
@@ -184,8 +206,7 @@
                                             </a>
                                         </li>
                                         <li>
-                                            <button class="dropdown-item" type="button"
-                                                @click="toggleLock(character)">
+                                            <button class="dropdown-item" type="button" @click="toggleLock(character)">
                                                 <i :class="lockMenuIcon(character)"></i>{{ lockMenuLabel(character) }}
                                             </button>
                                         </li>
@@ -220,20 +241,21 @@
                                             <i class="bi bi-lock-fill text-primary" v-if="isLocked(character)"
                                                 v-tooltip="'Locked for comparison'"></i>
                                         </h5>
-                                        <span class="badge"
-                                            :class="characterTypeClass(character)">{{ characterTypeLabel(character) }}</span>
-                                        <span class="badge bg-secondary text-dark">{{ characterIdLabel(character) }}</span>
-                                        <span
-                                            class="badge bg-success rounded-pill">Level {{ characterLevel(character) }}</span>
+                                        <span class="badge" :class="characterTypeClass(character)">{{
+                                            characterTypeLabel(character) }}</span>
+                                        <span class="badge bg-secondary text-dark">{{ characterIdLabel(character)
+                                            }}</span>
+                                        <span class="badge bg-success rounded-pill">Level {{ characterLevel(character)
+                                            }}</span>
                                         <span class="badge" :class="vital.badgeClass"
-                                            v-for="vital in characterVitals(character)"
-                                            :key="vital.id">{{ vital.label }} {{ vital.value }} / {{ vital.max }}</span>
+                                            v-for="vital in characterVitals(character)" :key="vital.id">{{ vital.label
+                                            }} {{ vital.value }} / {{ vital.max }}</span>
                                     </div>
                                 </div>
 
-                                <button class="btn btn-outline-primary mt-3" type="button"
-                                    data-bs-toggle="collapse" :data-bs-target="sheetPanelTarget(character)"
-                                    aria-expanded="false" :aria-controls="sheetPanelId(character)">
+                                <button class="btn btn-outline-primary mt-3" type="button" data-bs-toggle="collapse"
+                                    :data-bs-target="sheetPanelTarget(character)" aria-expanded="false"
+                                    :aria-controls="sheetPanelId(character)">
                                     <i class="bi bi-chevron-down me-1"></i> Character sheet
                                 </button>
 
@@ -259,7 +281,8 @@
                                                     v-for="slot in characterGear(character)" :key="slot.id">
                                                     {{ slot.label }}
                                                     <span class="badge"
-                                                        :class="slot.filled ? 'bg-primary' : 'bg-secondary text-dark'">{{ slot.itemName }}</span>
+                                                        :class="slot.filled ? 'bg-primary' : 'bg-secondary text-dark'">{{
+                                                        slot.itemName }}</span>
                                                 </li>
                                             </ul>
                                         </div>
@@ -267,16 +290,15 @@
                                         <!-- Skills -->
                                         <div class="col">
                                             <h6 class="fw-bold">Skills</h6>
-                                            <template
-                                                v-for="category in characterSkillCategories(character)"
+                                            <template v-for="category in characterSkillCategories(character)"
                                                 :key="category.id">
                                                 <p class="fw-semibold mb-1">{{ category.name }}</p>
                                                 <ul class="list-group list-group-flush mb-2">
                                                     <li class="list-group-item d-flex justify-content-between align-items-center"
                                                         v-for="skill in category.skills" :key="skill.id">
                                                         {{ skill.name }}
-                                                        <span
-                                                            class="badge bg-secondary text-dark">{{ skill.value }}</span>
+                                                        <span class="badge bg-secondary text-dark">{{ skill.value
+                                                            }}</span>
                                                     </li>
                                                 </ul>
                                             </template>
@@ -301,8 +323,8 @@
                                             <h6 class="fw-bold">Feats</h6>
                                             <p class="mb-0">
                                                 <span class="badge bg-primary me-1"
-                                                    v-for="feat in characterFeats(character)"
-                                                    :key="feat.id">{{ feat.name }}</span>
+                                                    v-for="feat in characterFeats(character)" :key="feat.id">{{
+                                                    feat.name }}</span>
                                                 <span class="text-body-secondary"
                                                     v-if="characterFeats(character).length === 0">None taken.</span>
                                             </p>
@@ -316,10 +338,10 @@
                                                     v-for="spell in characterSpells(character)" :key="spell.id">
                                                     {{ spell.name }}
                                                     <span>
-                                                        <span
-                                                            class="badge bg-primary">{{ spellLevelLabel(spell) }}</span>
-                                                        <span
-                                                            class="badge bg-secondary text-dark">{{ spellCostLabel(spell) }}</span>
+                                                        <span class="badge bg-primary">{{ spellLevelLabel(spell)
+                                                            }}</span>
+                                                        <span class="badge bg-secondary text-dark">{{
+                                                            spellCostLabel(spell) }}</span>
                                                     </span>
                                                 </li>
                                             </ul>
@@ -335,10 +357,9 @@
                                             <ul class="list-group list-group-flush">
                                                 <li class="list-group-item d-flex justify-content-between align-items-center"
                                                     v-for="item in characterInventory(character)" :key="item.id">
-                                                    <span><span
-                                                            class="badge bg-secondary text-dark me-2">{{ item.qty }}</span>{{ item.name }}</span>
-                                                    <span
-                                                        class="badge bg-primary">{{ itemSlotLabel(item) }}</span>
+                                                    <span><span class="badge bg-secondary text-dark me-2">{{ item.qty
+                                                            }}</span>{{ item.name }}</span>
+                                                    <span class="badge bg-primary">{{ itemSlotLabel(item) }}</span>
                                                 </li>
                                             </ul>
                                             <p class="text-body-secondary mb-0"
@@ -365,13 +386,11 @@
                             <li class="page-item" v-for="page in rosterPages" :key="page"
                                 :class="page === rosterPage ? 'active' : ''"
                                 :aria-current="page === rosterPage ? 'page' : null">
-                                <button class="page-link" type="button"
-                                    @click="goToPage(page)">{{ page }}</button>
+                                <button class="page-link" type="button" @click="goToPage(page)">{{ page }}</button>
                             </li>
 
                             <li class="page-item" :class="rosterPage === rosterPageCount ? 'disabled' : ''">
-                                <button class="page-link" type="button"
-                                    @click="goToPage(rosterPage + 1)">Next</button>
+                                <button class="page-link" type="button" @click="goToPage(rosterPage + 1)">Next</button>
                             </li>
                         </ul>
                     </nav>
@@ -381,8 +400,8 @@
 
         <!-- Delete character modal. One modal for every row, pointed at
             whichever character the kebab set as pendingDelete. -->
-        <div class="modal fade" id="deleteCharacterModal" tabindex="-1"
-            aria-labelledby="deleteCharacterModalLabel" aria-hidden="true">
+        <div class="modal fade" id="deleteCharacterModal" tabindex="-1" aria-labelledby="deleteCharacterModalLabel"
+            aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -409,8 +428,7 @@
                             Cancel
                         </button>
 
-                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal"
-                            @click="confirmDelete">
+                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal" @click="confirmDelete">
                             Delete Character
                         </button>
                     </div>

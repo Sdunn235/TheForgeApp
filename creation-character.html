@@ -230,8 +230,7 @@
                                         class="position-absolute top-0 translate-middle btn rounded-pill step-dot"
                                         :class="index <= currentStep ? 'btn-primary' : 'btn-secondary'"
                                         :style="{ left: dotLeft(index) }" :aria-label="dotLabel(step, index)"
-                                        :disabled="stepDisabled(index)" @click="goToStep(index)"
-                                        v-tooltip="step.label">
+                                        :disabled="stepDisabled(index)" @click="goToStep(index)" v-tooltip="step.label">
                                         {{ index + 1 }}
                                     </button>
                                 </div>
@@ -247,11 +246,7 @@
                                             Character Name
                                         </label>
                                         <input type="text" class="form-control" id="characterName" name="characterName"
-                                            placeholder="Enter Character Name" v-model="character.name" required
-                                            :class="nameTaken ? 'is-invalid' : ''" />
-                                        <div class="invalid-feedback">
-                                            Another character already has that name.
-                                        </div>
+                                            placeholder="Enter Character Name" v-model="character.name" required>
                                     </div>
 
                                     <fieldset class="mb-3">
@@ -284,13 +279,13 @@
                                     </div>
 
                                     <div class="mb-3" v-else>
-                                        <label for="npcId" class="form-label"> NPC ID </label>
-                                        <input class="form-control" type="text" id="npcId" name="npcId"
-                                            placeholder="Enter NPC ID" v-model="character.npcId" required
-                                            :class="npcIdTaken ? 'is-invalid' : ''" />
-                                        <div class="invalid-feedback">
-                                            That NPC ID is already in use.
-                                        </div>
+                                        <label for="npcType" class="form-label"> Creature Type </label>
+                                        <select class="form-select" id="npcType" name="npcType"
+                                            v-model="character.npcType" required>
+                                            <option v-for="kind in npcTypes" :key="kind.id" :value="kind.id">
+                                                {{ kind.label }}
+                                            </option>
+                                        </select>
                                     </div>
 
                                     <div class="card-navigation">

@@ -384,6 +384,15 @@ $dropdown-max-width: 20rem;
     overflow-y: auto;
 }
 
+// Shows about five choices and scrolls the rest (the creature-type filter).
+// One item is about 2rem at this font size; the extra half shows there is more.
+$dropdown-scroll-height: 10.5rem;
+
+.dropdown-menu-scroll {
+    max-height: $dropdown-scroll-height;
+    overflow-y: auto;
+}
+
 // Keeps the HP/MP/SP bars lined up with each other.
 $vitals-label-min-width: 1.75rem;
 
