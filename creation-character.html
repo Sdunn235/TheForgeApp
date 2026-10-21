@@ -230,40 +230,9 @@
                                                     </h2>
 
                                                     <!-- One menu per category: add a skill, or drop the lot -->
-                                                    <div class="dropdown">
-                                                        <button class="btn btn-outline-primary btn-kebab"
-                                                            data-bs-toggle="dropdown" aria-expanded="false"
-                                                            :aria-label="actionsLabel(category.name)">
-                                                            <i class="bi bi-three-dots-vertical"></i>
-                                                        </button>
-                                                        <ul class="dropdown-menu dropdown-menu-end add-skill-menu">
-                                                            <li>
-                                                                <h6 class="dropdown-header">Add a skill</h6>
-                                                            </li>
-                                                            <li v-if="availableSkills(category).length === 0">
-                                                                <span class="dropdown-item-text text-body-secondary">
-                                                                    Nothing left to add
-                                                                </span>
-                                                            </li>
-                                                            <li v-for="skill in availableSkills(category)"
-                                                                :key="skill.id">
-                                                                <button class="dropdown-item" type="button"
-                                                                    @click="addSkill(category, skill)">
-                                                                    {{ skill.name }}
-                                                                </button>
-                                                            </li>
-                                                            <li>
-                                                                <hr class="dropdown-divider" />
-                                                            </li>
-                                                            <li>
-                                                                <button class="dropdown-item text-danger" type="button"
-                                                                    @click="removeCategory(category)">
-                                                                    <i class="bi bi-trash me-2"></i>Remove
-                                                                    category
-                                                                </button>
-                                                            </li>
-                                                        </ul>
-                                                    </div>
+                                                    <action-menu :label="actionsLabel(category.name)"
+                                                        :items="skillCategoryMenu(category)"
+                                                        @select="pickFromCategory(category, $event)"></action-menu>
                                                 </div>
 
                                                 <div :id="panelId(category)" class="accordion-collapse collapse">
@@ -387,23 +356,8 @@
                                                                         v-tooltip="abilityTitle(skill, ability)">{{
                                                                         ability.name }}</label>
 
-                                                                    <div class="dropdown">
-                                                                        <button
-                                                                            class="btn btn-outline-primary btn-kebab"
-                                                                            type="button" data-bs-toggle="dropdown"
-                                                                            aria-expanded="false"
-                                                                            :aria-label="actionsLabel(ability.name)">
-                                                                            <i class="bi bi-three-dots-vertical"></i>
-                                                                        </button>
-                                                                        <ul class="dropdown-menu dropdown-menu-end">
-                                                                            <li>
-                                                                                <a class="dropdown-item" href="#">
-                                                                                    <i
-                                                                                        class="bi bi-pencil-square me-2"></i>Edit
-                                                                                </a>
-                                                                            </li>
-                                                                        </ul>
-                                                                    </div>
+                                                                    <action-menu :label="actionsLabel(ability.name)"
+                                                                        :items="abilityMenu"></action-menu>
                                                                 </span>
 
                                                                 <span class="text-body-secondary"
@@ -473,29 +427,10 @@
 
                                                 <!-- Add a spell to this school. The school itself stays;
                                                     only its spells are the character's to change. -->
-                                                <div class="dropdown">
-                                                    <button class="btn btn-outline-primary btn-kebab" type="button"
-                                                        data-bs-toggle="dropdown" aria-expanded="false"
-                                                        :aria-label="addSpellLabel(school.name)">
-                                                        <i class="bi bi-plus-lg"></i>
-                                                    </button>
-                                                    <ul class="dropdown-menu dropdown-menu-end add-skill-menu">
-                                                        <li>
-                                                            <h6 class="dropdown-header">Add a spell</h6>
-                                                        </li>
-                                                        <li v-if="availableSpells(school).length === 0">
-                                                            <span class="dropdown-item-text text-body-secondary">
-                                                                Nothing left to add
-                                                            </span>
-                                                        </li>
-                                                        <li v-for="spell in availableSpells(school)" :key="spell.id">
-                                                            <button class="dropdown-item" type="button"
-                                                                @click="addSpell(school, spell)">
-                                                                {{ spell.name }}
-                                                            </button>
-                                                        </li>
-                                                    </ul>
-                                                </div>
+                                                <action-menu variant="add" :label="addSpellLabel(school.name)"
+                                                    :items="addMenu('Add a spell', availableSpells(school))"
+                                                    empty-text="Nothing left to add"
+                                                    @select="addSpell(school, $event.entry)"></action-menu>
                                             </div>
 
                                             <div :id="spellPanelId(school)" class="accordion-collapse collapse">
@@ -504,31 +439,11 @@
                                                         <div class="col" v-for="spell in school.spells" :key="spell.id">
                                                             <div
                                                                 class="card h-100 p-3 bg-light border-primary-subtle shadow-sm position-relative">
-                                                                <div class="dropdown card-kebab">
-                                                                    <button class="btn btn-outline-primary btn-kebab"
-                                                                        type="button" data-bs-toggle="dropdown"
-                                                                        aria-expanded="false"
-                                                                        :aria-label="actionsLabel(spell.name)">
-                                                                        <i class="bi bi-three-dots-vertical"></i>
-                                                                    </button>
-                                                                    <ul class="dropdown-menu dropdown-menu-end">
-                                                                        <li>
-                                                                            <!-- Goes to Spell Design once that
-                                                                                page exists -->
-                                                                            <a class="dropdown-item" href="#">
-                                                                                <i
-                                                                                    class="bi bi-pencil-square me-2"></i>Edit
-                                                                            </a>
-                                                                        </li>
-                                                                        <li>
-                                                                            <button class="dropdown-item text-danger"
-                                                                                type="button"
-                                                                                @click="removeSpell(school, spell)">
-                                                                                <i class="bi bi-trash me-2"></i>Remove
-                                                                            </button>
-                                                                        </li>
-                                                                    </ul>
-                                                                </div>
+                                                                <!-- class lands on ActionMenu's outer div,
+                                                                    which pins it to the card's corner -->
+                                                                <action-menu class="card-kebab"
+                                                                    :label="actionsLabel(spell.name)" :items="spellMenu"
+                                                                    @select="pickFromSpell(school, spell, $event)"></action-menu>
 
                                                                 <div class="card-body d-flex flex-column">
                                                                     <h5 class="card-title pe-5">

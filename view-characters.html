@@ -145,40 +145,9 @@
                             :key="character.id">
                             <div class="card-body position-relative">
                                 <!-- One menu per character, in the corner -->
-                                <div class="dropdown card-kebab">
-                                    <button class="btn btn-outline-primary btn-kebab" type="button"
-                                        data-bs-toggle="dropdown" aria-expanded="false"
-                                        :aria-label="actionsLabel(character.name)">
-                                        <i class="bi bi-three-dots-vertical"></i>
-                                    </button>
-                                    <ul class="dropdown-menu dropdown-menu-end">
-                                        <li>
-                                            <a class="dropdown-item" :href="editHref(character)">
-                                                <i class="bi bi-pencil-square me-2"></i>Edit in the forge
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <button class="dropdown-item" type="button" @click="toggleLock(character)">
-                                                <i :class="lockMenuIcon(character)"></i>{{ lockMenuLabel(character) }}
-                                            </button>
-                                        </li>
-                                        <li>
-                                            <button class="dropdown-item" type="button"
-                                                @click="downloadCharacter(character)">
-                                                <i class="bi bi-download me-2"></i>Download JSON
-                                            </button>
-                                        </li>
-                                        <li>
-                                            <hr class="dropdown-divider" />
-                                        </li>
-                                        <li>
-                                            <button class="dropdown-item text-danger" type="button"
-                                                @click="askDelete(character)">
-                                                <i class="bi bi-trash me-2"></i>Delete
-                                            </button>
-                                        </li>
-                                    </ul>
-                                </div>
+                                <action-menu class="card-kebab" :label="actionsLabel(character.name)"
+                                    :items="rosterMenu(character)"
+                                    @select="pickFromRoster(character, $event)"></action-menu>
 
                                 <div class="d-flex flex-wrap align-items-center gap-3 pe-5">
                                     <img src="Assets/Images/anvil.png" :alt="'Portrait of ' + character.name"

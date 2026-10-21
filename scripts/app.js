@@ -295,6 +295,17 @@ const app = createApp({
             // same 1 and 100 written out thirty times.
             skillRange: { min: 1, max: 100 },
 
+            // The ⋮ on each ability and on each spell card. They never change,
+            // so they are data, not computed. Edit goes to "#" until the design
+            // pages exist. "action" is ours, like SkillCard's.
+            abilityMenu: [
+                { action: 'edit', label: 'Edit', href: '#', icon: 'bi bi-pencil-square' },
+            ],
+            spellMenu: [
+                { action: 'edit', label: 'Edit', href: '#', icon: 'bi bi-pencil-square' },
+                { action: 'remove', label: 'Remove', icon: 'bi bi-trash', danger: true },
+            ],
+
             // The six steps of the form, in order. The tracker dots and the
             // step panels both read this, so adding a step is one entry here.
             steps: [
@@ -915,6 +926,35 @@ const app = createApp({
             }));
             return [{ header: header }].concat(choices);
         },
+        // A skill category's ⋮: the skills it can still add, then Remove.
+        // A method, not computed, because each category has its own list.
+        skillCategoryMenu: function (category) {
+            const menu = this.addMenu('Add a skill', this.availableSkills(category));
+
+            // Only the heading means every skill is already added
+            if (menu.length === 1) {
+                menu.push({ note: 'Nothing left to add' });
+            }
+
+            return menu.concat([
+                { divider: true },
+                { action: 'remove', label: 'Remove category', icon: 'bi bi-trash', danger: true },
+            ]);
+        },
+        // What a pick from that menu means. ActionMenu only says which item.
+        pickFromCategory: function (category, item) {
+            if (item.action === 'remove') {
+                this.removeCategory(category);
+            } else {
+                this.addSkill(category, item.entry);
+            }
+        },
+        // The spell card's ⋮. Edit is a link, so Remove is the only pick.
+        pickFromSpell: function (school, spell, item) {
+            if (item.action === 'remove') {
+                this.removeSpell(school, spell);
+            }
+        },
         // A buff or debuff row's badges: its kind, then how long it lasts.
         effectBadges: function (effect) {
             const group = this.effectGroups.find((entry) => entry.kind === effect.kind);
@@ -1500,7 +1540,29 @@ const app = createApp({
         },
 
         lockMenuIcon: function (character) {
-            return this.isLocked(character) ? 'bi bi-unlock me-2' : 'bi bi-lock me-2';
+            return this.isLocked(character) ? 'bi bi-unlock' : 'bi bi-lock';
+        },
+
+        // A roster card's ⋮. A method, because Edit's link and the lock's
+        // wording are different for each character.
+        rosterMenu: function (character) {
+            return [
+                { action: 'edit', label: 'Edit in the forge', href: this.editHref(character), icon: 'bi bi-pencil-square' },
+                { action: 'lock', label: this.lockMenuLabel(character), icon: this.lockMenuIcon(character) },
+                { action: 'download', label: 'Download JSON', icon: 'bi bi-download' },
+                { divider: true },
+                { action: 'delete', label: 'Delete', icon: 'bi bi-trash', danger: true },
+            ];
+        },
+        // What a pick from that menu means. Edit is a link, so it never lands here.
+        pickFromRoster: function (character, item) {
+            if (item.action === 'lock') {
+                this.toggleLock(character);
+            } else if (item.action === 'download') {
+                this.downloadCharacter(character);
+            } else if (item.action === 'delete') {
+                this.askDelete(character);
+            }
         },
 
         // A locked card is outlined so it reads as pinned rather than as just

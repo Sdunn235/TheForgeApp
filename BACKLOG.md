@@ -26,7 +26,6 @@ moves to **Done** and gets a line in `CHANGELOG.md`.
 
 | # | Item | Kind | Level | Size | Notes |
 |---|---|---|---|---|---|
-| B-01 | The last hand-written dropdowns → ActionMenu | reuse | molecule | S | Skill category ⋮, ability ⋮, each school's +, the spell card ⋮, the roster card ⋮. Makes "one dropdown for the whole app" true |
 | B-02 | StepNav: the Back / Save buttons at the bottom of each step | component | molecule | S | 6 copies → 1. Props: save label, first step (Back off), disabled |
 | B-03 | SpellCard | component | molecule | M | Built on AppCard + ActionMenu, like SkillCard. Level/cost labels and the Learn tooltip move inside it |
 | B-04 | ChoiceGroup: the button-bar radios | component | molecule | S | The roster's Character Type + Sort By. `v-model` + a list of options |
@@ -73,3 +72,4 @@ New ideas go here first. Sort them into Next or Later when we plan.
 | | AppNavbar: 6 navbars → 1, one leave pop-up, ✕ removed | 2026-10-20 | first organism |
 | | ActionMenu: + look, headings, lines, notes, empty text | 2026-10-20 | |
 | | EntryRow + EntryPanel: Buffs, Debuffs, Feats, Inventory | 2026-10-20 | second organism |
+| B-01 | The last hand-written dropdowns → ActionMenu (skill category ⋮, ability ⋮, school +, spell card ⋮, roster card ⋮) | 2026-10-21 | The roster's creature-type filter stays a plain dropdown: it shows the current pick, not a menu of actions |

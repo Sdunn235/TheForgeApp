@@ -257,7 +257,9 @@ and asks the parent to change it."
 ### ActionMenu (layer 1) ✅ counts
 
 **Job:** one dropdown for the whole app: the forge buttons on the home page,
-the ⋮ menus on cards, and later the + menus and the roster menus.
+every + and ⋮ menu on the forge, and the ⋮ on each roster card. (The only
+dropdown left in plain HTML is the roster's creature-type filter, which shows
+the current pick rather than a list of actions.)
 
 | Props | Type | Notes |
 |---|---|---|
@@ -292,9 +294,30 @@ addMenu: function (header, entries) {
     return [{ header: header }].concat(choices);
 },
 ```
-Used for categories, buffs, debuffs and items. On the page,
+Used for categories, buffs, debuffs, items and each spell school. On the page,
 `@select="addCategory($event.entry)"` unwraps it. Feats builds its own
 (`featMenu`) because it has two groups, each with its own note.
+
+**Menus that belong to one row (methods, not computed).** A skill category's
+⋮ lists *that* category's skills, and a roster card's ⋮ has *that*
+character's Edit link and lock wording. Computed can't take an argument, so
+these are methods the template calls with the row: `skillCategoryMenu(category)`
+and `rosterMenu(character)`. Each item carries an `action` (`'remove'`,
+`'lock'`, `'download'`, `'delete'`), and a matching `pickFrom...` method
+reads it and calls the real method:
+```js
+pickFromCategory: function (category, item) {
+    if (item.action === 'remove') {
+        this.removeCategory(category);
+    } else {
+        this.addSkill(category, item.entry);
+    }
+},
+```
+Menus that never change (`abilityMenu`, `spellMenu`) are plain lists in
+`data`. To pin a ⋮ to a card's corner the page writes
+`<action-menu class="card-kebab">`. A class on a component tag lands on the
+component's outer element, so ActionMenu doesn't need a prop for it.
 
 **Why it sends the whole item and not just the label:** the parent can put
 its own fields on an item (SkillCard adds `action: 'remove'`). ActionMenu
@@ -1235,10 +1258,10 @@ redraw, never cleaned up), now replaced by `v-tooltip`.
 | Improvement | Status |
 |---|---|
 | 1. Squash bugs | ✅ buffs/debuffs not saved · duplicate on save after a rename · form not fully cleared after a save · Chrome focus warning on the leave and delete modals |
-| 2. More reusable components | ✅ ConfirmModal runs all 3 modals (the leave modal went from 2 copies to 1, with `:href`) · ActionMenu runs the + menus (headers, dividers, notes, empty text) |
+| 2. More reusable components | ✅ ConfirmModal runs all 3 modals (the leave modal went from 2 copies to 1, with `:href`) · ActionMenu runs the + menus (headers, dividers, notes, empty text) and now every + and ⋮ menu in the app (the last 5 hand-written ones moved over) |
 | 3. Organisms (teacher's feedback) | ✅ AppNavbar (6 navbars → 1) · EntryPanel + EntryRow (4 lists → 1). StepTracker if time allows |
 | 4. Redesigned character IDs (my own idea) | ✅ number IDs from a counter, NPC creature types, names can repeat, roster search by Name / User ID with a creature filter and a Newest sort |
-| CHANGELOG.md | 🟡 written as I go; turned into a version heading at the end |
+| CHANGELOG.md | ✅ `## [3.0.0] - 2026-10-21` |
 
 **Removed from app.js in 3.0:** `characterKey`, `nameTaken`, `npcIdTaken`,
 `otherCharacters`, `activeId`, the `lookupId` workaround, and the duplicate
@@ -1249,8 +1272,7 @@ reset lines in `saveCharacter`.
 hook, and the old `getElementById('confirmSaveModal')`.
 
 **Next (if time allows):** StepTracker (removes the last page search,
-`scrollToStep`); the gear menu at phone width; the remaining hand-written ⋮
-menus (skill category, abilities, spells) onto ActionMenu.
+`scrollToStep`); the gear menu at phone width.
 
 ---
 
