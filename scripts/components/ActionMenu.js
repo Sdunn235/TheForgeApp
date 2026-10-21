@@ -20,6 +20,12 @@ const ActionMenu = {
                     menuClass: 'dropdown-menu-end',
                     icon: 'bi bi-three-dots-vertical',
                 },
+                // The + beside a heading: "add one of these"
+                add: {
+                    buttonClass: 'btn btn-outline-primary btn-kebab',
+                    menuClass: 'add-skill-menu',
+                    icon: 'bi bi-plus-lg',
+                },
             },
         };
     },
@@ -27,9 +33,12 @@ const ActionMenu = {
     // props:   Data passed in from the parent through attributes.
     //          Read them, never assign to them. They belong to the parent.
     props: {
-        // Each entry: { label, href?, icon?, danger? }
-        //   href    -> a link; the browser goes there
-        //   no href -> a button; the parent hears "select" with the item
+        // Each entry is ONE of these:
+        //   { label, href?, icon?, danger? }  a choice: a link if it has href,
+        //                                     otherwise a button that emits "select"
+        //   { header: 'Text' }                a grey heading
+        //   { divider: true }                 a line between groups
+        //   { note: 'Text' }                  grey text that can't be clicked
         items: { type: Array, required: true },
         label: { type: String, required: true },
         variant: {
@@ -37,24 +46,30 @@ const ActionMenu = {
             default: 'kebab',
             // Catches a typo like variant="buton" with a console warning
             validator: function (value) {
-                return ['button', 'kebab'].includes(value);
+                return ['button', 'kebab', 'add'].includes(value);
             },
         },
+        // Shown when there is nothing left to pick (only headers, or nothing)
+        emptyText: { type: String, default: '' },
     },
 
     // emits:   "select" - a button item was clicked. The menu does not know
     //          what Remove or Edit means; the parent does.
     emits: ['select'],
 
-    // computed:    The look for whichever variant the parent picked.
+    // computed:    The look for whichever variant the parent picked, and
+    //              whether any item is an actual choice.
     computed: {
         look: function () {
             return this.variants[this.variant];
         },
+        hasChoices: function () {
+            return this.items.some((item) => item.label !== undefined);
+        },
     },
 
-    // template:    This component's HTML. A link item goes where it points;
-    //              a button item reports itself to the parent.
+    // template:    One <li> per item. The v-if chain picks what that item
+    //              is: a heading, a line, a note, a link, or a button.
     template: `
         <div class="dropdown">
             <button type="button" :class="look.buttonClass" data-bs-toggle="dropdown" aria-expanded="false"
@@ -63,8 +78,11 @@ const ActionMenu = {
                 <template v-else>{{ label }}</template>
             </button>
             <ul class="dropdown-menu" :class="look.menuClass">
-                <li v-for="item in items" :key="item.label">
-                    <a v-if="item.href" class="dropdown-item" :class="{ 'text-danger': item.danger }"
+                <li v-for="(item, index) in items" :key="index">
+                    <h6 v-if="item.header" class="dropdown-header">{{ item.header }}</h6>
+                    <hr v-else-if="item.divider" class="dropdown-divider">
+                    <span v-else-if="item.note" class="dropdown-item-text text-body-secondary">{{ item.note }}</span>
+                    <a v-else-if="item.href" class="dropdown-item" :class="{ 'text-danger': item.danger }"
                         :href="item.href">
                         <i v-if="item.icon" class="me-2" :class="item.icon"></i>{{ item.label }}
                     </a>
@@ -72,6 +90,9 @@ const ActionMenu = {
                         @click="$emit('select', item)">
                         <i v-if="item.icon" class="me-2" :class="item.icon"></i>{{ item.label }}
                     </button>
+                </li>
+                <li v-if="!hasChoices && emptyText">
+                    <span class="dropdown-item-text text-body-secondary">{{ emptyText }}</span>
                 </li>
             </ul>
         </div>

@@ -1,4 +1,4 @@
-# The Forge: Code Guide (Vue App 2.0, Components)
+# The Forge: Code Guide (Vue App 3.0, Organisms)
 
 A study guide for explaining this code: what each piece does, why it is built
 that way, and what every bit of syntax means. Each section stands on its own.
@@ -36,6 +36,12 @@ that way, and what every bit of syntax means. Each section stands on its own.
 - **Six components do real work so far:** RangeSlider, StatCard, ActionMenu,
   SkillCard, AppModal and ConfirmModal. AppCard and PageContentHeader are
   display-only frames. They are used, but they are not counted toward the five.
+- **Vue App 3.0 adds organisms** (atomic design, see section 4): whole page
+  sections built from the smaller pieces. The first is **AppNavbar**: one
+  file replaces six hand-written navbars.
+- **Every character has a number ID that never changes** (0, 1, 2...), handed
+  out by a counter that only goes up. That one change fixed the
+  duplicate-on-save bug at its root and made the save code shorter.
 
 ---
 
@@ -45,15 +51,17 @@ that way, and what every bit of syntax means. Each section stands on its own.
 scripts/
 ├── app.js                  the root app: owns the data, registers components
 └── components/
-    ├── ActionMenu.js       layer 1: one dropdown for the whole app
-    ├── AppCard.js          layer 1: the card frame
-    ├── AppModal.js         layer 1: the Bootstrap modal shell
-    ├── PageContentHeader.js layer 1: the big page heading (index only)
-    ├── RangeSlider.js      layer 1: slider + label + value badge
-    ├── ConfirmModal.js     built on AppModal: "are you sure?"
-    ├── StatCard.js         layer 2: AppCard + RangeSlider + the points rule
-    ├── SkillCard.js        layer 2: AppCard + RangeSlider + ActionMenu
-    └── CharacterRoster.js  empty placeholder, not used yet
+    ├── ActionMenu.js       molecule: one dropdown for the whole app
+    ├── AppCard.js          molecule: the card frame
+    ├── AppModal.js         molecule: the Bootstrap modal shell
+    ├── PageContentHeader.js molecule: the big page heading (index only)
+    ├── RangeSlider.js      molecule: slider + label + value badge
+    ├── ConfirmModal.js     molecule, built on AppModal: "are you sure?"
+    ├── StatCard.js         molecule: AppCard + RangeSlider + the points rule
+    ├── SkillCard.js        molecule: AppCard + RangeSlider + ActionMenu
+    ├── EntryRow.js         molecule: one list row (name, badges, ⋮)
+    ├── EntryPanel.js       ORGANISM: heading + count + + menu + EntryRows
+    └── AppNavbar.js        ORGANISM: both navbars, every page
 └── directives/
     └── tooltip.js          v-tooltip: a Bootstrap tooltip that cleans up after itself
 ```
@@ -83,7 +91,9 @@ once for the whole app:
 
 | Registered in | Components | Why there |
 |---|---|---|
-| `app.js` | ActionMenu, AppCard, ConfirmModal, PageContentHeader, RangeSlider, SkillCard, StatCard | The page markup uses these tags directly |
+| `app.js` | ActionMenu, AppCard, AppNavbar, ConfirmModal, EntryPanel, PageContentHeader, RangeSlider, SkillCard, StatCard | The page markup uses these tags directly |
+| `EntryPanel.js` | ActionMenu, EntryRow | The + menu and the rows |
+| `EntryRow.js` | ActionMenu (+ the `tooltip` directive) | The ⋮ menu and the row's tooltip |
 | `StatCard.js` | AppCard, RangeSlider | StatCard's own template uses them |
 | `SkillCard.js` | ActionMenu, AppCard, RangeSlider | SkillCard's own template uses them |
 | `ConfirmModal.js` | AppModal | Only ConfirmModal uses AppModal |
@@ -145,6 +155,21 @@ Layer 2  Feature cards  StatCard, SkillCard
 Layer 1  Building blocks ActionMenu, RangeSlider, AppCard, AppModal → ConfirmModal
                generic, know nothing about characters
 ```
+
+### The same layers in atomic design terms (teacher's feedback)
+
+Atomic design names five levels. This is where each piece of The Forge sits:
+
+| Level | What it is | In The Forge |
+|---|---|---|
+| Atoms | the smallest parts: a button, a badge, an input | **Bootstrap** gives us these. We don't build them |
+| Molecules | a few atoms that work as one small unit | RangeSlider, ActionMenu, AppCard, AppModal → ConfirmModal, StatCard, SkillCard, EntryRow |
+| Organisms | a whole section of the page, built from molecules | **AppNavbar** (every page), **EntryPanel** (Buffs, Debuffs, Feats, Inventory) |
+| Templates / Pages | the page layout with real data | the three HTML files + app.js |
+
+The teacher's feedback was that the molecules were good, and the next step was
+organisms. An organism is still a component; the difference is size. It is a
+whole section of the page, so it removes the most repeated markup.
 
 **The test for "should this be a component?"** It must pass at least one:
 
@@ -238,16 +263,38 @@ the ⋮ menus on cards, and later the + menus and the roster menus.
 |---|---|---|
 | `items` | Array, required | Each item: `{ label, href?, icon?, danger? }`, plus any field the parent wants for itself |
 | `label` | String, required | Button text, or what a screen reader says for the icon-only ⋮ |
-| `variant` | String, default `'kebab'` | `button` or `kebab`, checked by a validator |
+| `variant` | String, default `'kebab'` | `button`, `kebab` or `add` (the + beside a heading), checked by a validator |
+| `emptyText` | String, default `''` | shown when no item is a real choice ("Every category added") |
 
 **Emits:** `select`, sending the whole item that was clicked.
 
-**Two kinds of item:**
+**Five kinds of item** (3.0 added the last three, so it could run the + menus):
 
 | The item has... | It draws | On click |
 |---|---|---|
 | `href` | an `<a>` link | the browser goes there |
-| no `href` | a `<button>` | emits `select` with the item |
+| a `label`, no `href` | a `<button>` | emits `select` with the item |
+| `header` | a grey heading (`dropdown-header`) | nothing |
+| `divider` | a line between groups | nothing |
+| `note` | grey text that can't be clicked ("Nothing left here") | nothing |
+
+The template picks one with a `v-if` / `v-else-if` / `v-else` chain, top to
+bottom. `hasChoices` (computed) asks "does any item have a `label`?"; if not,
+`emptyText` shows. Headers and dividers have no label to use as a `:key`, so
+the key is the item's position: `v-for="(item, index) in items" :key="index"`.
+
+**Building a + menu (`addMenu` in app.js).** Every + menu is a heading, then
+one choice per catalog entry. The catalog entry rides inside each choice, so
+the click hands it back:
+```js
+addMenu: function (header, entries) {
+    const choices = entries.map((entry) => ({ label: entry.name, entry: entry }));
+    return [{ header: header }].concat(choices);
+},
+```
+Used for categories, buffs, debuffs and items. On the page,
+`@select="addCategory($event.entry)"` unwraps it. Feats builds its own
+(`featMenu`) because it has two groups, each with its own note.
 
 **Why it sends the whole item and not just the label:** the parent can put
 its own fields on an item (SkillCard adds `action: 'remove'`). ActionMenu
@@ -445,8 +492,21 @@ the modal, then emits. The page never needs to know AppModal exists.
 <slot>{{ message }}</slot>
 ```
 This means "show what the page put here, **or** the message if it put
-nothing." The save modal uses the message. The roster's delete modal will
-fill the slot with the character's name in bold.
+nothing." The save modal uses the message. The roster's delete modal fills
+the slot with the character's name in bold, because a plain-text prop can't
+carry bold text.
+
+**Three modals, one component:**
+
+| Modal | Page | How confirm works |
+|---|---|---|
+| Save | forge | no `href`, so it emits `confirm` → `saveCharacter` |
+| Leave | forge | `:href="leaveHref"`: Leave is a link. One modal for every exit, because `askLeave` sets `leaveHref` before opening it. It used to be 2 hand-written modals, one per destination |
+| Delete | roster | `danger` + the slot for the bold name. Emits `confirm` → `confirmDelete` |
+
+Converting the leave and delete modals also fixed the Chrome `aria-hidden`
+focus warning on them (bug from class), because they now get AppModal's
+`inert` fix for free.
 
 **Two layers of refs.** The page calls `this.$refs.saveModal.open()` on its
 ConfirmModal, and ConfirmModal calls `this.$refs.modal.open()` on its
@@ -522,11 +582,149 @@ component, but it is reuse: one file replaced every tooltip setup in the app.
 home page only for now. It was kept because future landing pages will reuse
 it. It is honestly display-only, so it doesn't count toward the five.
 
-### CharacterRoster.js
+### EntryRow (molecule) ✅ counts
 
-An empty placeholder from early planning. It isn't imported anywhere. The
-roster components get built after the required work, or the file gets
-deleted.
+**Job:** one row in a list: a buff, a feat, an item. Name, badges, the ⋮ menu
+(Edit / Remove) and the hover tooltip.
+
+| | |
+|---|---|
+| **Props** | `entry` (Object, required: name, description), `badges` (Array of `{ tag, badgeClass }`, default `[]`) |
+| **Emits** | `remove` (no data; the panel knows which row) |
+| **Data** | `menuItems`: Edit (link) and Remove (button, red), with `action`, like SkillCard |
+| **Slot** | default: extras before the ⋮ (inventory's quantity box) |
+| **Directive** | `v-tooltip="entry.description"` on the row |
+
+**An Array default must be a function:**
+```js
+badges: { type: Array, default: function () { return []; } },
+```
+Same reason `data` is a function: every row needs its own empty list, not one
+list shared by all of them.
+
+**Why `tag` / `badgeClass`:** the page's `featKinds` and `featSources` were
+already written in that shape, so `featBadges` just returns two of them.
+
+---
+
+### EntryPanel (organism) ✅ counts
+
+**Job:** a heading with a count and a + menu over a list of EntryRows. Used
+**4 times**: Buffs, Debuffs (one `v-for` over `effectGroups`), Feats, Inventory.
+It replaced about 250 lines of hand-written markup.
+
+| Props | Notes |
+|---|---|
+| `title`, `entries`, `addItems`, `addLabel`, `emptyText` | required |
+| `addEmptyText` | the + menu's "nothing left" (default `'Nothing left to add'`; Feats passes `""` because each group has its own note) |
+| `countClass` | a count pill beside the title; `''` = no count |
+| `badgesFor` | **a function**: given an entry, returns its badges |
+| `scroll` | Boolean: long lists scroll (Feats) |
+| `variant` | `compact` (small heading, in the Vitals card) or `card` (a card's title) |
+
+**Emits:** `add` (the catalog entry picked from the +), `remove` (the entry,
+relayed from EntryRow, rule 5).
+
+**Slots:** default = between the heading and the list (the feat counter);
+`#extra` = a **scoped slot** inside every row (inventory's quantity box).
+
+**Passing a function as a prop.** Each panel's badges differ, so the page
+hands over the function that works them out:
+```html
+<entry-panel ... :badges-for="effectBadges"></entry-panel>   <!-- no () -->
+```
+```html
+<entry-row ... :badges="badgesFor(entry)">                     <!-- the panel calls it -->
+```
+No parentheses on the page means "here is the function," not "call it now."
+It's still props down: the page decides, the panel only calls it. Vue methods
+always keep their `this`, so passing one around is safe.
+
+**The relay adds the entry:**
+```html
+<entry-row v-for="entry in entries" ... @remove="$emit('remove', entry)">
+```
+The row says "remove me" with no data. The panel is inside the `v-for`, so it
+knows which entry, adds it, and passes it up. The page's
+`@remove="removeFeat"` gets the feat.
+
+**The scoped slot (inventory).** A normal slot can't know which row it's in.
+A scoped slot hands the row's data back to the page:
+```html
+<!-- EntryPanel, inside each row -->
+<slot name="extra" :entry="entry"></slot>
+
+<!-- the page -->
+<template #extra="{ entry }">
+    <input type="number" ... v-model.number="entry.qty" />
+</template>
+```
+`{ entry }` unpacks what the slot sends. Inside, `entry` is *this row's* item.
+`v-model` on `entry.qty` doesn't break the props rule: slot content is the
+page's own markup, and `entry` is the page's own inventory item. The panel
+and the row never touch `qty`.
+
+**What to say:** "Four lists had the same heading, + menu, rows and empty
+text. Now they're one organism. The page gives it the list, the menu and a
+function for the badges; it reports add and remove. The quantity box goes in
+through a scoped slot, so only Inventory has it."
+
+---
+
+### AppNavbar (organism) ✅ counts
+
+**Job:** the navbar on every page: the top bar on large screens and the
+bottom bar on phones. It is drawn from one list of links, and it replaces 6
+hand-written `<nav>` blocks (2 per page × 3 pages).
+
+| | |
+|---|---|
+| **Props** | `active` (String, required, `home` / `forge` / `roster`, checked by a validator), `guard` (Boolean: ask before leaving) |
+| **Emits** | `leave`, with the `href` the user clicked (only when `guard` is on) |
+| **Data** | `links`: `{ id, label, shortLabel, href, icon }` for each page. Only the navbar uses them (rule 7) |
+| **Computed** | `homeLink`: the brand link goes home |
+| **Methods** | `onClick(event, link)`: the current page does nothing; with `guard`, stop the browser and emit `leave` |
+
+**Why it's an organism:** it is a whole section of the page, not one small
+part, and it has its own logic (the active link and the guard).
+
+**Two bars, one list.** Both bars loop over the same `links`. The top bar
+shows `label` ("Forge Character") and the phone bar shows `shortLabel` and
+`icon` ("Create" with a hammer). Add a page once, and both bars get it.
+
+**The guard (only the forge uses it):**
+```html
+<app-navbar active="forge" guard @leave="askLeave"></app-navbar>
+```
+```js
+onClick: function (event, link) {
+    if (link.id === this.active) {      // already here: reloading would lose work
+        event.preventDefault();
+        return;
+    }
+    if (this.guard) {                   // forge: don't leave, ask the page
+        event.preventDefault();
+        this.$emit('leave', link.href);
+    }
+},
+```
+`event.preventDefault()` tells the browser "don't follow this link." It is
+the same thing `@submit.prevent` does for the forms. The navbar doesn't know
+there is a modal. It only reports where the user wanted to go. The page
+decides what to do about it: `askLeave` sets `leaveHref` and opens the one
+leave ConfirmModal.
+
+**Why it can sit anywhere inside `#app`:** both bars are `fixed-top` /
+`fixed-bottom`, so they show at the top and bottom of the screen wherever
+they are in the HTML. That's why the old navbars could move inside `#app`
+(Vue only controls what is inside `#app`) without changing the look.
+
+**Two root elements.** The template has two `<nav>` tags side by side.
+Vue 3 allows that; Vue 2 needed one wrapper around everything.
+
+**What to say:** "Six copies of the navbar became one component. The page
+tells it where you are and whether to ask before leaving. The navbar reports
+the click, and the page decides what happens."
 
 ---
 
@@ -575,6 +773,45 @@ ever talking to each other.
 ```
 Notice the shape: **refs go down** (a parent asks a child to do something,
 like open), and **events go up** (a child tells a parent something happened).
+
+### D. Saving: a new character vs. an edit (the ID system)
+
+```
+NEW CHARACTER                         EDIT FROM THE ROSTER
+editingId = null                      ?id=3 in the address bar
+                                      loadFromQuery: Number("3") → 3
+                                      applyCharacter(found), editingId = 3
+collectCharacter → id: null           collectCharacter → id: 3
+storeCharacter:                       storeCharacter:
+  id is null → takeNextId() → 14        id is 3 → keep it
+  findIndex(14) → not found → push      findIndex(3) → found → replace in place
+returns 14 → "Saved (#14)"            returns 3 → "Saved (#3)"
+```
+Then `saveCharacter` puts `blankCharacter` back on the form with
+`applyCharacter`, so the next character starts empty.
+
+**Why this fixed the duplicate bug:** the old ID was *built from* the name
+and User ID. Rename a character and its ID changed, so the save couldn't find
+the original and added a second copy. Now the ID is a number that has nothing
+to do with the name, so a rename can't lose it.
+
+**The counter (`takeNextId`).** The next number lives in local storage under
+`theForgeNextId`, **apart from the roster**. Each new save takes it and adds 1.
+Why apart: if the next ID were "the highest on the roster + 1", deleting the
+newest character would hand its number out again, and an old Edit link, a
+downloaded file, or the locked list would then point at the wrong character.
+A counter that only goes up never gives a number out twice.
+
+**Text vs. numbers.** Storage and the address bar only hold text, so the
+number is converted on the way in (`Number(...)`) and the way out
+(`String(...)`). `3 === "3"` is false, which is exactly why Edit stopped
+working until `loadFromQuery` converted it.
+
+**The blank form (`blankCharacter`).** The first line of `mounted` takes a
+copy of the form with `collectCharacter()` before anything is loaded. At that
+moment the form only holds `data()`'s starting values. A save puts that copy
+back. The starting values are written once (in `data()`), so a new field can't
+be forgotten in the reset.
 
 ---
 
@@ -690,6 +927,15 @@ does the drawing.
 `#menu` is short for `v-slot:menu`. **Slot content is built where it is
 written** (on the page or in the parent), so it can use the parent's data. The
 component only decides *where* it goes.
+
+**Scoped slots: the component hands data back to the slot.**
+
+| In the component | On the page | Meaning |
+|---|---|---|
+| `<slot name="extra" :entry="entry"></slot>` | `<template #extra="{ entry }">` | the slot sends `entry`; the page unpacks it with `{ }` |
+
+Used when the slot sits inside a `v-for` and the page needs to know which
+item this copy is for (EntryPanel's quantity box).
 
 ### `ref` and `$refs`
 
@@ -898,6 +1144,13 @@ props: {
 `affordableMax` moved from a method to a computed because, inside StatCard,
 it no longer needs an argument.
 
+**Rule of thumb from a real bug:** if the HTML uses it as a **value**
+(`:add-items="featMenu"`), it's computed. If the HTML **calls** it
+(`addMenu(...)`) or **hands it over to be called** (`:badges-for="featBadges"`),
+it's a method. `featMenu` was once pasted into `methods`, so the page handed
+ActionMenu a function instead of a list, ActionMenu's `items.some(...)`
+crashed, and the whole forge page stopped drawing.
+
 ### Small operators used throughout
 
 | Syntax | Meaning | Example |
@@ -934,7 +1187,21 @@ it no longer needs an argument.
 | AppModal + ConfirmModal (two components) | The shell is reusable for non-confirm modals later | One modal component that does everything |
 | A `v-tooltip` directive for tooltips | Tooltips sit on plain elements; the directive's hooks create, update and dispose them per element | A tooltip component wrapped around every row; keeping `querySelectorAll` and adding cleanup to it |
 | `inert` from data for the focus warning | No reaching for the focused element; Chrome's own advice | `document.activeElement.blur()` (page-wide read, direct change) |
-| Commit at milestones (C0009 baseline, C0010 first components, C0011 six components + tooltip fix) | Each commit is a working state I can show or go back to | Committing after every small edit |
+| Commit at milestones (C0009 baseline, C0010 first components, C0011 six components + tooltip fix, C0012 bug fixes + IDs) | Each commit is a working state I can show or go back to | Committing after every small edit |
+| Character ID = a number from a counter that only goes up | It never changes, so a rename can't lose the character. That fixed the duplicate bug at its root | Building the ID from the name + User ID (the old way); "highest + 1" (a deleted number comes back) |
+| The counter is stored apart from the roster | It remembers numbers even after their characters are deleted | Working the next ID out from the roster |
+| Names can repeat | Real games allow it; the number ID keeps characters apart | `nameTaken` blocking a second "Thorin" |
+| NPCs have a creature type (D&D list + Unknown), not an NPC ID | A type is a description, and descriptions repeat. Unknown is the default, so it's never blank | A typed NPC ID that had to be unique |
+| Search = typed (Name, User ID); filter = picked from a list (Player/NPC, creature type) | A simple test for which control fits | Creature type as a search field |
+| Reset the form by putting back a copy taken in `mounted` | The starting values are written once, in `data()` | Typing every starting value again in `saveCharacter` |
+| AppNavbar emits `leave`; the page opens the modal | Navigation and "are you sure?" are separate jobs | The navbar opening a modal it doesn't own |
+| The forge's ✕ close button was removed | Home, Roster and the brand already leave | Keeping two ways to do the same thing |
+| ActionMenu grew headers, dividers, notes and `emptyText` | Six hand-written + menus all had them; now they're data | A separate AddMenu component |
+| One `addMenu(header, entries)` helper | Every + menu is the same shape | A computed per menu built by hand |
+| EntryRow + EntryPanel (molecule + organism) | 4 lists had the same shape; a row is reusable on its own | One big component with "if buff / if feat" checks |
+| Badges through a function prop (`badgesFor`) | Badges are data, not markup; each list works them out its own way | A slot of badge `<span>`s on the page (Bootstrap classes in the markup) |
+| Inventory's quantity box through a scoped slot | Only one list needs it, and it needs to know its row | A `showQty` flag inside EntryRow |
+| All four lists use `list-group-flush` | They look the same now | Inventory keeping outer borders |
 
 ---
 
@@ -951,6 +1218,7 @@ name them than have them found.
 | `v-tooltip` | `new bootstrap.Tooltip(el, ...)` / `dispose()` | The element Vue hands the directive, given to a third-party library and cleaned up when the element goes. Same case as AppModal. |
 | `bootstrap` | a global from Bootstrap's `<script>` tag | It belongs to the library, not to us. "No globals" means we don't create any. |
 | app.js `downloadCharacter` | `document.createElement('a')` | Creates a temporary download link that is never added to the page. **Question for the teacher.** |
+| `AppNavbar.onClick` | `event.preventDefault()` | Not DOM manipulation. It cancels the browser's own action for that one click (following the link), the same as `@submit.prevent`. It touches no elements. |
 
 **Still to remove** (a real page search, scheduled):
 - `scrollToStep`: `document.querySelector('.step-tracker')`. Fixed when the step tracker becomes a component.
@@ -962,34 +1230,65 @@ redraw, never cleaned up), now replaced by `v-tooltip`.
 
 ## 11. Where the assignment stands
 
-| Requirement | Status |
+### Vue App 3.0 (this assignment): 3–5 improvements + CHANGELOG.md
+
+| Improvement | Status |
 |---|---|
-| At least 5 working components with props or slots | ✅ 6: RangeSlider, StatCard, ActionMenu, SkillCard, AppModal, ConfirmModal |
-| Not purely visual | ✅ Each has an emit, a calculation or a lifecycle job |
-| Logic moved into components | 🟡 Slider fill, the cap, `affordableMax`, the menu choice, modal open/close. More to come |
-| No globals / no DOM manipulation | 🟡 1 page search left (step tracker) + 1 teacher question |
-| Class-presentation fixes | 🟡 1 of 3: tooltips now go away with their element (`v-tooltip`). Left: duplicate-on-save, buffs/debuffs not saved |
+| 1. Squash bugs | ✅ buffs/debuffs not saved · duplicate on save after a rename · form not fully cleared after a save · Chrome focus warning on the leave and delete modals |
+| 2. More reusable components | ✅ ConfirmModal runs all 3 modals (the leave modal went from 2 copies to 1, with `:href`) · ActionMenu runs the + menus (headers, dividers, notes, empty text) |
+| 3. Organisms (teacher's feedback) | ✅ AppNavbar (6 navbars → 1) · EntryPanel + EntryRow (4 lists → 1). StepTracker if time allows |
+| 4. Redesigned character IDs (my own idea) | ✅ number IDs from a counter, NPC creature types, names can repeat, roster search by Name / User ID with a creature filter and a Newest sort |
+| CHANGELOG.md | 🟡 written as I go; turned into a version heading at the end |
 
-**Removed from app.js so far:** `levelBar`, `setVital`, `setStatValue`,
-`fillPercent`, `affordableMax`, `releaseModalFocus`, `startTooltips`, the
-root `updated` hook, and the old `getElementById('confirmSaveModal')`.
+**Removed from app.js in 3.0:** `characterKey`, `nameTaken`, `npcIdTaken`,
+`otherCharacters`, `activeId`, the `lookupId` workaround, and the duplicate
+reset lines in `saveCharacter`.
 
-**Next, in order:**
-1. Move the forge page's navbars inside `#app` → one leave modal with
-   `:href="leaveHref"` instead of two → the roster's delete modal as a
-   ConfirmModal.
-2. Bug: editing a player and saving makes a second copy. `storeCharacter`
-   looks it up by a key built from the *edited* name or User ID, so after a
-   rename it can't find the original. Fix: when editing, find it by
-   `editingId`.
-3. Bug: buffs/debuffs aren't saved. `effects` is missing from
-   `collectCharacter` and `applyCharacter`.
-4. StepTracker component, which removes the last page search
-   (`scrollToStep`).
+**Removed in 2.0:** `levelBar`, `setVital`, `setStatValue`, `fillPercent`,
+`affordableMax`, `releaseModalFocus`, `startTooltips`, the root `updated`
+hook, and the old `getElementById('confirmSaveModal')`.
+
+**Next (if time allows):** StepTracker (removes the last page search,
+`scrollToStep`); the gear menu at phone width; the remaining hand-written ⋮
+menus (skill category, abilities, spells) onto ActionMenu.
 
 ---
 
 ## 12. Questions I might be asked
+
+**"What's the difference between a molecule and an organism?"**
+Size and job. A molecule is a small unit, like a slider with its label and
+badge. An organism is a whole section of the page built from smaller pieces,
+like the navbar. Both are components; the organism removes more repeated
+markup at once.
+
+**"Why don't deleted IDs get reused?"**
+Other things remember IDs: the Edit link (`?id=3`), a downloaded JSON file,
+the locked list. If 3 were deleted and handed out again, those would point at
+a different character. The counter only goes up, the same way a database's
+auto-number works. Gaps in the numbers cost nothing.
+
+**"Why is the counter stored separately from the roster?"**
+If the next ID were worked out from the roster (highest + 1), deleting the
+newest character would make its number come back. The roster forgets deleted
+characters; the counter doesn't.
+
+**"Why does EntryPanel take a function instead of a list of badges?"**
+The badges are different for every row, and different for every list. The
+page knows how to work them out (a buff's duration, a feat's source), so it
+hands the panel the function and the panel calls it once per row. The panel
+stays the same for all four lists.
+
+**"What is a scoped slot?"**
+A slot that sends data back to the page. EntryPanel puts the page's `#extra`
+content inside every row and hands it that row's `entry`, so the quantity box
+knows which item it belongs to.
+
+**"Why does the navbar emit instead of opening the modal itself?"**
+The navbar's job is navigation. Whether leaving needs a warning, and what the
+warning says, is the forge page's business. The navbar reports where the user
+wanted to go, and the page decides. That's the same split as ActionMenu, which
+reports a pick without knowing what it means.
 
 **"Why doesn't the child just change the value? Your demo did."**
 The Vue docs say a child should emit and let the parent change it. If only

@@ -12745,6 +12745,11 @@ img.roster-portrait {
   overflow-y: auto;
 }
 
+.dropdown-menu-scroll {
+  max-height: 10.5rem;
+  overflow-y: auto;
+}
+
 .vitals-label {
   min-width: 1.75rem;
 }

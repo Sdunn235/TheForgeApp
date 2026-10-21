@@ -16,52 +16,6 @@
 
 
 <body>
-    <!-- Navbar -->
-    <!-- Hidden below lg, where the bottom bar takes over -->
-    <nav class="navbar fixed-top navbar-expand-lg bg-primary d-none d-lg-flex" data-bs-theme="dark">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="./index.html">The Forge</a>
-
-            <ul class="navbar-nav flex-row ms-auto me-3">
-                <li class="nav-item">
-                    <a class="nav-link px-3 active" href="./index.html" aria-current="page">Home</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link px-3" href="./creation-character.html">Forge Character</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link px-3" href="./view-characters.html">Roster</a>
-                </li>
-            </ul>
-        </div>
-    </nav>
-
-    <!-- Takes over below lg, where the top bar is hidden -->
-    <nav class="navbar fixed-bottom bg-primary d-lg-none mobile-bottom-nav" data-bs-theme="dark">
-        <div class="container-fluid">
-            <ul class="navbar-nav flex-row w-100 justify-content-around">
-                <li class="nav-item">
-                    <a class="nav-link text-center active" href="./index.html" aria-current="page">
-                        <i class="bi bi-house-door d-block"></i>
-                        Home
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-center" href="./creation-character.html">
-                        <i class="bi bi-hammer d-block"></i>
-                        Create
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-center" href="./view-characters.html">
-                        <i class="bi bi-people d-block"></i>
-                        Roster
-                    </a>
-                </li>
-            </ul>
-        </div>
-    </nav>
-
     <div class="video-hero">
         <iframe
             src="https://www.youtube.com/embed/ez68sFkO6Qo?autoplay=1&mute=1&loop=1&playlist=ez68sFkO6Qo&controls=0&playsinline=1"
@@ -72,14 +26,15 @@
     <!-- Main content: one card per design area -->
     <!-- Page heading -->
     <div id="app" class="container text-start mt-5 pt-5">
+        <app-navbar active="home"></app-navbar>
         <page-content-header :title="appName" :description="tagline"></page-content-header>
 
         <!-- One card per forge. The frame lives in AppCard; the words for
             each one live in forges in app.js. -->
         <div class="row row-cols-1 row-cols-md-2 g-4">
             <div class="col" v-for="forge in forges" :key="forge.title">
-                <app-card :title="forge.title" :description="forge.description"
-                    :image="forge.image" :image-alt="forge.alt">
+                <app-card :title="forge.title" :description="forge.description" :image="forge.image"
+                    :image-alt="forge.alt">
                     <template #footer>
                         <action-menu class="d-grid" variant="button" :items="forge.links"
                             :label="forge.buttonLabel"></action-menu>

@@ -7,6 +7,8 @@ import StatCard from './components/StatCard.js';
 import SkillCard from './components/SkillCard.js';
 import ConfirmModal from './components/ConfirmModal.js';
 import vTooltip from './directives/tooltip.js';
+import AppNavbar from './components/AppNavbar.js';
+import EntryPanel from './components/EntryPanel.js';
 
 
 
@@ -21,6 +23,8 @@ const app = createApp({
         SkillCard,
         StatCard,
         ConfirmModal,
+        AppNavbar,
+        EntryPanel,
     },
     // directives: custom v- attributes this app's HTML can use
     directives: {
@@ -302,6 +306,8 @@ const app = createApp({
                 { id: 'items', label: 'Items' },
             ],
 
+
+
             // Which step is showing. 0 is the first one.
             currentStep: 0,
 
@@ -358,6 +364,26 @@ const app = createApp({
                 message: 'This will save the character and start a new blank form.',
                 confirmLabel: 'Save Character',
                 cancelLabel: 'Keep Editing',
+            },
+
+            // Leaving the forge. One modal for every exit; askLeave sets
+            // where Yes goes before opening it.
+            leaveConfirm: {
+                id: 'leavePageModal',
+                title: 'Leave Character Design?',
+                message: 'You will lose all unsaved data. Are you sure you want to leave?',
+                confirmLabel: 'Leave',
+                cancelLabel: 'Keep Editing',
+            },
+            leaveHref: '',
+
+            // The roster's delete question. The character's name goes in
+            // the slot on the page, because it changes per row.
+            deleteConfirm: {
+                id: 'deleteCharacterModal',
+                title: 'Delete Character?',
+                message: 'Stats, skills, abilities, spells, and items go with it. This cannot be undone.',
+                confirmLabel: 'Delete Character',
             },
 
             // Stat points: what you start with, and what each level adds.
@@ -860,6 +886,44 @@ const app = createApp({
 
     // methods: usually "events" triggered by v-on:
     methods: {
+        // An inventory row's badges: which slot it fits, then how many of it
+        // are worn right now (only when some are).
+        itemBadges: function (item) {
+            const badges = [{ tag: this.itemSlotLabel(item), badgeClass: 'bg-primary' }];
+            const worn = this.equippedCount(item);
+
+            if (worn > 0) {
+                badges.push({ tag: worn + ' worn', badgeClass: 'bg-success' });
+            }
+
+            return badges;
+        },
+
+
+        // A feat row's badges: its kind, then where its slot came from.
+        // featKinds and featSources already have { tag, badgeClass }.
+        featBadges: function (feat) {
+            return [this.featKindBadge(feat), this.featSourceBadge(feat)];
+        },
+
+        // Any + menu: a heading, then one choice per catalog entry. The entry
+        // rides along inside each choice so the click hands it back.
+        addMenu: function (header, entries) {
+            const choices = entries.map((entry) => ({
+                label: entry.name,
+                entry: entry,
+            }));
+            return [{ header: header }].concat(choices);
+        },
+        // A buff or debuff row's badges: its kind, then how long it lasts.
+        effectBadges: function (effect) {
+            const group = this.effectGroups.find((entry) => entry.kind === effect.kind);
+
+            return [
+                { tag: group.tag, badgeClass: group.badgeClass },
+                { tag: effect.duration, badgeClass: 'bg-secondary text-dark rounded-pill' },
+            ];
+        },
         // Where a tracker dot sits along the bar, as a percentage. Six dots
         // works out to 0, 20, 40, 60, 80, 100 — which is what the hand-written
         // start-0 / start-20 / ... classes were doing.
@@ -1445,10 +1509,18 @@ const app = createApp({
             return this.isLocked(character) ? 'border-primary border-2' : '';
         },
 
-        // The kebab points the shared modal at one character; the modal's
-        // button then deletes whatever it is pointing at.
+        // Point the shared modal at one character, then open it. Its
+        // Delete button calls confirmDelete, which deletes whatever it points at.
         askDelete: function (character) {
             this.pendingDelete = character;
+            this.$refs.deleteModal.open();
+        },
+
+        // The navbar asked to leave. Point the modal's Leave button at
+        // wherever the navbar was going, then ask.
+        askLeave: function (href) {
+            this.leaveHref = href;
+            this.$refs.leaveModal.open();
         },
 
         confirmDelete: function () {
@@ -1988,7 +2060,7 @@ const app = createApp({
         // The first step's Save button stays greyed out until there is a name,
         // plus a User ID for a player or a creature type for an NPC.
         infoComplete: function () {
-            const detail = this.character.type === 'npc'? this.character.npcType: this.character.userId;
+            const detail = this.character.type === 'npc' ? this.character.npcType : this.character.userId;
 
             return this.character.name.trim() !== '' && detail.trim() !== '';
         },
@@ -2100,6 +2172,12 @@ const app = createApp({
                 return !this.skillCategories.some((owned) => owned.id === entry.id);
             });
         },
+        // The + menu beside "Skills": a heading, then one choice per category
+        // the character doesn't have yet. entry rides along so the click
+        // handler gets the catalog category back.
+        categoryMenu: function () {
+            return this.addMenu('Choose a category', this.availableCategories);
+        },
         // The two columns, described rather than written out twice. Each
         // carries its own wording and colour, so the markup is one loop.
         effectGroups: function () {
@@ -2111,6 +2189,7 @@ const app = createApp({
                     badgeClass: 'bg-buff',
                     addLabel: 'Add a buff',
                     emptyLabel: 'No buffs active.',
+                    addItems: this.addMenu('Add a buff', this.availableEffects('buff')),
                     effects: this.effects.filter((effect) => effect.kind === 'buff'),
                 },
                 {
@@ -2120,6 +2199,7 @@ const app = createApp({
                     badgeClass: 'bg-debuff',
                     addLabel: 'Add a debuff',
                     emptyLabel: 'No debuffs active.',
+                    addItems: this.addMenu('Add a debuff', this.availableEffects('debuff')),
                     effects: this.effects.filter((effect) => effect.kind === 'debuff'),
                 },
             ];
@@ -2213,6 +2293,34 @@ const app = createApp({
 
                 return String(first.name).localeCompare(String(second.name));
             });
+        },
+
+        // The Inventory + menu: every catalog item not already carried.
+        itemMenu: function () {
+            return this.addMenu('Choose an item', this.availableItems);
+        },
+
+        // The Feats + menu: one heading per feat kind, its choices under it,
+        // or a grey note when that kind is used up. The name and the summary
+        // go together in the label, as before.
+        featMenu: function () {
+            const menu = [];
+
+            for (const kind of this.featKinds) {
+                const left = this.availableFeats(kind.id);
+
+                menu.push({ header: kind.label });
+
+                if (left.length === 0) {
+                    menu.push({ note: 'Nothing left here' });
+                }
+
+                for (const entry of left) {
+                    menu.push({ label: entry.name + ' — ' + entry.summary, entry: entry });
+                }
+            }
+
+            return menu;
         },
 
         // At least one page, even when the list is empty, so nothing ever
@@ -2322,7 +2430,7 @@ const app = createApp({
         // to give back. Naming a method as a string is shorthand for calling it.
         // A narrowing search can leave you on a page that no longer exists.
         rosterSearchTerm: function () { this.rosterPage = 1; },
-        
+
         // Leaving NPCs clears the creature type, or a hidden "Beast" filter
         // would quietly hide every player.
         rosterTypeFilter: function () {

@@ -16,58 +16,10 @@
 
 
 <body>
-    <!-- Navbar -->
-    <!-- Hidden below lg, where the bottom bar takes over -->
-    <nav class="navbar fixed-top navbar-expand-lg bg-primary d-none d-lg-flex" data-bs-theme="dark">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="./index.html">The Forge</a>
-
-            <ul class="navbar-nav flex-row ms-auto me-3">
-                <li class="nav-item">
-                    <a class="nav-link px-3" href="./index.html">Home</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link px-3" href="./creation-character.html">Forge Character</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link px-3 active" href="./view-characters.html" aria-current="page">Roster</a>
-                </li>
-            </ul>
-        </div>
-    </nav>
-
-    <!-- Takes over below lg, where the top bar is hidden -->
-    <nav class="navbar fixed-bottom bg-primary d-lg-none mobile-bottom-nav" data-bs-theme="dark">
-        <div class="container-fluid">
-            <ul class="navbar-nav flex-row w-100 justify-content-around">
-                <li class="nav-item">
-                    <a class="nav-link text-center" href="./index.html">
-                        <i class="bi bi-house-door d-block"></i>
-                        Home
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-center" href="./creation-character.html">
-                        <i class="bi bi-hammer d-block"></i>
-                        Create
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-center active" href="./view-characters.html" aria-current="page">
-                        <i class="bi bi-people d-block"></i>
-                        Roster
-                    </a>
-                </li>
-            </ul>
-        </div>
-    </nav>
-
-    <!-- The hero video lives on the home page only. This is a working page and
-        the 800px of auto-playing iframe just pushed the roster off the screen. -->
-
     <!-- Main content -->
     <!-- Vue owns the page from here down through the modal -->
     <div id="app">
+        <app-navbar active="roster"></app-navbar>
         <div class="container text-start mt-5 pt-5">
             <!-- Roster toolbar: search, filter, add -->
             <div class="card mb-4">
@@ -221,7 +173,6 @@
                                         </li>
                                         <li>
                                             <button class="dropdown-item text-danger" type="button"
-                                                data-bs-toggle="modal" data-bs-target="#deleteCharacterModal"
                                                 @click="askDelete(character)">
                                                 <i class="bi bi-trash me-2"></i>Delete
                                             </button>
@@ -398,43 +349,16 @@
             </div>
         </div>
 
-        <!-- Delete character modal. One modal for every row, pointed at
-            whichever character the kebab set as pendingDelete. -->
-        <div class="modal fade" id="deleteCharacterModal" tabindex="-1" aria-labelledby="deleteCharacterModalLabel"
-            aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="deleteCharacterModalLabel">
-                            <i class="bi bi-exclamation-triangle-fill text-danger"></i> Delete Character?
-                        </h5>
-
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
-                        </button>
-                    </div>
-
-                    <div class="modal-body">
-                        <p class="mb-2">
-                            You are about to permanently delete
-                            <strong>{{ pendingDelete === null ? 'this character' : pendingDelete.name }}</strong>
-                            from the world.
-                        </p>
-                        <p class="mb-0 text-dark">Stats, skills, abilities, spells, and items go with it. This
-                            cannot be undone.</p>
-                    </div>
-
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                            Cancel
-                        </button>
-
-                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal" @click="confirmDelete">
-                            Delete Character
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <!-- Delete character modal. One for every row; askDelete points it at
+            a character and opens it. The bold name fills ConfirmModal's slot. -->
+        <confirm-modal ref="deleteModal" v-bind="deleteConfirm" danger @confirm="confirmDelete">
+            <p class="mb-2">
+                You are about to permanently delete
+                <strong>{{ pendingDelete === null ? 'this character' : pendingDelete.name }}</strong>
+                from the world.
+            </p>
+            <p class="mb-0">{{ deleteConfirm.message }}</p>
+        </confirm-modal>
     </div>
     <!-- end #app -->
 
