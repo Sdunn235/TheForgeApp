@@ -1,0 +1,171 @@
+// The Forge - project stylesheet.
+//
+// On AI assistance: a pattern is designed once by hand here, then AI is used to
+// copy it across the other pages and repeated blocks - the navbar, the card
+// recipes, the per-item controls. That is why some files gain a lot of lines at
+// once. The @mixin / @include approach below, and the note explaining it, also
+// came out of one of those sessions. The colours, sizes, structure and the
+// decisions about what the app should do are the project's own.
+
+@use "sass:color";
+@use "sass:map";
+
+// 1-4. Our Bootstrap overrides and colours (see _tools.scss)
+@import "tools";
+
+// 5. The rest of Bootstrap
+@import "bootstrap/scss/bootstrap";
+
+// 6. Our own styles below
+
+// ---------------------------------------------------------------------------
+// Styling pattern for stats, skills, abilities, spells and items.
+// These are Bootstrap utility classes, not custom CSS. Follow the recipes
+// below so every step of the character form looks the same.
+//
+// Item card (one recipe, used everywhere):
+//   <div class="card h-100 p-3 bg-light border-primary-subtle shadow-sm">
+//     <h5 class="card-title">Name</h5>
+//     <p class="flex-grow-1 mb-3 text-body-secondary">Description</p>
+//
+// Step intro copy:
+//   <p class="mb-4 text-body-secondary">
+//
+// Badges carry meaning by color. Pick the one that matches the job:
+//   bg-primary               names a thing   (category, slot, school, type)
+//   bg-secondary text-dark   a value         (slider value, level, points)
+//   bg-success               a state         (learned, earned, active)
+//   add rounded-pill         when it is a count (x3, "2 buffs")
+//
+// Two rules worth remembering:
+//   - bg-secondary is light lavender, so its badges always need text-dark.
+//     Without it you get white on lavender at 1.69:1, which is unreadable.
+//   - Use text-body-secondary for muted copy, never text-secondary. In
+//     Bootstrap 5.3 text-secondary means the secondary THEME color, so on
+//     a bg-light card it renders lavender on near-white. text-muted is
+//     deprecated in 5.3; text-body-secondary replaces it.
+//   - text-body-secondary sets color only. Its size comes from
+//     $font-size-base, so do not reach for .small to make copy bigger.
+// ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// @mixin and @include, since they are used below.
+//
+// A mixin is a named, reusable block of declarations that can take arguments.
+// @mixin defines it; @include stamps a copy of it in with the arguments filled
+// in. It is not inheritance and not a reference: five @includes compile to five
+// independent copies in the compiled CSS. The value is having one place to
+// change a technique that several rules share.
+//
+//   @mixin range-fill($color) { ...declarations using $color... }
+//   .range-health { @include range-fill(#b3313c); }
+//   .range-mana   { @include range-fill(#2f6fd0); }
+//
+// range-fill() lives in RangeSlider.vue's style block, the only place that
+// uses it, and it is the only mixin written in this project. It
+// earns its place because a slider track can only be reached through a
+// browser-specific selector, and those cannot share a selector list, so the
+// same gradient has to be written twice per colour. Five colours would be ten
+// hand-maintained rules; the mixin makes it one.
+//
+// @include is also how Bootstrap's own mixins are called in this file:
+// media-breakpoint-down(sm) writes a media query, border-radius() respects
+// Bootstrap's $enable-rounded switch. Same mechanism, someone else's
+// definitions.
+// ---------------------------------------------------------------------------
+
+
+// Cards: every card in the app (AppCard and the pages' own) shares these
+.card {
+    img {
+        display: block;
+        width: 100%;
+        height: 180px;
+        object-fit: contain;
+        border-radius: 0.25rem 0.25rem 0 0;
+        background-color: $secondary;
+    }
+
+    .card-body {
+        background-color: $secondary;
+        border-radius: 0 0 0.25rem 0.25rem;
+    }
+}
+
+// Bootstrap sizes .form-label but not .form-check-label, which leaves radio
+// and checkbox text smaller than every other label. Reuse the same variables.
+.form-check-label {
+    font-size: $form-label-font-size;
+    font-weight: $form-label-font-weight;
+}
+
+// Dropdowns. App-wide: ActionMenu's menus and the roster's plain creature
+// filter both use them.
+.dropdown-menu {
+    width: 100%;
+
+    .dropdown-item {
+        color: #212529;
+        transition: background-color 0.2s ease, color 0.2s ease;
+
+        &:hover,
+        &:focus {
+            color: #fff;
+            background-color: $primary;
+        }
+
+        &:active {
+            color: #fff;
+            background-color: color.adjust($primary, $lightness: -10%);
+        }
+    }
+}
+
+// Dropdown menus. The global type scale pushes --bs-dropdown-font-size to
+// 1.5rem, which is larger than a menu needs and wider than several items
+// ("Toughness -- +10 max HP") can fit. Bootstrap sets .dropdown-item to
+// nowrap, so a long item overflows its own menu instead of wrapping.
+$dropdown-font-size: 1rem;
+$dropdown-min-width: 12rem;
+$dropdown-max-width: 20rem;
+
+.dropdown-menu {
+    --bs-dropdown-font-size: #{$dropdown-font-size};
+    --bs-dropdown-min-width: #{$dropdown-min-width};
+
+    max-width: $dropdown-max-width;
+}
+
+.dropdown-item {
+    white-space: normal;
+}
+
+// A kebab pinned to a card's corner. Stays app-wide: the page puts it on
+// ActionMenu (class="card-kebab") and AppCard uses it too. The button's own
+// margin (.5rem, in ActionMenu.vue) stacks on top of this offset, so the gap
+// from the card's border is 1rem, which lines the button up with the text.
+$card-kebab-offset: .5rem;
+
+.card-kebab {
+    position: absolute;
+    top: $card-kebab-offset;
+    inset-inline-end: $card-kebab-offset;
+}
+
+// The phone navbar (AppNavbar.vue) is fixed, so it floats over the end of the
+// page. Pad the body by its height to keep the last Save button reachable.
+// This stays app-wide: <body> is outside every component, so no scoped style
+// can reach it.
+@include media-breakpoint-down(lg) {
+    body:has(.mobile-bottom-nav) {
+        padding-bottom: $mobile-nav-height + $mobile-nav-clearance;
+    }
+}
+
+// Badges sit inline beside headings, labels and buttons throughout the app,
+// so they carry their own breathing room instead of every caller adding it.
+$badge-margin: .25rem;
+
+.badge {
+    margin: $badge-margin;
+}

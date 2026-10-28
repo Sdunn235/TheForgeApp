@@ -1,0 +1,93 @@
+// Variables, functions and mixins only: no CSS comes out of this file.
+// app.scss pulls it in before Bootstrap, and each component's
+// <style scoped> pulls it in to use the same colours and sizes.
+@use "sass:map";
+
+// Bootstrap customization follows the documented import order:
+// https://getbootstrap.com/docs/5.3/customize/sass/
+
+// 1. Functions first, so Bootstrap's color helpers are loaded before we override
+@import "bootstrap/scss/functions";
+
+// 2. Default variable overrides
+$primary: #8034fc;
+$secondary: #d0c0e9;
+$disabled: #756a86;
+$success: #198754;
+$body-bg: #f0e7ff;
+$form-range-track-height: 1.5rem;
+// Slider handle. Neutral on purpose: a handle tinted like its own track
+// disappears into it, and the stat and skill tracks are already $success.
+$form-range-thumb-bg: #343a40;
+
+// Form text sizing
+$form-label-font-size: 1rem;
+$form-label-font-weight: bold;
+$input-font-size: 1.5rem;
+// Selects keep the 1rem default; only text inputs are enlarged
+$form-select-font-size: 1.5rem;
+
+// Component sizing
+$badge-font-size: 1.25rem;
+$badge-border-radius: 1rem;
+$lead-font-size: 1.25rem;
+$navbar-brand-font-size: 2rem;
+
+// Typography knobs
+$h6-font-size: 1.5rem;
+$h5-font-size: 1.75rem;
+$h4-font-size: 2rem;
+// .small is fine print again. Body copy - including .text-body-secondary,
+// which is a colour utility with no size - is sized by $font-size-base.
+$small-font-size: 1.25rem;
+$font-size-base: 1.5rem;
+
+// Buttons size independently of body copy. Without these, $btn-font-size
+// inherits from $font-size-base and scaling a button scales paragraphs too.
+$btn-font-size: 1.25rem;
+// The .btn-sm / .btn-group-sm > .btn block is built from these four.
+// Change them here rather than overriding the compiled class.
+$btn-padding-y-sm: .25rem;
+$btn-padding-x-sm: .5rem;
+$btn-font-size-sm: .875rem;
+$btn-border-radius-sm: .375rem;
+// How much to thicken icon-font glyphs (they have no bold weight)
+$icon-stroke: 1px;
+
+// Sets the chevron's width, height and background-size together.
+// To recolour it, set $accordion-icon-color to a literal value.
+$accordion-icon-width: 2rem;
+// Gap between the left-hand chevron and the header text
+$accordion-chevron-gap: .75rem;
+
+// Bootstrap has no $list-group-font-size. Item text is sized by the <h6>
+// inside it, so $h6-font-size drives that; these control row spacing.
+$list-group-item-padding-y: .65rem;
+$list-group-item-padding-x: 1rem;
+
+// 3. Required Bootstrap stylesheets
+@import "bootstrap/scss/variables";
+@import "bootstrap/scss/variables-dark";
+
+// 4. Map overrides. Adding colors here makes Bootstrap build .bg-health,
+//    .text-mana, .btn-buff and the rest for us.
+$forge-colors: (
+    "health": #b3313c,
+    "mana": #2f6fd0,
+    "stamina": #c9a227,
+    "buff": #2e9e5b,
+    "debuff": #8a2be2
+);
+
+$theme-colors: map.merge($theme-colors, $forge-colors);
+
+// The phone navbar's height. AppNavbar.vue sets it, and app.scss pads the
+// bottom of the page by the same amount, so both read it from here.
+$mobile-nav-height: 4.5rem;
+// Extra room under the page so the last row clears the bar
+$mobile-nav-clearance: 1.5rem;
+
+// Bootstrap's maps and mixins (media-breakpoint-down and the rest), so
+// component styles can use them. Like the variables, they make no CSS.
+@import "bootstrap/scss/maps";
+@import "bootstrap/scss/mixins";
