@@ -4,16 +4,16 @@ import ChoiceGroup from '@/components/molecules/ChoiceGroup.vue';
 import ConfirmModal from '@/components/molecules/ConfirmModal.vue';
 import FilterChip from '@/components/atoms/FilterChip.vue';
 import vTooltip from '@/directives/tooltip.js';
-import Character from '@/models/Character.js';
+import Player from '@/models/Player.js';
+import Npc from '@/models/Npc.js';
 import { npcTypes } from '@/data/character.js';
 import { findById, removeFrom } from '@/helpers/lists.js';
-import { readCharacters, deleteCharacter } from '@/helpers/storage.js';
-import { spellLevelLabel, spellCostLabel, itemSlotLabel } from '@/helpers/labels.js';
 
 // The roster page: every saved character, searched, filtered, sorted and
-// paged, each with its character sheet. Characters come from storage as
-// Character objects (models/Character.js), so the sheet asks each character
-// for its own facts. This page only decides what is shown, and in what colours.
+// paged, each with its character sheet. The roster is a Roster collection
+// (models/Roster.js) owned by App.vue; it does the searching and sorting,
+// and each Player or Npc answers for its own facts. This page only decides
+// what is shown, and in what colours.
 export default {
     components: {
         ActionMenu,
@@ -25,11 +25,18 @@ export default {
         tooltip: vTooltip,
     },
 
+    // inject:  Takes what App.vue's provide hands down. roster is read here;
+    //          deleting goes back through App, which owns the roster.
+    inject: ['roster', 'deleteFromRoster'],
+
     // data:    This page's own state and wording.
     data: function () {
         return {
-            // Every saved character, loaded from storage when the page opens
-            roster: [],
+            // The type ids, from the classes, so 'npc' is never typed here
+            types: {
+                player: Player.type,
+                npc: Npc.type,
+            },
 
             // Which field the search box looks at, and what it is looking for
             searchField: 'name',
@@ -42,8 +49,8 @@ export default {
             typeFilter: 'all',
             typeFilters: [
                 { id: 'all', label: 'All' },
-                { id: 'player', label: 'Players' },
-                { id: 'npc', label: 'NPCs' },
+                { id: Player.type, label: 'Players' },
+                { id: Npc.type, label: 'NPCs' },
             ],
 
             // Narrows NPCs to one creature type. Only shown when NPCs is picked.
@@ -64,8 +71,8 @@ export default {
             pageSize: 4,
 
             // Characters pinned to the top so they stay on screen while you
-            // search for another. Ids, not objects: the roster is rebuilt from
-            // storage, and the objects would not survive it.
+            // search for another. Ids, not objects: saving an edit replaces
+            // the character object, but its id stays the same.
             lockedIds: [],
 
             // The character the delete pop-up is asking about. One pop-up
@@ -86,6 +93,13 @@ export default {
                 mp: 'text-bg-mana',
                 sp: 'text-bg-stamina',
             },
+
+            // The type badge's colour, by type id. Colours are this page's
+            // business, so this was "isNpc ? ... : ..." in the template.
+            typeBadges: {
+                [Player.type]: 'bg-primary',
+                [Npc.type]: 'bg-secondary text-dark',
+            },
         };
     },
 
@@ -96,46 +110,17 @@ export default {
         },
 
         // The roster after the search box and the filters have had their say.
-        // Locked characters are shown separately, so they come out of this
-        // list rather than appearing twice.
+        // The Roster does the work (models/Roster.js search); this page only
+        // says what is in the boxes. Locked characters are shown separately,
+        // so they are left out rather than appearing twice.
         filteredRoster: function () {
-            const term = this.searchTerm.trim().toLowerCase();
-
-            const matches = this.roster.filter((character) => {
-                if (this.lockedIds.includes(character.id)) {
-                    return false;
-                }
-
-                if (this.typeFilter !== 'all' && character.type !== this.typeFilter) {
-                    return false;
-                }
-
-                if (this.creatureFilter !== 'all' && character.npcType !== this.creatureFilter) {
-                    return false;
-                }
-
-                if (term === '') {
-                    return true;
-                }
-
-                // The model guarantees both are text, so no String() needed
-                const haystack = this.searchField === 'userId' ? character.userId : character.name;
-
-                return haystack.toLowerCase().includes(term);
-            });
-
-            // sort() rearranges the array it is called on, so this sorts the
-            // copy filter() just made, not the roster itself
-            return matches.sort((first, second) => {
-                if (this.sort === 'level') {
-                    return second.level - first.level;
-                }
-
-                if (this.sort === 'newest') {
-                    return second.id - first.id;
-                }
-
-                return first.name.localeCompare(second.name);
+            return this.roster.search({
+                type: this.typeFilter,
+                creature: this.creatureFilter,
+                field: this.searchField,
+                term: this.searchTerm,
+                exclude: this.lockedIds,
+                sort: this.sort,
             });
         },
 
@@ -198,18 +183,6 @@ export default {
     },
 
     methods: {
-        // The labels the sheet shows. A method can simply BE a helper: the
-        // template can only call what the component has, so this hands the
-        // imported functions to it.
-        spellLevelLabel: spellLevelLabel,
-        spellCostLabel: spellCostLabel,
-        itemSlotLabel: itemSlotLabel,
-
-        // Every saved character, as a Character object
-        loadRoster: function () {
-            this.roster = readCharacters().map((saved) => new Character(saved));
-        },
-
         goToPage: function (number) {
             this.page = Math.min(Math.max(number, 1), this.pageCount);
         },
@@ -263,9 +236,9 @@ export default {
             return 'sheet-' + character.id;
         },
 
-        // Save one character to a file. JSON.stringify writes only the
-        // Character's fields (its getters live on the prototype), so the file
-        // is the same plain data that was saved. The temporary link is the
+        // Save one character to a file. JSON.stringify writes what the
+        // character's toJSON hands it (models/Character.js): plain fields,
+        // no getters, lists as plain arrays. The temporary link is the
         // question for the teacher (B-18).
         downloadCharacter: function (character) {
             const blob = new Blob([JSON.stringify(character, null, 2)], { type: 'application/json' });
@@ -285,17 +258,16 @@ export default {
             this.$refs.deleteModal.open();
         },
 
-        // Delete writes the shorter list straight back to storage, then the
-        // roster reloads from it, so the two can't disagree
+        // App owns the roster, so App removes the character; the list on
+        // this page is computed from the roster, so it follows by itself
         confirmDelete: function () {
             if (this.pendingDelete === null) {
                 return;
             }
 
-            deleteCharacter(this.pendingDelete.id);
+            this.deleteFromRoster(this.pendingDelete);
             removeFrom(this.lockedIds, this.pendingDelete.id);
             this.pendingDelete = null;
-            this.loadRoster();
         },
     },
 
@@ -314,11 +286,6 @@ export default {
         creatureFilter: function () {
             this.page = 1;
         },
-    },
-
-    // mounted:     The page just opened: read the roster from storage
-    mounted: function () {
-        this.loadRoster();
     },
 };
 </script>
@@ -364,7 +331,7 @@ export default {
                                 v-model="typeFilter" />
 
                             <!-- A plain dropdown, not an ActionMenu: it shows the current pick -->
-                            <div class="dropdown mt-2" v-if="typeFilter === 'npc'">
+                            <div class="dropdown mt-2" v-if="typeFilter === types.npc">
                                 <button class="btn btn-outline-primary dropdown-toggle w-100" type="button"
                                     data-bs-toggle="dropdown" aria-expanded="false">{{ creatureLabel }}</button>
                                 <ul class="dropdown-menu dropdown-menu-scroll">
@@ -404,10 +371,10 @@ export default {
             <div class="card-body">
                 <div class="d-flex align-items-center gap-2 mb-3">
                     <h3 class="card-title mb-0">Characters</h3>
-                    <span class="badge bg-primary rounded-pill">{{ roster.length }}</span>
+                    <span class="badge bg-primary rounded-pill">{{ roster.count }}</span>
                 </div>
 
-                <div class="alert alert-secondary mb-0" role="status" v-if="roster.length === 0">
+                <div class="alert alert-secondary mb-0" role="status" v-if="roster.count === 0">
                     Nothing forged yet. Build a character and save it, and it will appear here.
                 </div>
                 <div class="alert alert-secondary mb-0" role="status"
@@ -430,7 +397,7 @@ export default {
                                         <i class="bi bi-lock-fill text-primary" v-if="isLocked(character)"
                                             v-tooltip="'Locked for comparison'"></i>
                                     </h5>
-                                    <span class="badge" :class="character.isNpc ? 'bg-secondary text-dark' : 'bg-primary'">{{
+                                    <span class="badge" :class="typeBadges[character.type]">{{
                                         character.typeLabel }}</span>
                                     <span class="badge bg-secondary text-dark">{{ character.tagLabel }}</span>
                                     <span class="badge bg-success rounded-pill">Level {{ character.level }}</span>
@@ -472,17 +439,17 @@ export default {
 
                                     <div class="col">
                                         <h6 class="fw-bold">Skills</h6>
-                                        <template v-for="category in character.skillCategories" :key="category.id">
+                                        <template v-for="category in character.skillCategories.items" :key="category.id">
                                             <p class="fw-semibold mb-1">{{ category.name }}</p>
                                             <ul class="list-group list-group-flush mb-2">
                                                 <li class="list-group-item d-flex justify-content-between align-items-center"
-                                                    v-for="skill in category.skills" :key="skill.id">
+                                                    v-for="skill in category.items" :key="skill.id">
                                                     {{ skill.name }}
                                                     <span class="badge bg-secondary text-dark">{{ skill.value }}</span>
                                                 </li>
                                             </ul>
                                         </template>
-                                        <p class="text-body-secondary mb-0" v-if="character.skillCategories.length === 0">
+                                        <p class="text-body-secondary mb-0" v-if="character.skillCategories.count === 0">
                                             No skills recorded.</p>
                                     </div>
 
@@ -497,9 +464,9 @@ export default {
 
                                         <h6 class="fw-bold">Feats</h6>
                                         <p class="mb-0">
-                                            <span class="badge bg-primary me-1" v-for="feat in character.feats" :key="feat.id">{{
+                                            <span class="badge bg-primary me-1" v-for="feat in character.feats.items" :key="feat.id">{{
                                                 feat.name }}</span>
-                                            <span class="text-body-secondary" v-if="character.feats.length === 0">None taken.</span>
+                                            <span class="text-body-secondary" v-if="character.feats.count === 0">None taken.</span>
                                         </p>
                                     </div>
 
@@ -510,8 +477,8 @@ export default {
                                                 v-for="spell in character.spellbook" :key="spell.id">
                                                 {{ spell.name }}
                                                 <span>
-                                                    <span class="badge bg-primary">{{ spellLevelLabel(spell) }}</span>
-                                                    <span class="badge bg-secondary text-dark">{{ spellCostLabel(spell) }}</span>
+                                                    <span class="badge bg-primary">{{ spell.levelLabel }}</span>
+                                                    <span class="badge bg-secondary text-dark">{{ spell.costLabel }}</span>
                                                 </span>
                                             </li>
                                         </ul>
@@ -523,13 +490,13 @@ export default {
                                         <h6 class="fw-bold">Inventory</h6>
                                         <ul class="list-group list-group-flush">
                                             <li class="list-group-item d-flex justify-content-between align-items-center"
-                                                v-for="item in character.inventory" :key="item.id">
+                                                v-for="item in character.inventory.items" :key="item.id">
                                                 <span><span class="badge bg-secondary text-dark me-2">{{ item.qty }}</span>{{
                                                     item.name }}</span>
-                                                <span class="badge bg-primary">{{ itemSlotLabel(item) }}</span>
+                                                <span class="badge bg-primary">{{ item.slotLabel }}</span>
                                             </li>
                                         </ul>
-                                        <p class="text-body-secondary mb-0" v-if="character.inventory.length === 0">Carrying
+                                        <p class="text-body-secondary mb-0" v-if="character.inventory.count === 0">Carrying
                                             nothing.</p>
                                     </div>
                                 </div>

@@ -11,29 +11,26 @@ import StatCard from '@/components/molecules/StatCard.vue';
 import StepNav from '@/components/molecules/StepNav.vue';
 import ToggleButton from '@/components/atoms/ToggleButton.vue';
 import vTooltip from '@/directives/tooltip.js';
-import { startingStats, npcTypes, levelRange } from '@/data/character.js';
-import { skillCatalog, skillRange } from '@/data/skills.js';
-import { abilityCatalog } from '@/data/abilities.js';
-import { spellCatalog, startingSpellSchools } from '@/data/spells.js';
-import { effectCatalog } from '@/data/effects.js';
-import { featCatalog, featKinds, featSources, featsPerLevel } from '@/data/feats.js';
-import { itemCatalog, startingGearSlots, itemQtyRange } from '@/data/items.js';
-import { deepCopy, findById, notOwned, removeFrom } from '@/helpers/lists.js';
+import Player from '@/models/Player.js';
+import Npc from '@/models/Npc.js';
+import { characterTypes } from '@/models/characterTypes.js';
+import { npcTypes, levelRange } from '@/data/character.js';
+import { featKinds, featSources, featsPerLevel } from '@/data/feats.js';
+import { itemQtyRange } from '@/data/items.js';
+import { findById } from '@/helpers/lists.js';
 import { addMenu } from '@/helpers/menus.js';
-import { makeCategory, makeSkill, makeEffect, makeFeat, makeSpell, makeItem } from '@/helpers/builders.js';
-import {
-    maxHpFor, maxMpFor, maxSpFor, vitalFormulas, spellsKnownFor, featsEarnedFor, statPointsFor,
-} from '@/helpers/formulas.js';
-import { itemSlotLabel } from '@/helpers/labels.js';
-import { storeCharacter, findCharacter } from '@/helpers/storage.js';
+import { vitalFormulas } from '@/helpers/formulas.js';
 
-// The forge: building or editing one character over six steps. This page
-// owns the character being built; the components show its parts and report
-// what the player did, and the methods here make the changes.
+// The forge: building or editing one character over six steps.
 //
-// The world's data (catalogs, starting lists) comes from src/data, the
-// equations from helpers/formulas.js, and saving from helpers/storage.js.
-// What is left here is the one job of this page: the form.
+// The character being built is ONE object, a Player or an Npc
+// (src/models). It knows its own rules: its ceilings, its budgets, what
+// it may learn, how equipping works. The template asks it directly
+// (character.statPointsLeft) and tells it what the player did
+// (character.addFeat(...)).
+//
+// What is left on this page is the form itself: which step is showing,
+// the menus and badges (how things look), saving, and leaving.
 export default {
     components: {
         AccordionPanel,
@@ -52,9 +49,12 @@ export default {
         tooltip: vTooltip,
     },
 
+    // inject:  From App.vue's provide. The roster is read to find the
+    //          character being edited; saving goes back through App,
+    //          which owns the roster.
+    inject: ['roster', 'saveToRoster'],
+
     // data:    The character being built, and this page's own wording.
-    //          The starting lists are COPIES: a module runs once, so editing
-    //          the imported arrays would change them for the next visit too.
     data: function () {
         return {
             // The six steps of the form, in order. The tracker dots and the
@@ -71,62 +71,16 @@ export default {
             // Which step is showing. 0 is the first one.
             currentStep: 0,
 
-            // What the first step collects.
-            character: {
-                name: '',
-                type: 'player', // 'player' or 'npc'
-                userId: '',
-                npcType: 'unknown', // 'unknown' or one of npcTypes
+            // The character being built or edited. A new one starts as a
+            // Player; the radio on step 1 can turn it into an Npc. Its id is
+            // null until the roster saves it (models/Roster.js save).
+            character: new Player(),
+
+            // The type ids, from the classes, so 'player' is never typed here
+            types: {
+                player: Player.type,
+                npc: Npc.type,
             },
-
-            // The Vitals card. Current values only: every ceiling is worked out
-            // from the stats and the level, so there is nowhere to store a
-            // maximum that disagrees with the equation. Anything above its
-            // ceiling is pulled down (clampVitals).
-            vitals: {
-                level: 1,
-                hp: 42,
-                mp: 12,
-                sp: 28,
-            },
-
-            stats: deepCopy(startingStats),
-
-            // The skills this character has, grouped the way the accordion
-            // shows them: a category holds its own skills. A new character
-            // starts with none; they are picked from skillCatalog.
-            skillCategories: [],
-
-            // Which abilities this character has learned, by id. The abilities
-            // themselves belong to skills (abilityCatalog), so a skill picked
-            // on step 3 brings its abilities with it and nothing can disagree.
-            learnedAbilities: [],
-
-            // Buffs and debuffs on the character. kind decides which column
-            // an effect lands in and the colour of its badge.
-            effects: [],
-
-            // Feats the character holds, and how many it may hold. The levels
-            // set the floor; anything above that was granted.
-            feats: [],
-            featAllowance: 0,
-
-            // Every school, each holding the spells this character carries.
-            // A spell can be carried without being learned (learnedSpells).
-            spellSchools: deepCopy(startingSpellSchools),
-            learnedSpells: [],
-
-            // What the character is wearing, and carrying
-            gearSlots: deepCopy(startingGearSlots),
-            inventory: [],
-
-            // The id of the roster entry being edited, or null for a new
-            // character. Not '' or 0: 0 is a real id (the counter starts there).
-            editingId: null,
-
-            // A picture of the empty form, taken in mounted before anything
-            // loads. Putting it back is how the form resets.
-            blankCharacter: null,
 
             // The alert under the form. Empty text means it stays hidden.
             message: {
@@ -177,12 +131,17 @@ export default {
     computed: {
         // --- Character ----------------------------------------------------
 
-        // The first step's Save stays greyed out until there is a name, plus
-        // a User ID for a player or a creature type for an NPC.
-        infoComplete: function () {
-            const detail = this.character.type === 'npc' ? this.character.npcType : this.character.userId;
-
-            return this.character.name.trim() !== '' && detail.trim() !== '';
+        // The Player / NPC radio. A Player and an Npc are different classes,
+        // so changing the type means swapping the object for one of the
+        // other class, carrying everything they share across (convertTo).
+        // get/set lets v-model work on it like an ordinary field.
+        characterType: {
+            get: function () {
+                return this.character.type;
+            },
+            set: function (type) {
+                this.character = this.character.convertTo(characterTypes[type]);
+            },
         },
 
         // --- The step tracker ---------------------------------------------
@@ -199,27 +158,13 @@ export default {
 
         // --- Vitals -------------------------------------------------------
 
-        // The derived ceilings. The equations themselves are in
-        // helpers/formulas.js, so the roster's cards use exactly the same maths.
-        maxHp: function () {
-            return maxHpFor(this.statValue('constitution'), this.vitals.level);
-        },
-
-        maxMp: function () {
-            return maxMpFor(this.statValue('wisdom'), this.vitals.level);
-        },
-
-        maxSp: function () {
-            return maxSpFor(this.statValue('dexterity'), this.statValue('constitution'), this.vitals.level);
-        },
-
-        // The three derived bars. Everything one bar needs sits in one place:
-        // its colour class, its ceiling, and the equation in its tooltip.
+        // The three bars. The ceilings come from the character; the colour
+        // class and the tooltip are how this page shows them.
         vitalBars: function () {
             return [
-                { id: 'hp', label: 'HP', fillClass: 'range-health', min: 0, max: this.maxHp, formula: vitalFormulas.hp },
-                { id: 'mp', label: 'MP', fillClass: 'range-mana', min: 0, max: this.maxMp, formula: vitalFormulas.mp },
-                { id: 'sp', label: 'SP', fillClass: 'range-stamina', min: 0, max: this.maxSp, formula: vitalFormulas.sp },
+                { id: 'hp', label: 'HP', fillClass: 'range-health', min: 0, max: this.character.maxHp, formula: vitalFormulas.hp },
+                { id: 'mp', label: 'MP', fillClass: 'range-mana', min: 0, max: this.character.maxMp, formula: vitalFormulas.mp },
+                { id: 'sp', label: 'SP', fillClass: 'range-stamina', min: 0, max: this.character.maxSp, formula: vitalFormulas.sp },
             ];
         },
 
@@ -234,8 +179,8 @@ export default {
                     badgeClass: 'bg-buff',
                     addLabel: 'Add a buff',
                     emptyLabel: 'No buffs active.',
-                    addItems: addMenu('Add a buff', this.availableEffects('buff')),
-                    effects: this.effects.filter((effect) => effect.kind === 'buff'),
+                    addItems: addMenu('Add a buff', this.character.availableEffects('buff')),
+                    effects: this.character.effectsOfKind('buff'),
                 },
                 {
                     kind: 'debuff',
@@ -244,58 +189,20 @@ export default {
                     badgeClass: 'bg-debuff',
                     addLabel: 'Add a debuff',
                     emptyLabel: 'No debuffs active.',
-                    addItems: addMenu('Add a debuff', this.availableEffects('debuff')),
-                    effects: this.effects.filter((effect) => effect.kind === 'debuff'),
+                    addItems: addMenu('Add a debuff', this.character.availableEffects('debuff')),
+                    effects: this.character.effectsOfKind('debuff'),
                 },
             ];
-        },
-
-        // --- Stats --------------------------------------------------------
-
-        // The pool grows with level (helpers/formulas.js)
-        statPointsBudget: function () {
-            return statPointsFor(this.vitals.level);
-        },
-
-        // Every point raised above a stat's floor costs one, so starting
-        // each stat at its minimum is free.
-        statPointsSpent: function () {
-            let spent = 0;
-
-            for (const stat of this.stats) {
-                spent += stat.value - stat.min;
-            }
-
-            return spent;
-        },
-
-        statPointsLeft: function () {
-            return this.statPointsBudget - this.statPointsSpent;
         },
 
         // --- Skills -------------------------------------------------------
 
         // The + beside "Skills": the categories the character doesn't have yet
         categoryMenu: function () {
-            return addMenu('Choose a category', notOwned(skillCatalog, this.skillCategories));
+            return addMenu('Choose a category', this.character.availableCategories);
         },
 
         // --- Feats --------------------------------------------------------
-
-        // Slots the levels have paid for (helpers/formulas.js)
-        featsEarned: function () {
-            return featsEarnedFor(this.vitals.level);
-        },
-
-        // Anything allowed above what the levels earned was granted
-        featsBonus: function () {
-            return this.featAllowance - this.featsEarned;
-        },
-
-        // Slots still open. Goes negative when feats outnumber the allowance.
-        featsLeft: function () {
-            return this.featAllowance - this.feats.length;
-        },
 
         // The Feats + menu: one heading per feat kind, its choices under it,
         // or a grey note when that kind is used up.
@@ -303,7 +210,7 @@ export default {
             const menu = [];
 
             for (const kind of featKinds) {
-                const left = this.availableFeats(kind.id);
+                const left = this.character.availableFeats(kind.id);
 
                 menu.push({ header: kind.label });
 
@@ -319,26 +226,11 @@ export default {
             return menu;
         },
 
-        // --- Spells -------------------------------------------------------
-
-        // How many spells the book holds: Intelligence + Level
-        spellsKnown: function () {
-            return spellsKnownFor(this.statValue('intelligence'), this.vitals.level);
-        },
-
-        spellsLearned: function () {
-            return this.learnedSpells.length;
-        },
-
-        spellsLeft: function () {
-            return this.spellsKnown - this.spellsLearned;
-        },
-
         // --- Items --------------------------------------------------------
 
         // The Inventory + menu: every catalog item not already carried
         itemMenu: function () {
-            return addMenu('Choose an item', notOwned(itemCatalog, this.inventory));
+            return addMenu('Choose an item', this.character.availableItems);
         },
     },
 
@@ -349,9 +241,11 @@ export default {
         // required fields by the time this runs. An overspent stat pool is
         // the one thing it can't check for us. The last step asks first.
         nextStep: function () {
-            if (this.statPointsLeft < 0) {
+            const left = this.character.statPointsLeft;
+
+            if (left < 0) {
                 this.message.kind = 'alert-danger';
-                this.message.text = 'You are ' + Math.abs(this.statPointsLeft)
+                this.message.text = 'You are ' + Math.abs(left)
                     + ' stat points over budget. Lower a stat before moving on.';
 
                 return;
@@ -375,10 +269,10 @@ export default {
         },
 
         // Jump straight to a step from the tracker. Step one is always
-        // reachable; the rest wait for the same condition as step one's
-        // Save button, so you can't skip naming the character.
+        // reachable; the rest wait until step one is filled in, so you can't
+        // skip naming the character. The character says when it is.
         stepDisabled: function (index) {
-            return index > 0 && !this.infoComplete;
+            return index > 0 && !this.character.isComplete;
         },
 
         goToStep: function (index) {
@@ -410,69 +304,15 @@ export default {
 
         // --- Saving and loading -------------------------------------------
         //
-        // The form's state is spread across a dozen keys rather than one
-        // character object, so these gather it up on the way out and spread
-        // it back on the way in. The shape you edit and the shape you store
-        // don't have to be the same.
+        // The form edits a COPY (clone) of a saved character, and saves a
+        // copy of the form. So the roster never shares an object with the
+        // form, and nothing changes in the roster until Save.
 
-        // Everything worth keeping, as one object. A deep copy, so the saved
-        // character doesn't share objects with the live form and keep
-        // changing after it was saved.
-        collectCharacter: function () {
-            return deepCopy({
-                id: this.editingId,
-                name: this.character.name,
-                type: this.character.type,
-                userId: this.character.userId,
-                npcType: this.character.npcType,
-                vitals: this.vitals,
-                stats: this.stats,
-                skillCategories: this.skillCategories,
-                learnedAbilities: this.learnedAbilities,
-                feats: this.feats,
-                featAllowance: this.featAllowance,
-                spellSchools: this.spellSchools,
-                learnedSpells: this.learnedSpells,
-                gearSlots: this.gearSlots,
-                inventory: this.inventory,
-                effects: this.effects,
-                savedAt: new Date().toISOString(),
-            });
-        },
-
-        // Spread a saved character back across the form. Each field is copied
-        // only if the saved object has it, so a character saved before a
-        // feature existed still loads.
-        applyCharacter: function (saved) {
-            const copy = deepCopy(saved);
-
-            this.character = {
-                name: copy.name || '',
-                type: copy.type || 'player',
-                userId: copy.userId || '',
-                npcType: copy.npcType || 'unknown',
-            };
-
-            const fields = [
-                'vitals', 'stats', 'skillCategories', 'learnedAbilities',
-                'feats', 'featAllowance', 'spellSchools', 'learnedSpells',
-                'gearSlots', 'inventory', 'effects',
-            ];
-
-            for (const field of fields) {
-                if (copy[field] !== undefined) {
-                    this[field] = copy[field];
-                }
-            }
-
-            this.currentStep = 0;
-        },
-
-        // Start from the blank form, then, if the address asks for one
-        // (/forge?id=3), load that saved character to edit.
+        // Start a blank character, then, if the address asks for one
+        // (/forge?id=3), load a copy of that saved character to edit.
         loadCharacter: function (id) {
-            this.applyCharacter(this.blankCharacter);
-            this.editingId = null;
+            this.character = new Player();
+            this.currentStep = 0;
             this.message.text = '';
 
             if (id === undefined) {
@@ -481,7 +321,7 @@ export default {
 
             // The address bar only holds text ("3"); saved ids are numbers (3)
             const wanted = Number(id);
-            const found = findCharacter(wanted);
+            const found = this.roster.find(wanted);
 
             if (found === undefined) {
                 this.message.kind = 'alert-danger';
@@ -490,18 +330,17 @@ export default {
                 return;
             }
 
-            this.applyCharacter(found);
-            this.editingId = found.id;
+            this.character = found.clone();
 
             this.message.kind = 'alert-success';
             this.message.text = 'Editing "' + found.name + '" (' + found.id
                 + '). Saving will update the roster entry.';
         },
 
-        // The save pop-up said yes. Store the character (storage.js hands
-        // back its id), then start a blank one.
+        // The save pop-up said yes. App saves a copy into the roster and
+        // hands back its id, then the form starts a blank character.
         saveCharacter: function () {
-            const savedId = storeCharacter(this.collectCharacter());
+            const savedId = this.saveToRoster(this.character.clone());
             const text = 'Character "' + this.character.name + '" (' + savedId
                 + ') saved to the roster. Starting a new character.';
 
@@ -550,37 +389,7 @@ export default {
             }
         },
 
-        // --- Stats and vitals -----------------------------------------------
-
-        // One attribute's current value by id
-        statValue: function (id) {
-            const stat = findById(this.stats, id);
-
-            return stat === undefined ? 0 : stat.value;
-        },
-
-        // Pull every current value back under its ceiling. Called on load
-        // and whenever a maximum moves.
-        clampVitals: function () {
-            this.vitals.hp = Math.min(this.vitals.hp, this.maxHp);
-            this.vitals.mp = Math.min(this.vitals.mp, this.maxMp);
-            this.vitals.sp = Math.min(this.vitals.sp, this.maxSp);
-        },
-
-        // --- Effects (buffs and debuffs) ------------------------------------
-
-        // Effects of one kind the character doesn't have yet
-        availableEffects: function (kind) {
-            return notOwned(effectCatalog.filter((entry) => entry.kind === kind), this.effects);
-        },
-
-        addEffect: function (catalogEffect) {
-            this.effects.push(makeEffect(catalogEffect));
-        },
-
-        removeEffect: function (effect) {
-            removeFrom(this.effects, effect);
-        },
+        // --- Badges and menus (how things look) -----------------------------
 
         // A buff or debuff row's badges: its kind, then how long it lasts
         effectBadges: function (effect) {
@@ -592,37 +401,10 @@ export default {
             ];
         },
 
-        // --- Skills ---------------------------------------------------------
-
-        addCategory: function (catalogCategory) {
-            this.skillCategories.push(makeCategory(catalogCategory));
-        },
-
-        removeCategory: function (category) {
-            removeFrom(this.skillCategories, category);
-        },
-
-        // Which skills this category could still add. A method, because the
-        // answer depends on which category you ask about.
-        availableSkills: function (category) {
-            const source = findById(skillCatalog, category.id);
-
-            return source === undefined ? [] : notOwned(source.skills, category.skills);
-        },
-
-        // New skills start at the bottom of the shared range
-        addSkill: function (category, catalogSkill) {
-            category.skills.push(makeSkill(catalogSkill, skillRange.min));
-        },
-
-        removeSkill: function (category, skill) {
-            removeFrom(category.skills, skill);
-        },
-
         // A category's ⋮: the skills it can still add, then Remove.
         // A method, not computed, because each category has its own list.
         skillCategoryMenu: function (category) {
-            const menu = addMenu('Add a skill', this.availableSkills(category));
+            const menu = addMenu('Add a skill', this.character.availableSkills(category));
 
             // Only the heading means every skill is already added
             if (menu.length === 1) {
@@ -638,91 +420,18 @@ export default {
         // What a pick from that menu means. ActionMenu only says which item.
         pickFromCategory: function (category, item) {
             if (item.action === 'remove') {
-                this.removeCategory(category);
+                this.character.skillCategories.remove(category);
             } else {
-                this.addSkill(category, item.entry);
+                this.character.addSkill(category, item.entry);
             }
         },
 
-        // --- Abilities ------------------------------------------------------
-
-        // The abilities a skill offers, from the catalog
-        abilitiesFor: function (skill) {
-            const entry = abilityCatalog.find((item) => item.skillId === skill.id);
-
-            return entry === undefined ? [] : entry.abilities;
-        },
-
-        isLearned: function (ability) {
-            return this.learnedAbilities.includes(ability.id);
-        },
-
-        // Which requirements are not met yet, in words. An empty list means
-        // the ability is available. Each part of requires is optional.
-        abilityBlockers: function (skill, ability) {
-            const blockers = [];
-            const needs = ability.requires;
-
-            if (needs === undefined) {
-                return blockers;
-            }
-
-            if (needs.skill !== undefined && skill.value < needs.skill) {
-                blockers.push(skill.name + ' ' + needs.skill);
-            }
-
-            if (needs.stat !== undefined && this.statValue(needs.stat.id) < needs.stat.value) {
-                const stat = findById(this.stats, needs.stat.id);
-
-                blockers.push((stat === undefined ? needs.stat.id : stat.label) + ' ' + needs.stat.value);
-            }
-
-            if (needs.level !== undefined && this.vitals.level < needs.level) {
-                blockers.push('Level ' + needs.level);
-            }
-
-            return blockers;
-        },
-
-        canLearn: function (skill, ability) {
-            return this.abilityBlockers(skill, ability).length === 0;
-        },
-
-        // The toggle's tooltip: what it does, or what is missing
+        // The ability toggle's tooltip: what it does, or what is missing.
+        // The character works out what is missing; this page puts it in words.
         abilityTitle: function (skill, ability) {
-            const blockers = this.abilityBlockers(skill, ability);
+            const blockers = this.character.abilityBlockers(skill, ability);
 
             return blockers.length === 0 ? ability.description : 'Needs ' + blockers.join(', ');
-        },
-
-        // Learn or unlearn. Unlearning is always allowed; only learning is
-        // gated, so requirements drifting out of reach later never trap an
-        // ability in the on position.
-        toggleAbility: function (skill, ability) {
-            if (this.isLearned(ability)) {
-                removeFrom(this.learnedAbilities, ability.id);
-            } else if (this.canLearn(skill, ability)) {
-                this.learnedAbilities.push(ability.id);
-            }
-        },
-
-        // --- Feats ----------------------------------------------------------
-
-        // Feats of one kind the character doesn't have yet
-        availableFeats: function (kind) {
-            return notOwned(featCatalog.filter((entry) => entry.kind === kind), this.feats);
-        },
-
-        // Level-earned slots fill first, so a new feat is "Earned" while the
-        // levels still cover it and "Bonus" after
-        addFeat: function (catalogFeat) {
-            const earnedTaken = this.feats.filter((feat) => feat.source === 'earned').length;
-
-            this.feats.push(makeFeat(catalogFeat, earnedTaken < this.featsEarned ? 'earned' : 'bonus'));
-        },
-
-        removeFeat: function (feat) {
-            removeFrom(this.feats, feat);
         },
 
         // A feat row's badges: its kind, then where its slot came from.
@@ -731,62 +440,15 @@ export default {
             return [findById(featKinds, feat.kind), findById(featSources, feat.source)];
         },
 
-        // --- Spells ---------------------------------------------------------
-
         // A school's + menu: the spells it could still add
         spellMenu: function (school) {
-            const source = findById(spellCatalog, school.id);
-
-            return addMenu('Add a spell', source === undefined ? [] : notOwned(source.spells, school.spells));
-        },
-
-        addSpell: function (school, catalogSpell) {
-            school.spells.push(makeSpell(catalogSpell));
-        },
-
-        // Losing a spell also takes it out of the spellbook
-        removeSpell: function (school, spell) {
-            removeFrom(school.spells, spell);
-            removeFrom(this.learnedSpells, spell.id);
-        },
-
-        isSpellLearned: function (spell) {
-            return this.learnedSpells.includes(spell.id);
-        },
-
-        // Learn or forget. Forgetting is always allowed; learning stops at
-        // what the spellbook holds, so an Intelligence drop never traps a
-        // spell in the learned position.
-        toggleSpell: function (spell) {
-            if (this.isSpellLearned(spell)) {
-                removeFrom(this.learnedSpells, spell.id);
-            } else if (this.spellsLeft > 0) {
-                this.learnedSpells.push(spell.id);
-            }
-        },
-
-        // --- Items ----------------------------------------------------------
-
-        addItem: function (catalogItem) {
-            this.inventory.push(makeItem(catalogItem, itemQtyRange.min));
-        },
-
-        // Dropping an item also takes it off, so no gear slot points at an
-        // item the inventory no longer has
-        removeItem: function (item) {
-            for (const slot of this.gearSlots) {
-                if (slot.equipped === item.id) {
-                    slot.equipped = '';
-                }
-            }
-
-            removeFrom(this.inventory, item);
+            return addMenu('Add a spell', this.character.availableSpells(school));
         },
 
         // An inventory row's badges: its slot, then how many are worn (if any)
         itemBadges: function (item) {
-            const badges = [{ tag: itemSlotLabel(item), badgeClass: 'bg-primary' }];
-            const worn = this.equippedCount(item);
+            const badges = [{ tag: item.slotLabel, badgeClass: 'bg-primary' }];
+            const worn = this.character.inventory.wornCount(item);
 
             if (worn > 0) {
                 badges.push({ tag: worn + ' worn', badgeClass: 'bg-success' });
@@ -794,84 +456,38 @@ export default {
 
             return badges;
         },
-
-        // What a gear slot could hold: whatever fits and is still in the bag,
-        // plus whatever is already in the slot (or there'd be no way to take
-        // it off)
-        equippableIn: function (slot) {
-            return this.inventory.filter((item) => {
-                return item.slot === slot.accepts && (item.qty > 0 || item.id === slot.equipped);
-            });
-        },
-
-        // Equipping takes one out of the bag, taking off puts one back, and
-        // swapping does both, in that order. Without this, two hand slots
-        // could wear the same single dagger.
-        equipItem: function (slot, itemId) {
-            this.returnToBag(slot.equipped);
-            slot.equipped = '';
-
-            if (itemId === '') {
-                return;
-            }
-
-            const item = findById(this.inventory, itemId);
-
-            if (item === undefined || item.qty < 1) {
-                return;
-            }
-
-            item.qty -= 1;
-            slot.equipped = itemId;
-        },
-
-        returnToBag: function (itemId) {
-            if (itemId === '') {
-                return;
-            }
-
-            const item = findById(this.inventory, itemId);
-
-            if (item !== undefined) {
-                item.qty += 1;
-            }
-        },
-
-        // How many of this item are being worn. The row's quantity is what's
-        // spare, so 1 worn with 0 spare still reads correctly.
-        equippedCount: function (item) {
-            return this.gearSlots.filter((slot) => slot.equipped === item.id).length;
-        },
     },
 
-    // watch:   Calls the function when the value changes.
+    // watch:   Calls the function when the value changes. A dotted string
+    //          watches a value inside an object, here a getter on the
+    //          character, which re-runs when what it reads changes.
     watch: {
         // A derived ceiling can fall below the value under it: drop a level
         // and maxHp drops with it. Nothing is "spent" into HP, so the honest
         // answer is to clamp. Stat points are the opposite case: those ARE
         // spent, so they go negative instead and the player chooses what to
-        // give back. Naming a method as a string is shorthand for calling it.
-        maxHp: 'clampVitals',
-        maxMp: 'clampVitals',
-        maxSp: 'clampVitals',
+        // give back.
+        'character.maxHp': function () {
+            this.character.clampVitals();
+        },
+        'character.maxMp': function () {
+            this.character.clampVitals();
+        },
+        'character.maxSp': function () {
+            this.character.clampVitals();
+        },
 
         // "You may take more, never fewer." Levelling up can raise the floor
-        // past the current allowance, so push the allowance up with it: the
-        // vitals clamp in reverse.
-        featsEarned: function (newEarned) {
-            if (this.featAllowance < newEarned) {
-                this.featAllowance = newEarned;
-            }
+        // past the current allowance, so the allowance goes up with it.
+        'character.featsEarned': function () {
+            this.character.keepFeatAllowance();
         },
     },
 
-    // mounted:     Before anything loads, the form holds only data()'s
-    //              starting values, so keep a copy for resetting. Then load
-    //              whatever the address asks for (?id=3 from the roster).
+    // mounted:     Load whatever the address asks for (?id=3 from the
+    //              roster), or a blank character.
     mounted: function () {
-        this.blankCharacter = this.collectCharacter();
         this.loadCharacter(this.$route.query.id);
-        this.clampVitals();
     },
 
     // beforeRouteLeave:   The router asks before leaving this page, by any
@@ -914,13 +530,13 @@ export default {
                         <h4 class="card-title">Vitals</h4>
 
                         <RangeSlider id="level" label="Level" variant="level" :min="levelRange.min" :max="levelRange.max"
-                            v-model="vitals.level" :tooltip="levelTooltip" show-max />
+                            v-model="character.vitals.level" :tooltip="levelTooltip" show-max />
 
                         <div class="row row-cols-1 row-cols-lg-2 g-4">
                             <!-- Buffs makes this row tall, so spread the three bars down it -->
                             <div class="col d-flex flex-column justify-content-evenly">
                                 <RangeSlider v-for="bar in vitalBars" :key="bar.id" :id="bar.id" :label="bar.label"
-                                    variant="vital" :min="bar.min" :max="bar.max" v-model="vitals[bar.id]"
+                                    variant="vital" :min="bar.min" :max="bar.max" v-model="character.vitals[bar.id]"
                                     :fill-class="bar.fillClass" :tooltip="bar.formula" show-max />
                             </div>
 
@@ -930,8 +546,8 @@ export default {
                                     <div class="col" v-for="group in effectGroups" :key="group.kind">
                                         <EntryPanel :title="group.title" :entries="group.effects" :add-items="group.addItems"
                                             :add-label="group.addLabel" :empty-text="group.emptyLabel"
-                                            :count-class="group.badgeClass" :badges-for="effectBadges" @add="addEffect"
-                                            @remove="removeEffect" />
+                                            :count-class="group.badgeClass" :badges-for="effectBadges" @add="character.addEffect($event)"
+                                            @remove="character.effects.remove($event)" />
                                     </div>
                                 </div>
                             </div>
@@ -971,19 +587,19 @@ export default {
                             <legend class="form-label">Character Type</legend>
                             <div class="form-check">
                                 <input class="form-check-input" type="radio" name="characterType" id="playerCharacter"
-                                    value="player" v-model="character.type">
+                                    :value="types.player" v-model="characterType">
                                 <label class="form-check-label" for="playerCharacter">Player Character</label>
                             </div>
                             <div class="form-check">
                                 <input class="form-check-input" type="radio" name="characterType" id="npcCharacter"
-                                    value="npc" v-model="character.type">
+                                    :value="types.npc" v-model="characterType">
                                 <label class="form-check-label" for="npcCharacter">Non-Player Character</label>
                             </div>
                         </fieldset>
 
                         <!-- Only one of these exists at a time, so the unused one
                             can't block validation the way a hidden required field would -->
-                        <div class="mb-3" v-if="character.type === 'player'">
+                        <div class="mb-3" v-if="character.type === types.player">
                             <label for="userId" class="form-label">User ID</label>
                             <input class="form-control" type="text" id="userId" placeholder="Enter User ID"
                                 v-model="character.userId" required>
@@ -995,7 +611,7 @@ export default {
                             </select>
                         </div>
 
-                        <StepNav save-label="Save Info" first :save-disabled="!infoComplete" />
+                        <StepNav save-label="Save Info" first :save-disabled="!character.isComplete" />
                     </div>
 
                     <!-- ===== Step 2: Stats ===== -->
@@ -1003,15 +619,15 @@ export default {
                         <h3>Build Character Stats</h3>
                         <div class="mb-3">
                             <label class="form-label fw-semibold">Available Stat Points:
-                                <BudgetBadge :left="statPointsLeft" /></label>
+                                <BudgetBadge :left="character.statPointsLeft" /></label>
                             <p class="mb-3 text-body-secondary">
                                 Choose a value from 1 to 20 for each ability. Spend these across the six attributes below.
                             </p>
                         </div>
 
                         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
-                            <div class="col" v-for="stat in stats" :key="stat.id">
-                                <StatCard :stat="stat" v-model="stat.value" :points-left="statPointsLeft" />
+                            <div class="col" v-for="stat in character.stats" :key="stat.id">
+                                <StatCard :stat="stat" v-model="stat.value" :points-left="character.statPointsLeft" />
                             </div>
                         </div>
 
@@ -1025,11 +641,11 @@ export default {
                             <!-- Offers only the categories the character doesn't
                                 have, so it empties as the list fills -->
                             <ActionMenu variant="add" label="Add skill category" :items="categoryMenu"
-                                empty-text="Every category added" @select="addCategory($event.entry)" />
+                                empty-text="Every category added" @select="character.addCategory($event.entry)" />
                         </div>
 
                         <div class="accordion mb-3">
-                            <AccordionPanel v-for="category in skillCategories" :key="category.id"
+                            <AccordionPanel v-for="category in character.skillCategories.items" :key="category.id"
                                 :id="'skill-' + category.id" :title="category.name">
                                 <!-- One menu per category: add a skill, or drop the lot -->
                                 <template #menu>
@@ -1038,16 +654,16 @@ export default {
                                 </template>
 
                                 <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
-                                    <div class="col" v-for="skill in category.skills" :key="skill.id">
-                                        <SkillCard :skill="skill" v-model="skill.value" @remove="removeSkill(category, skill)" />
+                                    <div class="col" v-for="skill in category.items" :key="skill.id">
+                                        <SkillCard :skill="skill" v-model="skill.value" @remove="category.remove(skill)" />
                                     </div>
                                 </div>
-                                <p class="text-body-secondary mb-0" v-if="category.skills.length === 0">
+                                <p class="text-body-secondary mb-0" v-if="category.count === 0">
                                     No skills here yet. Use this category's menu to add one.
                                 </p>
                             </AccordionPanel>
 
-                            <p class="text-body-secondary mb-0" v-if="skillCategories.length === 0">
+                            <p class="text-body-secondary mb-0" v-if="character.skillCategories.count === 0">
                                 No skill categories yet. Use the + beside the heading above.
                             </p>
                         </div>
@@ -1064,15 +680,15 @@ export default {
                         <div class="accordion mb-3">
                             <AccordionPanel id="feats" title="Feats">
                                 <div class="d-flex flex-wrap align-items-center gap-3 mb-2">
-                                    <span class="badge bg-primary">Level {{ vitals.level }}</span>
-                                    <span class="badge bg-secondary text-dark">Earned {{ featsEarned }}</span>
-                                    <span class="badge bg-success">Bonus {{ featsBonus }}</span>
-                                    <BudgetBadge :left="featsLeft">{{ feats.length }} / {{ featAllowance }}</BudgetBadge>
+                                    <span class="badge bg-primary">Level {{ character.level }}</span>
+                                    <span class="badge bg-secondary text-dark">Earned {{ character.featsEarned }}</span>
+                                    <span class="badge bg-success">Bonus {{ character.featsBonus }}</span>
+                                    <BudgetBadge :left="character.featsLeft">{{ character.feats.count }} / {{ character.featAllowance }}</BudgetBadge>
 
                                     <div class="d-flex align-items-center gap-2 ms-auto">
                                         <label for="featCount" class="form-label mb-0">Total</label>
                                         <input type="number" class="form-control" id="featCount"
-                                            v-model.number="featAllowance" :min="featsEarned" max="20" step="1"
+                                            v-model.number="character.featAllowance" :min="character.featsEarned" max="20" step="1"
                                             aria-describedby="featCountHelp">
                                     </div>
                                 </div>
@@ -1080,42 +696,42 @@ export default {
                                     One feat every {{ featsPerLevel }} levels. You may take more, never fewer.
                                 </div>
 
-                                <EntryPanel title="Current Feats" :entries="feats" :add-items="featMenu" add-label="Add feat"
+                                <EntryPanel title="Current Feats" :entries="character.feats.items" :add-items="featMenu" add-label="Add feat"
                                     add-empty-text="" empty-text="No feats yet. Use the + beside the heading."
-                                    :badges-for="featBadges" @add="addFeat" @remove="removeFeat" />
+                                    :badges-for="featBadges" @add="character.addFeat($event)" @remove="character.feats.remove($event)" />
                             </AccordionPanel>
                         </div>
 
                         <!-- Abilities. The same categories and skills as the Skills
                             step: one list, two views, so they can't disagree. -->
                         <div class="accordion mb-3">
-                            <AccordionPanel v-for="category in skillCategories" :key="category.id"
+                            <AccordionPanel v-for="category in character.skillCategories.items" :key="category.id"
                                 :id="'ability-' + category.id" :title="category.name">
-                                <template v-for="skill in category.skills" :key="skill.id">
+                                <template v-for="skill in category.items" :key="skill.id">
                                     <h6 class="fw-bold">{{ skill.name }}</h6>
 
                                     <div class="d-flex flex-wrap gap-2 mb-3" role="group" :aria-label="skill.name + ' abilities'">
-                                        <span class="d-inline-flex align-items-center gap-1" v-for="ability in abilitiesFor(skill)"
+                                        <span class="d-inline-flex align-items-center gap-1" v-for="ability in skill.abilities"
                                             :key="ability.id">
-                                            <ToggleButton :id="'ability-' + ability.id" :checked="isLearned(ability)"
-                                                :disabled="!isLearned(ability) && !canLearn(skill, ability)"
-                                                :tooltip="abilityTitle(skill, ability)" @toggle="toggleAbility(skill, ability)">
+                                            <ToggleButton :id="'ability-' + ability.id" :checked="character.isLearned(ability)"
+                                                :disabled="!character.isLearned(ability) && !character.canLearn(skill, ability)"
+                                                :tooltip="abilityTitle(skill, ability)" @toggle="character.toggleAbility(skill, ability)">
                                                 {{ ability.name }}</ToggleButton>
                                             <ActionMenu :label="'Actions for ' + ability.name" :items="abilityMenu" />
                                         </span>
 
-                                        <span class="text-body-secondary" v-if="abilitiesFor(skill).length === 0">
+                                        <span class="text-body-secondary" v-if="skill.abilities.length === 0">
                                             No abilities for this skill yet.
                                         </span>
                                     </div>
                                 </template>
 
-                                <p class="text-body-secondary mb-0" v-if="category.skills.length === 0">
+                                <p class="text-body-secondary mb-0" v-if="category.count === 0">
                                     No skills in this category. Add one on the Skills step.
                                 </p>
                             </AccordionPanel>
 
-                            <p class="text-body-secondary mb-0" v-if="skillCategories.length === 0">
+                            <p class="text-body-secondary mb-0" v-if="character.skillCategories.count === 0">
                                 No skill categories yet. Add them on the Skills step.
                             </p>
                         </div>
@@ -1136,24 +752,24 @@ export default {
                         <!-- How much the spellbook holds: Intelligence + Level -->
                         <div class="d-flex align-items-center gap-2 mb-4">
                             <span class="form-label fw-semibold mb-0">Spells known:
-                                <BudgetBadge :left="spellsLeft">{{ spellsLearned }} / {{ spellsKnown }}</BudgetBadge></span>
+                                <BudgetBadge :left="character.spellsLeft">{{ character.learnedSpells.length }} / {{ character.spellsKnown }}</BudgetBadge></span>
                         </div>
 
                         <div class="accordion mb-3">
-                            <AccordionPanel v-for="school in spellSchools" :key="school.id" :id="'spell-' + school.id"
+                            <AccordionPanel v-for="school in character.spellSchools" :key="school.id" :id="'spell-' + school.id"
                                 :title="school.name">
                                 <template #menu>
                                     <ActionMenu variant="add" :label="'Add a spell to ' + school.name" :items="spellMenu(school)"
-                                        empty-text="Nothing left to add" @select="addSpell(school, $event.entry)" />
+                                        empty-text="Nothing left to add" @select="character.addSpell(school, $event.entry)" />
                                 </template>
 
                                 <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
-                                    <div class="col" v-for="spell in school.spells" :key="spell.id">
-                                        <SpellCard :spell="spell" :learned="isSpellLearned(spell)" :book-full="spellsLeft <= 0"
-                                            @toggle="toggleSpell(spell)" @remove="removeSpell(school, spell)" />
+                                    <div class="col" v-for="spell in school.items" :key="spell.id">
+                                        <SpellCard :spell="spell" :learned="character.isSpellLearned(spell)" :book-full="character.spellsLeft <= 0"
+                                            @toggle="character.toggleSpell(spell)" @remove="character.removeSpell(school, spell)" />
                                     </div>
 
-                                    <div class="col" v-if="school.spells.length === 0">
+                                    <div class="col" v-if="school.count === 0">
                                         <p class="text-body-secondary mb-0">
                                             No spells here yet. Use this school's + to add one.
                                         </p>
@@ -1180,12 +796,12 @@ export default {
                                     <div class="card-body d-flex flex-column">
                                         <h5 class="card-title">Gear</h5>
 
-                                        <div class="mb-3" v-for="slot in gearSlots" :key="slot.id">
+                                        <div class="mb-3" v-for="slot in character.inventory.gearSlots" :key="slot.id">
                                             <label :for="slot.id" class="form-label fw-semibold">{{ slot.label }}</label>
                                             <select class="form-select" :id="slot.id" :value="slot.equipped"
-                                                @change="equipItem(slot, $event.target.value)">
+                                                @change="character.inventory.equip(slot, $event.target.value)">
                                                 <option value="">&mdash; Empty &mdash;</option>
-                                                <option v-for="item in equippableIn(slot)" :key="item.id" :value="item.id">
+                                                <option v-for="item in character.inventory.equippableIn(slot)" :key="item.id" :value="item.id">
                                                     {{ item.name }}
                                                 </option>
                                             </select>
@@ -1198,10 +814,10 @@ export default {
                             <div class="col">
                                 <div class="card h-100 p-3 bg-light border-primary-subtle shadow-sm">
                                     <div class="card-body d-flex flex-column">
-                                        <EntryPanel variant="card" title="Inventory" :entries="inventory" :add-items="itemMenu"
+                                        <EntryPanel variant="card" title="Inventory" :entries="character.inventory.items" :add-items="itemMenu"
                                             add-label="Add item" add-empty-text="Carrying everything there is"
                                             empty-text="Carrying nothing. Use the + beside the heading."
-                                            :badges-for="itemBadges" @add="addItem" @remove="removeItem">
+                                            :badges-for="itemBadges" @add="character.addItem($event)" @remove="character.inventory.remove($event)">
                                             <!-- The quantity box, inside every row. Each row hands
                                                 its own item back as "entry". -->
                                             <template #extra="{ entry }">

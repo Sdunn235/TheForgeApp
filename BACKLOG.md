@@ -18,11 +18,11 @@ moves to **Done** and gets a line in `CHANGELOG.md`.
 
 ## Now
 
-Vue App 3.0 - SFC (plan: Phases 1–7). Top to bottom.
+Vue App 4.0 - Models & Collections: built 2026-11-09, waiting on the browser check.
 
 | # | Item | Kind | Level | Size | Notes |
 |---|---|---|---|---|---|
-| B-32 | Component gallery page | docs | | S | App.vue test page during Phase 3 → `/gallery` route. Shows atoms → molecules → organisms |
+| B-36 | Browser check of 4.0 (`npm run dev`) | bug | | S | Roster search/filter/sort/paging · edit + save keeps the ID · Player ↔ NPC keeps stats · equip/swap/drop a dagger · a feat past the allowance is Bonus · delete · gallery |
 
 ## Next
 
@@ -51,7 +51,8 @@ New ideas go here first. Sort them into Next or Later when we plan.
 |---|---|---|---|---|---|
 | B-20 | Move the form's prose into data | cleanup | | S | e.g. the step intros and the empty-list texts still typed in the HTML |
 | B-21 | Empty-state alerts on the roster | component | molecule | S | "Nothing forged yet" / "No character matches". Maybe too small to be worth it |
-| B-22 | Gear panel | component | organism | M | Single use today, so it fails the "2+ uses OR own logic" test, unless the gear logic moves into it |
+| B-22 | Gear panel | component | organism | M | Single use today, so it fails the "2+ uses OR own logic" test. The gear logic now lives in Inventory, so a panel would only show it |
+| B-37 | Bring storage back with factories | feature | | M | Next assignment. Turn saved plain data back into Players / Npcs (`helpers/storage.js` is commented out) |
 
 ---
 
@@ -59,6 +60,10 @@ New ideas go here first. Sort them into Next or Later when we plan.
 
 | # | Item | Done | Notes |
 |---|---|---|---|
+| B-33 | Entry models (Skill, Spell, Item, Feat, Effect on one Entry) + Stat | 2026-11-09 | `builders.js` and `labels.js` deleted |
+| B-34 | Collections: Collection, EntryGroup, FeatList, Inventory, Roster | 2026-11-09 | Roster search/sort and ids; Inventory equip |
+| B-35 | Character → Player / Npc; the forge runs on one character; storage off, roster in App.vue | 2026-11-09 | ForgeView 1,304 → 920 lines |
+| B-32 | Component gallery page | 2026-10-27 | `/gallery` |
 | | Buffs/debuffs saved · duplicate on rename · form resets after a save | 2026-10-18 | C0012 |
 | | Number IDs from a counter, NPC creature types, names can repeat, roster search/filter/sort | 2026-10-19 | C0012 |
 | | Roster delete pop-up → ConfirmModal (fixed the focus warning) | 2026-10-20 | |

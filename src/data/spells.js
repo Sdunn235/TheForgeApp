@@ -79,7 +79,7 @@ export const spellCatalog = [
 
 // The schools a new character starts with: every school, each empty.
 // Built from the catalog, so a new school only has to be added once.
-// A view copies this into its data(), the same way as startingStats.
+// A new Character copies it into its own EntryGroups, like startingStats.
 export const startingSpellSchools = spellCatalog.map((school) => ({
     id: school.id,
     name: school.name,

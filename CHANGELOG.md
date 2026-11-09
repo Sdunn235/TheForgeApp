@@ -5,6 +5,30 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [4.0.0] - 2026-11-09
+
+Vue App 4.0 - Models & Collections. Changes since Vue App 3.0 - SFC (commit C0015, 2026-10-27).
+
+### Added
+- Models for every kind of data in The Forge, in `src/models/`. Each one knows its own rules, so the pages ask it instead of working things out themselves.
+- Players and NPCs are now two kinds of character (Player and Npc), built on one shared Character. A player has a User ID, and an NPC has a creature type.
+- Skills, spells, items, feats, and buffs/debuffs are now models built on one shared Entry, so their name, ID, and description are written once. Each one adds only what is its own (a spell's level and mana cost, an item's slot and quantity).
+- Lists now manage themselves. One shared Collection adds, removes, finds, and counts, and knows what is not picked yet. The roster, the inventory, the feats, and each skill category and spell school are all built on it.
+- The roster now does its own searching, filtering, sorting, and ID numbers.
+- The inventory now handles equipping. Putting an item on, taking it off, and dropping it all happen in one place.
+- Every new class and function has a DocBlock comment that explains what it does, what it takes, and what it gives back.
+
+### Changed
+- The forge now builds one character instead of a dozen separate pieces of data. The page went from 1,304 to 920 lines.
+- Switching between Player and NPC on the forge now changes the character into the other kind. Stats, skills, and everything else come along, but a player's User ID does not.
+- The roster is now kept by the app itself while it runs, and both the forge and the roster page use that one roster.
+- A new character now starts with full HP, MP, and SP.
+- The roster's type badge colors and the type filters now come from the Player and NPC models instead of typed-in words.
+
+### Removed
+- Saving to the browser (local storage) is turned off for this assignment, as the teacher asked. A reload now starts over with the 14 sample characters, and anything you made is gone. It comes back when we get to factories.
+- The old helper files for building entries and their labels. The models do those jobs now.
+
 ## [3.2.5] - 2026-10-27
 
 Vue App 3.0 - SFC. Changes since Vue App 3.0 (commit C0014, 2026-10-21).

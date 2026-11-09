@@ -1,9 +1,10 @@
-// The sample characters added to the roster the first time the app runs.
+// The sample characters the roster starts with every time the app runs
+// (storage is off for now, so nothing else is kept between visits).
 
 // Sample characters, written as the little that makes each one
-// different. buildSampleCharacter expands a spec into a full
-// character using the same catalogs the forge does, so a sample
-// cannot describe a skill or item that does not exist.
+// different. buildSampleCharacter (helpers/seed.js) turns a spec into a
+// full Player or Npc using the same model methods the forge does, so a
+// sample cannot describe a skill or item that does not exist.
 export const sampleRoster = [
     {
         userId: 'sdunn', name: 'Thorin Ironfist', type: 'player', level: 12,

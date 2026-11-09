@@ -13,9 +13,14 @@ import { skillCatalog } from '@/data/skills.js';
 import { effectCatalog } from '@/data/effects.js';
 import { spellCatalog } from '@/data/spells.js';
 import { featCatalog, featKinds, featSources } from '@/data/feats.js';
-import { makeSkill, makeEffect, makeSpell, makeFeat } from '@/helpers/builders.js';
 import { addMenu } from '@/helpers/menus.js';
-import { findById, notOwned, removeFrom } from '@/helpers/lists.js';
+import { findById, removeFrom } from '@/helpers/lists.js';
+import Collection from '@/models/Collection.js';
+import Stat from '@/models/Stat.js';
+import Skill from '@/models/Skill.js';
+import Spell from '@/models/Spell.js';
+import Feat from '@/models/Feat.js';
+import Effect from '@/models/Effect.js';
 import AccordionPanel from '@/components/molecules/AccordionPanel.vue';
 import StepNav from '@/components/molecules/StepNav.vue';
 import ChoiceGroup from '@/components/molecules/ChoiceGroup.vue';
@@ -53,16 +58,18 @@ export default {
             level: 12,
             hp: 30,
             strength: 8,
-            // Copies, never the imported arrays themselves (a module runs once)
-            stats: JSON.parse(JSON.stringify(startingStats.slice(0, 2))),
+            // Model objects, built from the catalogs the same way the forge
+            // builds them. Each one is a copy, never the catalog entry itself.
+            stats: startingStats.slice(0, 2).map((stat) => new Stat(stat)),
             statPool: 10,
-            skill: makeSkill(skillCatalog[0].skills[0], 40),
-            buffs: [],
+            skill: new Skill(skillCatalog[0].skills[0], 40),
+            // Collections: they do their own add, remove and "not owned yet"
+            buffs: new Collection(),
             // Three illusion spells, and a spellbook that holds 1
-            spells: spellCatalog[5].spells.slice(0, 3).map((spell) => makeSpell(spell)),
+            spells: spellCatalog[5].spells.slice(0, 3).map((spell) => new Spell(spell)),
             learnedSpells: [],
             bookSize: 1,
-            feats: [makeFeat(featCatalog[1], 'earned')],
+            feats: new Collection([new Feat(featCatalog[1], 'earned')]),
             named: false,
             typeFilter: 'all',
             typeFilters: [
@@ -101,7 +108,7 @@ export default {
             let spent = 0;
 
             for (const stat of this.stats) {
-                spent += stat.value - stat.min;
+                spent += stat.spent;
             }
 
             return this.statPool - spent;
@@ -109,10 +116,10 @@ export default {
         buffMenu: function () {
             const buffs = effectCatalog.filter((entry) => entry.kind === 'buff');
 
-            return addMenu('Add a buff', notOwned(buffs, this.buffs));
+            return addMenu('Add a buff', this.buffs.missingFrom(buffs));
         },
         featMenu: function () {
-            return addMenu('Add a feat', notOwned(featCatalog, this.feats));
+            return addMenu('Add a feat', this.feats.missingFrom(featCatalog));
         },
     },
     methods: {
@@ -126,11 +133,11 @@ export default {
             ];
         },
         addBuff: function (catalogEffect) {
-            this.buffs.push(makeEffect(catalogEffect));
+            this.buffs.add(new Effect(catalogEffect));
             this.log('EntryPanel emitted add: ' + catalogEffect.name);
         },
         removeBuff: function (effect) {
-            removeFrom(this.buffs, effect);
+            this.buffs.remove(effect);
             this.log('EntryPanel emitted remove: ' + effect.name);
         },
         toggleSpell: function (spell) {
@@ -146,11 +153,11 @@ export default {
             return [findById(featKinds, feat.kind), findById(featSources, feat.source)];
         },
         addFeat: function (catalogFeat) {
-            this.feats.push(makeFeat(catalogFeat, 'earned'));
+            this.feats.add(new Feat(catalogFeat, 'earned'));
             this.log('Feats panel emitted add: ' + catalogFeat.name);
         },
         removeFeat: function (feat) {
-            removeFrom(this.feats, feat);
+            this.feats.remove(feat);
             this.log('Feats panel emitted remove: ' + feat.name);
         },
         removeSpell: function (spell) {
@@ -277,9 +284,9 @@ export default {
             <AccordionPanel id="gallery-feats" title="Feats">
                 <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
                     <span class="badge bg-primary">Level 12</span>
-                    <BudgetBadge :left="3 - feats.length">{{ feats.length }} / 3</BudgetBadge>
+                    <BudgetBadge :left="3 - feats.count">{{ feats.count }} / 3</BudgetBadge>
                 </div>
-                <EntryPanel title="Current Feats" :entries="feats" :add-items="featMenu" add-label="Add feat"
+                <EntryPanel title="Current Feats" :entries="feats.items" :add-items="featMenu" add-label="Add feat"
                     empty-text="No feats yet. Use the + beside the heading." :badges-for="featBadges"
                     @add="addFeat" @remove="removeFeat" />
             </AccordionPanel>
@@ -336,7 +343,7 @@ export default {
         <h3 class="h5 mt-4">EntryPanel: add and remove for real</h3>
         <div class="card">
             <div class="card-body">
-                <EntryPanel title="Buffs" :entries="buffs" :add-items="buffMenu" add-label="Add a buff"
+                <EntryPanel title="Buffs" :entries="buffs.items" :add-items="buffMenu" add-label="Add a buff"
                     empty-text="No buffs active." count-class="bg-buff" :badges-for="buffBadges" @add="addBuff"
                     @remove="removeBuff" />
             </div>

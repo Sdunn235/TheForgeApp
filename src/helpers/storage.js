@@ -1,3 +1,17 @@
+// ---------------------------------------------------------------------------
+// OFF FOR THIS ASSIGNMENT (Models & Collections). Teacher's instructions:
+// "Disable/comment out any code with regards to local storage. If you leave
+// this in, it will be using the old data format instead of your new models.
+// We will talk about how to bring this back when we get to factories."
+//
+// While it is off:
+//   - the roster lives in memory, owned by App.vue (models/Roster.js)
+//   - the id counter (takeNextId) moved into Roster.save
+//   - the samples are built fresh on every start (helpers/seed.js)
+// A reload resets the roster. Nothing imports this file right now.
+// ---------------------------------------------------------------------------
+
+/*
 import { findById } from '@/helpers/lists.js';
 
 // Everything that touches localStorage, in one place. The forge and the
@@ -103,3 +117,4 @@ export function markSamplesAdded() {
         console.warn('Could not record that samples were added:', error);
     }
 }
+*/

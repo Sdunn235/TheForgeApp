@@ -1,7 +1,7 @@
 // The rules every character is built on. Shared by the forge, the roster and
 // the sample characters, so it lives here rather than in one page.
-// Views copy what the player edits (startingStats) into their own data();
-// nothing here is ever changed while the app runs.
+// A new Character copies what the player edits (startingStats) into its
+// own Stat objects; nothing here is ever changed while the app runs.
 
 // The six attributes a new character starts with. min/max live here so the
 // ranges are data, not numbers buried in the markup.

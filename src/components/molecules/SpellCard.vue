@@ -2,7 +2,7 @@
 import ActionMenu from '@/components/molecules/ActionMenu.vue';
 import AppCard from '@/components/molecules/AppCard.vue';
 import ToggleButton from '@/components/atoms/ToggleButton.vue';
-import { spellLevelLabel, spellCostLabel } from '@/helpers/labels.js';
+import Spell from '@/models/Spell.js';
 
 // One spell the character carries: its card, its badges, its ⋮ menu and
 // its Learn button. Built like SkillCard: AppCard is the frame, and the
@@ -28,12 +28,15 @@ export default {
         };
     },
 
-    // props:   spell    = id, name, level, cost, description. Read only.
+    // props:   spell    = a Spell (models/Spell.js). Read only. It knows
+    //                     how its own level and cost read (levelLabel,
+    //                     costLabel), so this card just shows them.
     //          learned  = is it in the spellbook?
     //          bookFull = is the spellbook full? (the page counts, because
     //                     only the page can see every spell)
     props: {
-        spell: { type: Object, required: true },
+        // type can be a class: Vue then checks the prop is a Spell
+        spell: { type: Spell, required: true },
         learned: { type: Boolean, default: false },
         bookFull: { type: Boolean, default: false },
     },
@@ -49,12 +52,6 @@ export default {
     computed: {
         menuLabel: function () {
             return 'Actions for ' + this.spell.name;
-        },
-        levelLabel: function () {
-            return spellLevelLabel(this.spell);
-        },
-        costLabel: function () {
-            return spellCostLabel(this.spell);
         },
         // The checkbox's id, so its label can point at it
         toggleId: function () {
@@ -101,8 +98,8 @@ export default {
         </template>
 
         <div class="mb-2">
-            <span class="badge bg-primary">{{ levelLabel }}</span>
-            <span class="badge bg-secondary text-dark">{{ costLabel }}</span>
+            <span class="badge bg-primary">{{ spell.levelLabel }}</span>
+            <span class="badge bg-secondary text-dark">{{ spell.costLabel }}</span>
         </div>
 
         <p class="flex-grow-1 mb-3 text-body-secondary">{{ spell.description }}</p>

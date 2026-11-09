@@ -1,4 +1,4 @@
-# The Forge: Code Guide (Vue App 3.0 - SFC)
+# The Forge: Code Guide (Vue App 4.0 - Models & Collections)
 
 A study guide for explaining this code: what each piece does, why it is built
 that way, and what every bit of syntax means. Each section stands on its own.
@@ -21,6 +21,7 @@ that way, and what every bit of syntax means. Each section stands on its own.
 14. [Design principles in The Forge](#14-design-principles-in-the-forge)
 15. [Data, helpers and the Character model](#15-data-helpers-and-the-character-model)
 16. [Single File Components, Vite and the router](#16-single-file-components-vite-and-the-router)
+17. [Models and collections (4.0)](#17-models-and-collections-40)
 
 ---
 
@@ -40,8 +41,17 @@ that way, and what every bit of syntax means. Each section stands on its own.
 - **The principle is one-way data flow: props go down, events go up.** That is
   the Vue docs' own wording. A component never changes data that isn't its own.
 - **The world's data lives apart from the pages** (MVVM's Model): the
-  catalogs in `src/data/`, small tools in `src/helpers/`, and a `Character`
-  class in `src/models/`.
+  catalogs in `src/data/`, small tools in `src/helpers/`, and **classes in
+  `src/models/`** (section 17).
+- **Every character is a `Player` or an `Npc`** (both extend `Character`), and
+  it knows its own rules: its ceilings, budgets, what it may learn, how
+  equipping works. The forge holds one character and asks it.
+- **Lists manage themselves.** A `Collection` class does add, remove, find and
+  "not owned yet"; `Roster`, `Inventory`, `FeatList` and `EntryGroup` build on
+  it. The roster's search and sort live in `Roster`.
+- **Storage is off for this assignment** (the teacher's instruction). `App.vue`
+  owns the roster in memory and shares it with the pages. A reload starts
+  over with the 14 samples.
 - **18 components in atomic order:** 3 atoms, 13 molecules, 2 organisms (see
   section 4). One `ActionMenu` runs every dropdown, one `RangeSlider` every
   slider, one `ConfirmModal` every "are you sure?", one `AccordionPanel` every
@@ -59,7 +69,7 @@ that way, and what every bit of syntax means. Each section stands on its own.
 index.html                  one page: <div id="app"> and <script src="/src/main.js">
 src/
 ├── main.js                 starts the app: styles, Bootstrap, the router, App.vue
-├── App.vue                 the frame: <AppNavbar /> + <RouterView /> (the current page)
+├── App.vue                 the frame: <AppNavbar /> + <RouterView />, and owns the roster
 ├── router/index.js         which address shows which view
 ├── views/                  PAGES (atomic design's top level)
 │   ├── HomeView.vue        /          the video banner + one card per design area
@@ -75,7 +85,7 @@ src/
 ├── directives/tooltip.js   v-tooltip: a Bootstrap tooltip that cleans up after itself
 ├── data/                   the world: catalogs and starting lists (section 15)
 ├── helpers/                small tools with no "this" (section 15)
-├── models/Character.js     a saved character, as a class (section 15)
+├── models/                 classes: characters, entries, collections (section 17)
 └── sass/
     ├── _tools.scss         variables and mixins only (no CSS)
     └── app.scss            Bootstrap + the truly app-wide rules
@@ -969,7 +979,9 @@ does the assigning, the same split as RangeSlider.
 2. StatCard      @update:model-value hears it and relays:
                  $emit('update:modelValue', 12)
 3. ForgeView     v-model="stat.value" → stat.value = 12   (the ONLY assignment)
-4. ForgeView     statPointsLeft recomputes (the pool shrinks by 2)
+                 stat is one of character.stats, a Stat object
+4. Character     character.statPointsLeft is a getter, so it is worked out
+                 fresh: it adds up each Stat's `spent` (the pool shrinks by 2)
 5. back down     StatCard gets modelValue 12 and a new pointsLeft
                  → affordableMax recomputes
                  RangeSlider gets modelValue 12 → fillPercent recomputes,
@@ -984,11 +996,12 @@ ever talking to each other.
 ```
 1. ActionMenu   Remove is a button item → $emit('select', item)
 2. SkillCard    onSelect(item): item.action === 'remove' → $emit('remove')
-3. ForgeView    @remove="removeSkill(category, skill)"
-4. ForgeView    removeSkill → removeFrom(category.skills, skill)  (helpers/lists.js)
+3. ForgeView    @remove="category.remove(skill)"
+4. EntryGroup   the category is a collection, so it removes its own skill
+                (Collection.remove, matched by id)
 5. back down    v-for redraws; that SkillCard is gone. The skill reappears in
-                the category's "Add a skill" menu because availableSkills
-                recomputes.
+                the category's "Add a skill" menu because
+                character.availableSkills(category) is asked again.
 ```
 
 ### C. Finish → Save
@@ -1000,7 +1013,8 @@ ever talking to each other.
 4. AppModal    open() → this.bsModal.show()   (Bootstrap animates it in)
 5. user        clicks Save Character
 6. ConfirmModal confirm() → closes, $emit('confirm')
-7. ForgeView   @confirm="saveCharacter" → storeCharacter (storage.js), resets the form
+7. ForgeView   @confirm="saveCharacter" → saveToRoster(character.clone())
+               (App.vue saves it into the Roster), then a new Player() for the form
 ```
 Notice the shape: **refs go down** (a parent asks a child to do something,
 like open), and **events go up** (a child tells a parent something happened).
@@ -1009,27 +1023,33 @@ like open), and **events go up** (a child tells a parent something happened).
 
 ```
 NEW CHARACTER                         EDIT FROM THE ROSTER
-editingId = null                      ?id=3 in the address bar
-                                      loadCharacter(this.$route.query.id): Number("3") → 3
-                                      applyCharacter(found), editingId = 3
-collectCharacter → id: null           collectCharacter → id: 3
-storeCharacter (helpers/storage.js):  storeCharacter:
-  id is null → takeNextId() → 14        id is 3 → keep it
-  findIndex(14) → not found → push      findIndex(3) → found → replace in place
+character = new Player()              ?id=3 in the address bar
+  its id is null                      loadCharacter(this.$route.query.id): Number("3") → 3
+                                      character = roster.find(3).clone()  (its id is 3)
+saveToRoster(character.clone())       saveToRoster(character.clone())
+Roster.save (models/Roster.js):       Roster.save:
+  id is null → the next id → 14         id is 3 → keep it
+  not in the roster → add               found → replace in place
 returns 14 → "Saved (#14)"            returns 3 → "Saved (#3)"
 ```
-Then `saveCharacter` puts `blankCharacter` back on the form, so the next
+Then `saveCharacter` starts a `new Player()` on the form, so the next
 character starts empty. After an **edit** it also clears `?id=3` from the
 address (`this.$router.replace({ name: 'forge' })`), so a refresh doesn't load
 the old character into the new form.
+
+**Why clone twice?** The form edits a *copy* of the saved character, and the
+roster keeps a *copy* of the form. So the roster and the form never share an
+object: nothing on the roster changes until you press Save, and editing the
+next character can't reach back into the one you just saved.
 
 **Why this fixed the duplicate bug:** the old ID was *built from* the name
 and User ID. Rename a character and its ID changed, so the save couldn't find
 the original and added a second copy. Now the ID is a number that has nothing
 to do with the name, so a rename can't lose it.
 
-**The counter (`takeNextId`).** The next number lives in local storage under
-`theForgeNextId`, **apart from the roster**. Each new save takes it and adds 1.
+**The counter (`_nextId` in the Roster).** It used to live in local storage
+(`takeNextId`); with storage off it lives inside the Roster, still **apart from
+the list of characters**. Each new save takes it and adds 1.
 Why apart: if the next ID were "the highest on the roster + 1", deleting the
 newest character would hand its number out again, and an old Edit link, a
 downloaded file, or the locked list would then point at the wrong character.
@@ -1040,11 +1060,11 @@ number is converted on the way in (`Number(...)`) and the way out
 (`String(...)`). `3 === "3"` is false, which is exactly why Edit stopped
 working until the load converted it.
 
-**The blank form (`blankCharacter`).** The first line of `mounted` takes a
-copy of the form with `collectCharacter()` before anything is loaded. At that
-moment the form only holds `data()`'s starting values. A save puts that copy
-back. The starting values are written once (in `data()`), so a new field can't
-be forgotten in the reset.
+**The blank form.** A reset is just `this.character = new Player()`. The
+starting values are written once, in the Character constructor, so a new
+field can't be forgotten in the reset. (In 3.0 this took three methods:
+`collectCharacter`, `applyCharacter` and a `blankCharacter` copy. All three
+are gone.)
 
 ### E. Leaving the forge (the router asks first)
 
@@ -1556,6 +1576,21 @@ crashed, and the whole forge page stopped drawing.
 | A `/gallery` page | Tests every component on its own, and shows the atomic design | Testing only inside the real pages |
 | Drop the `roster` prefix inside RosterView | Inside its own file the prefix says nothing new | `rosterSearchTerm`, `rosterPage`... |
 | No Pinia (shared store) yet | localStorage already connects the forge and the roster | Adding a new tool mid-assignment (backlog B-31) |
+| **4.0 - Models & Collections:** | | |
+| Player and Npc as subclasses of Character | They differ in fields (User ID vs creature type) and answers (`tagLabel`, `isComplete`), so each class answers for itself. Removes the `isNpc ? ... : ...` branches | One Character class with a `type` field (3.0's choice, when they differed in one field only) |
+| `static type` on each class, read through a `type` getter | The teacher's Book/Magazine pattern: `'player'` is written once, and `type` can't be changed by mistake | Typing `'player'` / `'npc'` in each file |
+| One `Entry` base class for Skill, Spell, Item, Feat, Effect | All five share id, name, description; each adds only what differs | Five classes each copying the same three fields; keeping `builders.js` |
+| One `EntryGroup` for both skill categories and spell schools | Same fields, same jobs. Two classes only earn it when their fields or methods differ | `SkillCategory` + `SpellSchool` classes that would be identical |
+| Collections *have* an array (composition), like the teacher's PublicationCollection | The collection decides what can be done to its list; `items` hands out a copy | Extending `Array` itself |
+| `_arr`, not a real `#private` field | Vue wraps every object in a Proxy, and `#private` fields break inside one | `#arr` |
+| Inheritance between collections (`Inventory.remove` calls `super.remove`) | Inventory adds one rule (take it off first) and reuses the rest | Writing remove again in Inventory |
+| No decorators | Nothing here needs extra behaviour wrapped around an object while the app runs; Vue's Proxy already wraps every object for reactivity. Assessed and left out, as the assignment allows | A decorator just to say we used one |
+| `clone()` = write to JSON, build a new one from it | Copies every nested list. The teacher's `Object.assign(new Book(), old)` copies one level, so a character's lists would be shared | `Object.assign`, `{ ...character }` (a plain object, not a Player), Lodash |
+| Each constructor takes saved data OR a catalog entry | One way in, so `clone`, the samples and the + menus can't build things differently | Separate "from catalog" and "from saved" builders |
+| Storage commented out, not deleted | The teacher's instruction; it comes back with factories next week | Deleting `storage.js` |
+| The roster lives in App.vue, shared with `provide` / `inject` | App outlives every page, and the router draws the pages, so there's no tag to put a prop on. Changes still go through App's own methods (`saveToRoster`, `deleteFromRoster`) | A shared global roster object; Pinia (B-31) |
+| A lookup table `characterTypes`, not a factory | Turns `'npc'` into the Npc class for the radio and the samples. Factories are next week's topic | A `createCharacter` factory now |
+| Colours stay in the views (`typeBadges`, `vitalBadges`) | MVVM: the model knows facts, the view knows looks | Bootstrap classes in the models |
 
 ---
 
@@ -1587,7 +1622,24 @@ redraw, never cleaned up), now replaced by `v-tooltip`.
 
 ## 11. Where the assignment stands
 
-### Vue App 3.0 - SFC (this assignment)
+### Vue App 4.0 - Models & Collections (this assignment)
+
+| The assignment asks for | Where it is |
+|---|---|
+| Models for the primary data types | `Player` and `Npc` (extend `Character`); `Skill`, `Spell`, `Item`, `Feat`, `Effect` (extend `Entry`); `Stat`. All in `src/models/` (section 17) |
+| Different types have different properties or methods | Player has `userId`, Npc has `npcType`; each has its own `tagLabel` and `isComplete`. Spell has `levelLabel`, Item has `takeOne` / `returnOne`, Skill has `abilities`... |
+| Inheritance, composition or decorators | Inheritance: Entry → 5 types, Collection → 4 collections, Character → Player / Npc. Composition: a Character *has* its collections; a Collection *has* its array. Decorators: assessed, not used (section 9) |
+| Collections move list code out of the components | `Collection` (add, remove, contains, find, count, items, filter, missingFrom), plus `Roster` (save, ids, search, sort), `Inventory` (equip, worn, remove-unequips), `FeatList` (earned / bonus), `EntryGroup` |
+| DocBlocks on the new classes and functions | Every class, constructor, getter and method in `src/models/`, plus `helpers/lists.js` and `helpers/seed.js` |
+| Comment out local storage | `helpers/storage.js` is commented out with the teacher's note; the roster lives in App.vue |
+| Cloning keeps the models | `Character.clone()` / `convertTo()` (section 17) |
+| Improvements listed in CHANGELOG.md | `## [4.0.0]` |
+
+**By the numbers:** ForgeView 1,304 → 920 lines (about 40 methods moved into the
+models). `builders.js` and `labels.js` deleted. RosterView's 40-line
+search-and-sort became one `roster.search(...)` call.
+
+### Vue App 3.0 - SFC (the assignment before this one)
 
 | The assignment asks for | Where it is |
 |---|---|
@@ -1835,6 +1887,12 @@ The unit's principles, each with a real example from this code.
 
 ## 15. Data, helpers and the Character model
 
+> **Updated in 4.0.** This section is how it was in 3.0 - SFC. Since then:
+> `builders.js` and `labels.js` are gone (their jobs moved into the models),
+> `notOwned` and `deepCopy` left `lists.js`, `storage.js` is commented out,
+> `seed.js` builds a `Roster`, and the one Character class became
+> Character + Player + Npc. Section 17 has the current picture.
+
 The project is now a Vite app (`npm create vue@latest`, then `npm install`,
 then `npm run dev`). Before any component moved, everything in `app.js` that
 was **not page code** moved out into plain `.js` modules. `app.js` went from
@@ -1950,8 +2008,9 @@ plain data.
 **The model knows facts, not looks (MVVM).** It gives `isNpc` and the HP
 numbers, never `bg-primary` or `text-bg-health`. Colours stay in the view.
 
-**One class, no subclasses.** Players and NPCs differ in one field (`type`),
-so there's no Player/NPC inheritance. That's composition over inheritance.
+**One class, no subclasses (3.0; changed in 4.0).** Players and NPCs differed
+in one field (`type`), so there was no Player/NPC inheritance. In 4.0 they
+differ in fields and in answers, so they became subclasses (section 17).
 
 ### Questions I might be asked
 
@@ -2054,3 +2113,205 @@ routes: [
 | `scss/forge.scss` → `css/forge.css` (watcher) | `src/sass/app.scss` + `_tools.scss` + each component's `<style scoped>`, compiled by Vite |
 | Bootstrap from a CDN `<script>` (a global) | Bootstrap from npm, imported by the files that use it |
 | Live Server | `npm run dev` |
+
+---
+
+## 17. Models and collections (4.0)
+
+The assignment: build classes for the main kinds of data, use inheritance or
+composition to cut repeated code, move list code (add, remove, sort, search)
+out of the components and into **collections**, and turn off local storage.
+
+### The classes at a glance
+
+```
+ENTRIES (things a character copies out of a catalog)
+Entry            id, name, description        ← written once, shared by all five
+ ├─ Skill        + min, max, value             · abilities
+ ├─ Spell        + level, cost                 · levelLabel, costLabel
+ ├─ Item         + slot, qty                   · slotLabel, takeOne(), returnOne()
+ ├─ Feat         + kind, source                · isEarned
+ └─ Effect       + kind, duration              · isBuff
+Stat             id, label, min, max, value    · spent     (not an Entry: no name, no catalog)
+
+COLLECTIONS (lists that manage themselves)
+Collection       add, remove, contains, find, count, items, filter, missingFrom
+ ├─ EntryGroup   + id, name     a skill category (of Skills) or a spell school (of Spells)
+ ├─ FeatList     + earnedCount, addFeat(entry, earnedSlots)
+ ├─ Inventory    + gearSlots, gear, equip, equippableIn, wornCount, remove (unequips first)
+ └─ Roster       + save (hands out ids), search (filters + sort)
+
+CHARACTERS
+Character        stats, vitals, and HAS: skillCategories, effects, feats,
+ │               spellSchools, inventory · every rule (maxHp, statPointsLeft,
+ │               toggleSpell, abilityBlockers...) · clone(), convertTo()
+ ├─ Player       + userId    · tagLabel = the User ID · isComplete needs a User ID
+ └─ Npc          + npcType   · tagLabel = "Beast"     · isComplete needs a creature type
+```
+
+### Reading a class (the syntax)
+
+```js
+export default class Player extends Character {   // extends: a Player IS a Character, plus more
+    static type = 'player';                        // static: belongs to the class, not each object
+                                                   //   Player.type → 'player'
+    constructor(saved = {}) {                      // runs once per "new Player(...)"
+        super(saved);                              // run Character's constructor first
+        this.userId = saved.userId || '';          // then add what only a Player has
+    }
+
+    get isComplete() {                             // a getter: read like a field, worked out fresh
+        return super.isComplete && this.userId.trim() !== '';
+    }                                              // super.isComplete = Character's own check
+}
+```
+- **`extends`** gives Player everything Character has (fields, getters,
+  methods). Player only writes what is different.
+- **`super(...)`** in a constructor runs the parent's constructor. It has to
+  come before `this` is used.
+- **`super.isComplete`** calls the parent's version of something the child
+  replaces, so the child adds to it instead of copying it (**overriding**).
+- **`static`** is for things that are the same for every object of the class:
+  `Player.type`, `Roster.sorts`. The teacher's `Book.type` is the same idea.
+- **`this.constructor`** is the class an object was made from. Character's
+  `get type()` reads `this.constructor.type`, so it works for both subclasses
+  without each one writing it again.
+- **`??`** ("if missing"): `source.value ?? skillRange.min` uses the saved value,
+  or the minimum if there isn't one. Unlike `||`, it keeps a real `0`
+  (a level-0 spell, character id 0).
+
+### Inheritance vs composition: where each one is used
+
+| | Means | In The Forge |
+|---|---|---|
+| **Inheritance** ("is a") | A Skill *is an* Entry | Entry → Skill, Spell, Item, Feat, Effect · Collection → EntryGroup, FeatList, Inventory, Roster · Character → Player, Npc |
+| **Composition** ("has a") | A Character *has an* Inventory | A Character has its collections · a Collection has its array (`_arr`), like the teacher's PublicationCollection |
+| **Decorators** | Wrapping an object to add behaviour | Not used. Nothing needed wrapping while the app runs, and Vue already wraps every object for reactivity. Assessed and left out (the assignment allows that) |
+
+**The test for a subclass:** do the two have different fields or methods?
+Player and Npc do (User ID vs creature type, different `tagLabel`), so they're
+subclasses. A skill category and a spell school don't (both are a name and a
+list), so they share one class, `EntryGroup`.
+
+### What a collection does for a view
+
+```js
+// 3.0: the list code was written in the view, again for every list
+this.effects.push(makeEffect(catalogEffect));
+removeFrom(this.effects, effect);
+notOwned(effectCatalog, this.effects);
+
+// 4.0: the list looks after itself
+this.effects.add(new Effect(catalogEffect));
+this.effects.remove(effect);
+this.effects.missingFrom(effectCatalog);
+```
+- **`items`** hands out a *copy* of the list (`[...this._arr]`), for `v-for` and
+  for props. Nothing outside can push into the real list behind the
+  collection's back. The entries in the copy are the real ones, so
+  `v-model="skill.value"` still edits the skill.
+- **`count`** replaces `.length`, **`find(id)`** replaces `findById(list, id)`.
+- **`toJSON()`** is what `JSON.stringify` writes for a collection: just the
+  entries. Without it a saved list would come out as `{ "_arr": [...] }`.
+- **`_arr`** has an underscore to say "don't touch from outside". Not a real
+  `#private` field, because those break inside Vue's Proxy.
+
+### Copying a character (`clone` and `convertTo`)
+
+The teacher's hint is `Object.assign(new Book(), oldBook)`. It makes a real
+Book, but copies only **one level**: a character's lists would still be the
+*same* lists in both copies. So:
+
+```js
+clone() {
+    return this.convertTo(this.constructor);           // same class as this one
+}
+convertTo(CharacterClass) {
+    return new CharacterClass(JSON.parse(JSON.stringify(this)));
+}
+```
+1. `JSON.stringify(this)` writes the character as plain text (through each
+   `toJSON`).
+2. `JSON.parse` turns it back into plain objects: no classes, nothing shared.
+3. `new CharacterClass(...)` rebuilds it, and **each constructor rebuilds its
+   own parts** as models (Stats, Skills, an Inventory...).
+
+That's why every constructor accepts saved data *or* a catalog entry: there is
+only one way to build anything. `convertTo(Npc)` is the forge's Player / NPC
+radio: everything shared comes across, and the User ID is left behind.
+
+### Where the roster lives now (storage off)
+
+```
+App.vue   data: roster = buildSampleRoster()      ← owns it
+          provide: roster, saveToRoster, deleteFromRoster
+             │
+     ┌───────┴────────┐
+ForgeView          RosterView
+inject: roster,    inject: roster,
+  saveToRoster       deleteFromRoster
+```
+- **`provide` / `inject`** hands something from a component to any component
+  below it, without a prop on every level. App can't put props on the pages,
+  because the router draws them, so this is the way through.
+- **The owner still makes every change.** The pages read the roster, but
+  saving and deleting go through App's own methods. The same idea as props
+  down, events up.
+- **Storage is commented out** (`helpers/storage.js`), as the teacher said:
+  left in, it would load the old plain data instead of the models. It comes
+  back with factories. Until then a reload starts over with the 14 samples.
+
+### What moved where
+
+| Was (3.0 - SFC) | Now (4.0) |
+|---|---|
+| 12 loose keys in ForgeView's `data()` (`vitals`, `stats`, `feats`...) | one `character: new Player()` |
+| ~40 forge methods (`statPointsLeft`, `addFeat`, `equipItem`, `abilityBlockers`...) | methods and getters on Character, Inventory, FeatList |
+| `collectCharacter`, `applyCharacter`, `blankCharacter` | `clone()`, `new Player()` |
+| `helpers/builders.js` (`makeSkill`...) | `new Skill(...)` and the other constructors |
+| `helpers/labels.js` | `spell.levelLabel`, `spell.costLabel`, `item.slotLabel` |
+| `notOwned` / `deepCopy` in `lists.js` | `Collection.missingFrom` / `Character.clone` |
+| RosterView's 40-line filter + sort | `roster.search({ type, creature, field, term, exclude, sort })` |
+| `takeNextId` in storage | `Roster.save` |
+| `seedRoster` writing to storage once | `buildSampleRoster()` every start |
+| `isNpc ? ... : ...` | Player and Npc each answer (`tagLabel`, `isComplete`) |
+
+### Code smells fixed in 4.0
+
+| Smell | Where it was | Refactoring |
+|---|---|---|
+| Large Class | ForgeView: 1,304 lines, the character's state and every rule | Move Method into the models (now 920 lines) |
+| Feature Envy | Forge methods digging into `this.inventory` and `this.gearSlots` | Move Method → Inventory |
+| Data Clumps | The 12 loose keys always saved and loaded together | Introduce Object → Character |
+| Switch Statements | `isNpc ? ... : ...` | Replace Conditional with Polymorphism → Player / Npc |
+| Duplicate Code | push / splice / notOwned for every list; id, name, description in every builder | Extract Superclass → Collection, Entry |
+| Primitive Obsession | `'player'` / `'npc'` typed across files | `static type` on the classes |
+
+### Questions I might be asked
+
+**"Why classes instead of plain objects?"** The rules belong with the data
+they're about. A plain object can't tell you its own `maxHp`; a Character can.
+The forge used to work everything out *for* the character; now it asks.
+
+**"Why are Player and Npc subclasses, when last time you said one class was
+better?"** Last time they differed in one field. Now each answers questions
+differently (`tagLabel`, `isComplete`) and has its own field. When two types
+behave differently, subclasses beat if-statements.
+
+**"Why didn't you use `Object.assign` like the hint?"** It copies one level.
+A character has lists inside lists, so the copy would share them with the
+original. The JSON round trip copies everything, and the constructors rebuild
+the models.
+
+**"Why didn't you use decorators?"** I looked for a place where an object
+needed extra behaviour added while the app runs and didn't find one.
+Inheritance and composition covered the repeated code. Adding one just to tick
+the box would be over-engineering.
+
+**"Where does the roster live with storage off?"** In App.vue, the one
+component that never goes away. It's shared with `provide` / `inject`, and
+only App changes it.
+
+**"What's the difference between Collection and Roster?"** Collection is
+any list (add, remove, find). Roster is a Collection that also knows the
+roster's rules: handing out ids, replacing an edited character, search and sort.
